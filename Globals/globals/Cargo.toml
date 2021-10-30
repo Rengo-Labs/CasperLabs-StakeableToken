@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "globals",
+    "globals_tests"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
