@@ -13,12 +13,13 @@ use crate::config::*;
 pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, timing_contract_hash: Key, declaration_contract_hash: Key) 
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, timing_contract_hash: Key, declaration_contract_hash: Key, globals_contract_hash: Key) 
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
         data::set_timing_hash(timing_contract_hash);
         data::set_declaration_hash(declaration_contract_hash);
+        data::set_globals_hash(globals_contract_hash);
     }
 
     fn to_bytes16(&self, x: U256) -> Vec<u16>
@@ -164,10 +165,24 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         result
     }
 
+    // Following function will be used for both safe_transfer as well as safe_transfer_from
+    // Incase of safe_transfer, 'from' will be the caller.
+    fn transfer_from(&self, token: Key, from: Key, to: Key, value: U256)
+    {
+        // Token must be approved for router to spend.
+        let args: RuntimeArgs = runtime_args!{
+            "owner" => from,
+            "recipient" => to,
+            "amount" => value
+        };
 
+        let _:() = runtime::call_contract(ContractHash::from(token.into_hash().unwrap_or_default()), "transfer_from", args);
+    }
+
+
+    
     // ************************ HELPER METHODS ***************************
 
-        
     fn _increase_stake_count(&self, _staker: Key)
     {
         let declaration_hash: Key = data::declaration_hash();
@@ -195,11 +210,114 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         let _:() = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "set_liquidity_stake_count", runtime_args!{ "staker" => _staker, "value" => stake_count});
     }
 
+    fn _is_mature_stake(_stake: Structs::Stake) -> bool
+    {
+        if _stake.close_day > 0 {
+            return _stake.final_day <= _stake.close_day;
+        }
+        else {
+            let timing_hash: Key = data::timing_hash();
+            let _current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_hash.into_hash().unwrap_or_default()), "_current_wise_day", runtime_args!{});
+        
+            return _stake.final_day <= _current_wise_day;
+        }
+    }
+
+    fn _not_critical_mass_referrer(_referrer: Key) -> bool
+    {
+        let declaration_hash: Key = data::declaration_hash();
+        let struct_key: String = _referrer.to_formatted_string();
+
+        let critical_mass: String = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::CRITICAL_MASS});
+        let critical_mass: Structs::CriticalMass = serde_json::from_str(&critical_mass).unwrap();
+        return critical_mass.activation_day == 0.into();
+    }
+
+    fn _stake_not_started(_stake: Structs::Stake) -> bool
+    {
+        if _stake.close_day > 0 {
+            return _stake.start_day > _stake.close_day;
+        }
+        else {
+            let timing_hash: Key = data::timing_hash();
+            let _current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_hash.into_hash().unwrap_or_default()), "_current_wise_day", runtime_args!{});
+        
+            return _stake.start_day > _current_wise_day;
+        }
+    }
+
+    fn _stake_ended(_stake: Structs::Stake) -> bool
+    {
+        return _stake.is_active == false || Self::_is_mature_stake(_stake);
+    }
+
+    fn _days_left(_stake: Structs::Stake) -> U256
+    {
+        if _stake.is_active == false {
+            return Self::_days_diff(U256::from(_stake.close_day), U256::from(_stake.final_day));
+        }
+        else {
+            let timing_hash: Key = data::timing_hash();
+            let _current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_hash.into_hash().unwrap_or_default()), "_current_wise_day", runtime_args!{});
+            return Self::_days_diff(U256::from(_current_wise_day), U256::from(_stake.final_day));
+        }
+    }
+
+    fn _days_diff(_start_date: U256, _end_date: U256) -> U256 
+    {
+        return if  _start_date > _end_date {0.into()} else {_end_date.checked_sub(_start_date).unwrap_or_default()};
+    }
+
+    fn _calculation_day(_stake: Structs::Stake) -> U256
+    {
+        let globals_hash: Key = data::globals_hash();
+        let current_wise_day: U256 = runtime::call_contract(ContractHash::from(globals_hash.into_hash().unwrap_or_default()), "get_globals", runtime_args!{"field" => Structs::CURRENT_WISE_DAY});
+
+        return if _stake.final_day > current_wise_day.as_u64() {current_wise_day} else {U256::from(_stake.final_day)};
+    }
+
+    fn _starting_day(_stake: Structs::Stake) -> U256 
+    {
+        return if _stake.scrape_day == 0.into() { U256::from(_stake.start_day) } else { U256::from(_stake.scrape_day) } 
+    }
+
+    fn _not_future(_day: U256) -> bool 
+    {
+        let timing_hash: Key = data::timing_hash();
+        let _current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_hash.into_hash().unwrap_or_default()), "_current_wise_day", runtime_args!{});
+        
+        return _day <= U256::from(_current_wise_day);
+    }
+
+    fn _not_past(_day: U256) -> bool 
+    {
+        let timing_hash: Key = data::timing_hash();
+        let _current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_hash.into_hash().unwrap_or_default()), "_current_wise_day", runtime_args!{});
+        
+        return _day >= U256::from(_current_wise_day);
+    }
+
     fn _non_zero_address(key: Key) -> bool
     {
         let zero_addr: Key = Key::Hash([0u8;32]);
         return key != zero_addr
     }
+
+    fn _get_lock_days(_stake: Structs::Stake) -> U256
+    {
+        return if _stake.lock_days > 1 {U256::from(_stake.lock_days - 1)} else {1.into()};
+    }
+
+    fn _prepare_path(_token_address: Key, _synthetic_address: Key, _wise_address: Key) -> Vec<Key>
+    {
+        let mut _path: Vec<Key> = Vec::with_capacity(3);
+        _path.push(_token_address);
+        _path.push(_synthetic_address);
+        _path.push(_wise_address);
+        
+        _path
+    }
+
 
     fn _generate_key_for_dictionary(key: &Key, id: &Vec<u16>) -> String
     {

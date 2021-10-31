@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{collections::BTreeSet, format, vec};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -30,9 +30,9 @@ impl ContractContext<OnChainContractStorage> for HelperStruct
 impl Helper<OnChainContractStorage> for HelperStruct{}
 impl HelperStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, timing_hash: Key, declaration_hash: Key) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, timing_hash: Key, declaration_hash: Key, globals: Key) 
     {
-        Helper::init(self, Key::from(contract_hash), package_hash, timing_hash, declaration_hash);
+        Helper::init(self, Key::from(contract_hash), package_hash, timing_hash, declaration_hash, globals);
     }
 }
 
@@ -44,8 +44,9 @@ fn constructor()
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
     let timing_hash: Key = runtime::get_named_arg("timing");
     let declaration_hash: Key = runtime::get_named_arg("declaration");
+    let globals: Key = runtime::get_named_arg("globals");
 
-    HelperStruct::default().constructor(contract_hash, package_hash, timing_hash, declaration_hash);
+    HelperStruct::default().constructor(contract_hash, package_hash, timing_hash, declaration_hash, globals);
 }
 
 fn get_entry_points() -> EntryPoints 
@@ -57,10 +58,36 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
             Parameter::new("timing", Key::cl_type()),
-            Parameter::new("declaration", Key::cl_type())
+            Parameter::new("declaration", Key::cl_type()),
+            Parameter::new("globals", Key::cl_type())
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "stakes_pagination",
+        vec![
+            Parameter::new("_staker", Key::cl_type()),
+            Parameter::new("_offset", CLType::U256),
+            Parameter::new("_length", CLType::U256),
+        ],
+        //CLType::List(Box::new(CLType::List(Box::new(CLType::U256)))),                           // list of (lists of u16)
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "referrals_pagination",
+        vec![
+            Parameter::new("_referrer", Key::cl_type()),
+            Parameter::new("_offset", CLType::U256),
+            Parameter::new("_length", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
@@ -78,13 +105,15 @@ pub extern "C" fn call()
 
     let timing_contract_hash: Key = runtime::get_named_arg("timing");
     let declaration_contract_hash: Key = runtime::get_named_arg("declaration");
+    let globals_hash: Key = runtime::get_named_arg("globals");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
         "timing" => timing_contract_hash,
-        "declaration" => declaration_contract_hash
+        "declaration" => declaration_contract_hash,
+        "globals" => globals_hash
     };
 
     // Add the constructor group to the package hash with a single URef.

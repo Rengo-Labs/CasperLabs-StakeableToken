@@ -16,6 +16,20 @@ pub const LTBALANCE: &str = "lt_balance";
 pub const LAUNCH_TIME: &str = "launch_time";
 pub const SYNTHETIC_BNB: &str = "synthetic_bnb";
 
+// mappings
+pub const STAKE_COUNT: &str = "stake_count";
+pub const REFERRAL_COUNT: &str = "referral_count";
+pub const LIQUIDITY_STAKE_COUNT: &str = "liquidity_stake_count";
+pub const SCHEDULED_TO_END: &str = "scheduled_to_end";
+pub const REFERRAL_SHARES_TO_END: &str = "referral_shares_to_end";
+pub const TOTAL_PENALTIES: &str = "total_penalties";
+pub const CRITICAL_MASS: &str = "critical_mass";
+pub const SCRAPES: &str = "scrapes";
+pub const STAKES: &str = "stakes";
+pub const REFERRER_LINK: &str = "referrer_link";
+pub const LIQUIDITY_STAKES: &str = "liquidity_stakes";
+
+
 
 pub fn self_hash() -> Key { get_key(SELF_HASH).unwrap_or_revert()}
 pub fn set_self_hash(hash: Key) { set_key(SELF_HASH, hash);}
@@ -43,20 +57,6 @@ pub fn set_lt_balance(balance: U256) { set_key(LTBALANCE, balance);}
 
 pub fn launch_time() -> U256 {get_key(LAUNCH_TIME).unwrap_or_default()}
 pub fn set_launch_time(launch_time: U256) { set_key(LAUNCH_TIME, launch_time);}
-
-
-// mappings
-pub const STAKE_COUNT: &str = "stake_count";
-pub const REFERRAL_COUNT: &str = "referral_count";
-pub const LIQUIDITY_STAKE_COUNT: &str = "liquidity_stake_count";
-pub const SCHEDULED_TO_END: &str = "scheduled_to_end";
-pub const REFERRAL_SHARES_TO_END: &str = "referral_shares_to_end";
-pub const TOTAL_PENALTIES: &str = "total_penalties";
-pub const CRITICAL_MASS: &str = "critical_mass";
-pub const SCRAPES: &str = "scrapes";
-pub const STAKES: &str = "stakes";
-pub const REFERRER_LINK: &str = "referrer_link";
-pub const LIQUIDITY_STAKES: &str = "liquidity_stakes";
 
 
 // mappings
@@ -226,9 +226,24 @@ impl CriticalMass {
         Dict::init(CRITICAL_MASS)
     }
 
-    pub fn get(&self, owner: &Key) -> String {
-        let json_string: String = self.dict.get_by_key(owner).unwrap_or_default();
-        json_string
+    // key is the string representation of the Key type
+    pub fn get(&self, key: &str) -> String
+    {
+        let result: String = self.dict.get(&key).unwrap_or_default();
+        result
+    }
+    
+    // value is the json string representation of the 'CriticalMass' structure
+    // key should the string representation of the Key type
+    pub fn set(&self, key : &str, value: String ) 
+    {
+        self.dict.set(&key, value);
+    }
+
+    /*
+    pub fn get(&self, key: &str) -> String {
+        let result: U256 = self.dict.get(&key).unwrap_or_default();
+        result
 
         // Set =  let json_string = serde_json::to_string(&value).unwrap();                    // convert structure to json string and save
         //let ret: config::CriticalMass = serde_json::from_str(&json_string).unwrap();
@@ -240,6 +255,7 @@ impl CriticalMass {
     pub fn set(&self, owner: &Key, value: &str) {
         self.dict.set_by_key(owner, value);
     }
+    */
 }
 
 

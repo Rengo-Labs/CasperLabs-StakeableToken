@@ -14,6 +14,17 @@ pub mod Structs
     pub const STAKES: &str = "stakes";
     pub const REFERRER_LINK: &str = "referrer_link";
     pub const LIQUIDITY_STAKES: &str = "liquidity_stakes";
+    pub const TOTAL_PENALTIES: &str = "total_penalties";
+    pub const CRITICAL_MASS: &str = "critical_mass";
+
+
+    // Keys for global struct
+    pub const TOTAL_STAKED: &str = "total_staked";
+    pub const TOTAL_SHARES: &str = "total_shares";
+    pub const SHARE_PRICE: &str = "share_price";
+    pub const CURRENT_WISE_DAY: &str = "current_wise_day";
+    pub const REFERRAL_SHARES: &str = "referral_shares";
+    pub const LIQUIDITY_SHARES: &str = "liquidity_shares";
 
     #[derive(Serialize, Deserialize)]
     pub struct Stake 
@@ -54,7 +65,7 @@ pub mod Structs
     #[derive(Serialize, Deserialize)]
     pub struct CriticalMass 
     {
-        total_amount: U256,
-        activation_day: U256
+        pub total_amount: U256,
+        pub activation_day: U256
     }
 }

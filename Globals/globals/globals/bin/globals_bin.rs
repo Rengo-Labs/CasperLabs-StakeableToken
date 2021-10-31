@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{collections::BTreeSet, format, vec};
+use alloc::{collections::BTreeSet, format, vec, string::String};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -10,8 +10,8 @@ use casper_contract::{
 };
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, CLTyped, EntryPoint, EntryPointAccess, EntryPointType, EntryPoints,
-    Group, Key, Parameter, RuntimeArgs, URef, U256
+    runtime_args, CLTyped, CLType, EntryPoint, EntryPointAccess, EntryPointType, EntryPoints,
+    Group, Key, Parameter, RuntimeArgs, URef, U256, CLValue
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use globals::{self, Globals};
@@ -69,6 +69,23 @@ fn decrease_globals()
     GlobalsContract::default().decrease_globals(_staked, _shares, _rshares);
 }
 
+#[no_mangle]
+fn set_globals()
+{
+    let field: String = runtime::get_named_arg("field");
+    let value: U256 = runtime::get_named_arg("value");
+    GlobalsContract::default().set_globals(field, value);
+}
+
+#[no_mangle]
+fn get_globals()
+{
+    let field: String = runtime::get_named_arg("field");
+    let ret: U256 = GlobalsContract::default().get_globals(field);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -108,6 +125,28 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_globals",
+        vec![
+            Parameter::new("field", String::cl_type()),
+            Parameter::new("value", U256::cl_type())
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_globals",
+        vec![
+            Parameter::new("field", String::cl_type()),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
 }
 

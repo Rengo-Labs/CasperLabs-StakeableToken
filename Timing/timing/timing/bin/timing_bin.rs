@@ -53,6 +53,12 @@ fn current_wise_day()
     TimingStruct::default().current_wise_day();
 }
 
+#[no_mangle]
+fn _current_wise_day()
+{
+    TimingStruct::default().current_wise_day_only();
+}
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -70,6 +76,14 @@ fn get_entry_points() -> EntryPoints
 
     entry_points.add_entry_point(EntryPoint::new(
         "current_wise_day",
+        vec![],
+        CLType::U64,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "_current_wise_day",
         vec![],
         CLType::U64,
         EntryPointAccess::Public,

@@ -102,7 +102,11 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
             let referral_link = data::ReferrerLink::instance();
             return referral_link.get(&key);
         }
-        else{
+        else if struct_name.eq(data::CRITICAL_MASS) {
+            let critical_mass = data::CriticalMass::instance();
+            return critical_mass.get(&key);
+        }
+        else {
             String::from("")
         }
     }

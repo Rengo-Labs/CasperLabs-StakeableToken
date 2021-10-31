@@ -1,4 +1,5 @@
 extern crate alloc;
+use alloc::{string::String};
 
 use casper_types::{
     contracts::{ContractPackageHash},Key,  U256};
@@ -46,4 +47,16 @@ pub trait Globals<Storage: ContractStorage>: ContractContext<Storage>
             globals.set(data::REFERRAL_SHARES, if globals.get(data::REFERRAL_SHARES) > _rshares { globals.get(data::REFERRAL_SHARES) - _rshares } else {0.into()});
         }
     }
+
+    fn get_globals(&mut self, field: String) -> U256
+    {
+        let globals : GlobalsStruct = GlobalsStruct::instance();
+        globals.get(&field)
+    }
+
+    fn set_globals(&mut self, field: String, value: U256)
+    {
+        let globals : GlobalsStruct = GlobalsStruct::instance();
+        globals.set(&field, value);
+    }    
 }

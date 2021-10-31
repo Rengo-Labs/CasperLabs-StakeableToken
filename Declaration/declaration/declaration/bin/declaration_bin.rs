@@ -116,7 +116,7 @@ fn get_stuct_from_key()
     let key: String = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
 
-    let ret: String = DeclarationStruct::default().get_stuct_from_key(key, struct_name);
+    let ret: String = DeclarationStruct::default().get_struct_from_key(key, struct_name);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
