@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, vec};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, string::String};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -49,6 +49,70 @@ fn constructor()
     HelperStruct::default().constructor(contract_hash, package_hash, timing_hash, declaration_hash, globals);
 }
 
+#[no_mangle]
+fn stake_ended()
+{
+    let stake: String = runtime::get_named_arg("stake");
+    let ret: bool = HelperStruct::default().stake_ended(stake);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn days_diff()
+{
+    let start_date: U256 = runtime::get_named_arg("start_date");
+    let end_date: U256 = runtime::get_named_arg("end_date");
+
+    let ret: U256 = HelperStruct::default().days_diff(start_date, end_date);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn is_mature_stake()
+{
+    let stake: String = runtime::get_named_arg("stake");
+    let ret: bool = HelperStruct::default().is_mature_stake(stake);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn not_critical_mass_referrer()
+{
+    let referrer: Key = runtime::get_named_arg("referrer");
+    let ret: bool = HelperStruct::default().not_critical_mass_referrer(referrer);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn calculation_day()
+{
+    let stake: String = runtime::get_named_arg("stake");
+    let ret: U256 = HelperStruct::default().calculation_day(stake);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+} 
+
+#[no_mangle]
+fn not_past()
+{
+    let day: U256 = runtime::get_named_arg("day");
+    let ret: bool = HelperStruct::default().not_past(day);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn not_future()
+{
+    let day: U256 = runtime::get_named_arg("day");
+    let ret: bool = HelperStruct::default().not_past(day);
+
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -67,13 +131,83 @@ fn get_entry_points() -> EntryPoints
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "stakes_pagination",
+        "stake_ended",
         vec![
-            Parameter::new("_staker", Key::cl_type()),
-            Parameter::new("_offset", CLType::U256),
-            Parameter::new("_length", CLType::U256),
+            Parameter::new("stake", CLType::String),
         ],
-        //CLType::List(Box::new(CLType::List(Box::new(CLType::U256)))),                           // list of (lists of u16)
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "days_diff",
+        vec![
+            Parameter::new("start_date", CLType::U256),
+            Parameter::new("end_date", CLType::U256),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "is_mature_stake",
+        vec![
+            Parameter::new("stake", CLType::String),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "not_critical_mass_referrer",
+        vec![
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "calculation_day",
+        vec![
+            Parameter::new("day", CLType::U256),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "not_past",
+        vec![
+            Parameter::new("stake", CLType::String),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "not_future",
+        vec![
+            Parameter::new("stake", CLType::String),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "referrals_pagination",
+        vec![
+            Parameter::new("_referrer", Key::cl_type()),
+            Parameter::new("_offset", CLType::U256),
+            Parameter::new("_length", CLType::U256)
+        ],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -90,6 +224,7 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
+
 
     entry_points
 }

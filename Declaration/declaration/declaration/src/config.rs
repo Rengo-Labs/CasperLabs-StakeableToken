@@ -2,64 +2,70 @@
 pub mod parameters
 {
     use casper_types::{U256, Key};
-    
-    struct Parameters
+    extern crate serde;
+    use serde::{Serialize, Deserialize};
+
+    #[derive(Serialize, Deserialize)]
+    pub struct ConstantParameters
     {
         _decimals : u32,
-        YODAS_PER_WISE: U256,
-        SECONDS_IN_DAY: u32,
-        MIN_LOCK_DAYS: u32,
-        FORMULA_DAY: u32,
-        MAX_LOCK_DAYS: u32,
-        MAX_BONUS_DAYS_A: u32,
-        MAX_BONUS_DAYS_B: u32,
-        MIN_REFERRAL_DAYS: u32,
-        MIN_STAKE_AMOUNT: U256,
-        REFERRALS_RATE: U256,                       // 1.000% (direct value, can be used right away)
-        INFLATION_RATE_MAX: U256,                   // 3.000% (indirect -> checks throgh LiquidityGuard)
-        INFLATION_RATE: U256,                       // 3.000% (indirect -> checks throgh LiquidityGuard)
-        LIQUIDITY_RATE: U256,                       // 0.006% (indirect -> checks throgh LiquidityGuard)
-        PRECISION_RATE: U256, 
-        THRESHOLD_LIMIT: U256,                      // $10,000 $BUSD
-        DAILY_BONUS_A: U256,                        // 25%:1825 = 0.01369863013 per day;
-        DAILY_BONUS_B: U256                         // 5%:13505 = 0.00037023324 per day;
+        yodas_per_wise: U256,
+        seconds_in_day: u32,
+        min_lock_days: u32,
+        formula_day: u32,
+        max_lock_days: u32,
+        max_bonus_days_a: u32,
+        max_bonus_days_b: u32,
+        min_referral_days: u32,
+        min_stake_amount: U256,
+        referrals_rate: U256,                       // 1.000% (direct value, can be used right away)
+        inflation_rate_max: U256,                   // 3.000% (indirect -> checks through LiquidityGuard)
+        inflation_rate: U256,                       // 3.000% (indirect -> checks through LiquidityGuard)
+        liquidity_rate: U256,                       // 0.006% (indirect -> checks through LiquidityGuard)
+        precision_rate: U256, 
+        threshold_limit: U256,                      // $10,000 $BUSD
+        daily_bonus_a: U256,                        // 25%:1825 = 0.01369863013 per day;
+        daily_bonus_b: U256                         // 5%:13505 = 0.00037023324 per day;
     }
 
-    impl Parameters 
+    impl ConstantParameters 
     {
-        pub fn instance(&self) -> Parameters
+        pub fn instance() -> ConstantParameters
         {
             let precision_rate: u128 = 1000000000000000000;         // 1E18
             let threshold_limit: u128 = 10000000000000000000000;    // 10000E18
             let daily_bonus_a: u128 = 13698630136986302;
             let daily_bonus_b: u128 = 370233246945575;
             
-            Parameters 
+            let mut p = ConstantParameters 
             {
                 _decimals: 18,
-                YODAS_PER_WISE: U256::from(10).pow(self._decimals.into()),
-                SECONDS_IN_DAY: 86400,
-                MIN_LOCK_DAYS: 1,
-                FORMULA_DAY: 25,
-                MAX_LOCK_DAYS: 15330,
-                MAX_BONUS_DAYS_A: 1825,
-                MAX_BONUS_DAYS_B: 13505,
-                MIN_REFERRAL_DAYS: 365,
-                MIN_STAKE_AMOUNT: 1000000.into(),
-                REFERRALS_RATE: 366816973.into(),
-                INFLATION_RATE_MAX: 103000.into(),
-                INFLATION_RATE: 103000.into(),
-                LIQUIDITY_RATE: 100006.into(),
-                PRECISION_RATE: precision_rate.into(),         
-                THRESHOLD_LIMIT: threshold_limit.into(),    
-                DAILY_BONUS_A: daily_bonus_a.into(),
-                DAILY_BONUS_B: daily_bonus_b.into()
-            }
+                yodas_per_wise: U256::from(0),
+                //yodas_per_wise: U256::from(10).pow(_decimals.into()),             // cannot access struct's other methods here
+                seconds_in_day: 86400,
+                min_lock_days: 1,
+                formula_day: 25,
+                max_lock_days: 15330,
+                max_bonus_days_a: 1825,
+                max_bonus_days_b: 13505,
+                min_referral_days: 365,
+                min_stake_amount: 1000000.into(),
+                referrals_rate: 366816973.into(),
+                inflation_rate_max: 103000.into(),
+                inflation_rate: 103000.into(),
+                liquidity_rate: 100006.into(),
+                precision_rate: precision_rate.into(),         
+                threshold_limit: threshold_limit.into(),    
+                daily_bonus_a: daily_bonus_a.into(),
+                daily_bonus_b: daily_bonus_b.into()
+            };
+            p.yodas_per_wise = U256::from(10).pow(p._decimals.into());
+            p
         }
     }
 }
 
-pub mod Structs
+pub mod structs
 {
     use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}, CLTyped, CLType};
     extern crate serde;

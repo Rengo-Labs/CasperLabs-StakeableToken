@@ -7,7 +7,7 @@ use casper_types::{
 use contract_utils::{ContractContext, ContractStorage};
 
 use crate::data::{self};
-use crate::config::parameters::*;
+use crate::config::parameters;
 
 pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage> 
 {
@@ -92,6 +92,20 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         liquidity_stake_count.set(&staker, value);
     }
 
+    fn get_referral_shares_to_end(&self, key: U256) -> U256
+    {
+        let referral_shares_to_end = data::ReferralSharesToEnd::instance();
+        referral_shares_to_end.get(&key)
+    }
+
+    fn set_referral_shares_to_end(&self, key: U256, value: U256)
+    {
+        let referral_shares_to_end = data::ReferralSharesToEnd::instance();
+        referral_shares_to_end.set(&key, value);
+    }
+
+
+    // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String
     {
         if struct_name.eq(data::STAKES) {
@@ -109,5 +123,31 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         else {
             String::from("")
         }
+    }
+
+    // This function is used to set the struct objects stored against key. These struct objects are received as json string.
+    fn set_struct_from_key(&self, key: String, value: String, struct_name: String)
+    {
+        if struct_name.eq(data::STAKES) {
+            let stakes = data::Stakes::instance();
+            stakes.set(&key, value);
+        }
+        else if struct_name.eq(data::REFERRER_LINK) {
+            let referral_link = data::ReferrerLink::instance();
+            referral_link.set(&key, value);
+        }
+        else if struct_name.eq(data::CRITICAL_MASS) {
+            let critical_mass = data::CriticalMass::instance();
+            critical_mass.set(&key, value);
+        }
+    }
+
+    // returns the struct of constants (defined in config) as a json string.
+    fn get_declaration_constants(&self)->String
+    {
+        let const_struct = parameters::ConstantParameters::instance();
+        let json_string = serde_json::to_string(&const_struct).unwrap();
+
+        json_string
     }
 }
