@@ -14,12 +14,12 @@ use casper_types::{
     Group, Key, Parameter, RuntimeArgs, URef, U256, CLType, CLValue,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
-use timing::{self, Timing};
+use wisetoken::{self, WiseToken};
 
 #[derive(Default)]
-struct TimingStruct(OnChainContractStorage);
+struct WiseTokenStruct(OnChainContractStorage);
 
-impl ContractContext<OnChainContractStorage> for TimingStruct 
+impl ContractContext<OnChainContractStorage> for WiseTokenStruct 
 {
     fn storage(&self) -> &OnChainContractStorage 
     {
@@ -27,12 +27,12 @@ impl ContractContext<OnChainContractStorage> for TimingStruct
     }
 }
 
-impl Timing<OnChainContractStorage> for TimingStruct{}
-impl TimingStruct
+impl WiseToken<OnChainContractStorage> for WiseTokenStruct{}
+impl WiseTokenStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, declaration_contract_hash: Key) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash) 
     {
-        Timing::init(self, Key::from(contract_hash), package_hash, declaration_contract_hash);
+        WiseToken::init(self, Key::from(contract_hash), package_hash);
     }
 }
 
@@ -42,31 +42,10 @@ fn constructor()
 {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let declaration_contract_hash: Key = runtime::get_named_arg("declaration_contract_hash");
 
-    TimingStruct::default().constructor(contract_hash, package_hash, declaration_contract_hash);
+    WiseTokenStruct::default().constructor(contract_hash, package_hash);
 }
 
-#[no_mangle]
-fn current_wise_day()
-{
-    let ret: u64 = TimingStruct::default().current_wise_day();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn _current_wise_day()
-{
-    let ret: u64 = TimingStruct::default().current_wise_day_only();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn _previous_wise_day()
-{
-    let ret: u64 = TimingStruct::default().previous_wise_day();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -76,35 +55,10 @@ fn get_entry_points() -> EntryPoints
         "constructor",
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
-            Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("declaration_contract_hash", CLType::Key)
+            Parameter::new("package_hash", ContractPackageHash::cl_type())
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "current_wise_day",
-        vec![],
-        CLType::U64,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "_current_wise_day",
-        vec![],
-        CLType::U64,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "_previous_wise_day",
-        vec![],
-        CLType::U64,
-        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
@@ -126,7 +80,6 @@ pub extern "C" fn call()
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
-        "declaration_contract_hash" => declaration_contract 
     };
 
     // Add the constructor group to the package hash with a single URef.
