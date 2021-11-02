@@ -22,7 +22,9 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::set_liquidity_guard_hash(liquidity_guard);
         data::set_synthetic_bnb_hash(synthetic_bnb);
         data::set_launch_time(launch_time);
-
+        data::set_inflation_rate(U256::from(103000));           // 3.000% (indirect -> checks through LiquidityGuard)
+        data::set_liquidity_rate(U256::from(100006));           // 0.006% (indirect -> checks through LiquidityGuard)
+        
         data::StakeCount::init();
         data::ReferralCount::init();
         data::LiquidityStakeCount::init();
@@ -104,6 +106,60 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         referral_shares_to_end.set(&key, value);
     }
 
+    fn set_scheduled_to_end(&self, key: U256, value: U256)
+    {
+        let scheduled_to_end = data::ScheduledToEnd::instance();
+        scheduled_to_end.set(&key, value);
+    }
+
+    fn get_scheduled_to_end(&self, key: U256) -> U256
+    {
+        let scheduled_to_end = data::ScheduledToEnd::instance();
+        scheduled_to_end.get(&key)
+    }
+
+    fn set_total_penalties(&self, key: U256, value: U256)
+    {
+        let scheduled_to_end = data::TotalPenalties::instance();
+        scheduled_to_end.set(&key, value);
+    }
+
+    fn get_total_penalties(&self, key: U256) -> U256
+    {
+        let scheduled_to_end = data::TotalPenalties::instance();
+        scheduled_to_end.get(&key)
+    }
+
+    fn set_inflation_rate(&self, value: U256)
+    {
+        data::set_inflation_rate(value);
+    }
+
+    fn get_inflation_rate(&self) -> U256
+    {
+        data::inflation_rate()
+    }
+
+    fn set_liquidity_rate(&self, value: U256)
+    {
+        data::set_liquidity_rate(value);
+    }
+
+    fn get_liquidity_rate(&self) -> U256
+    {
+        data::liquidity_rate()
+    }
+
+    fn set_liquidity_guard_status(&self, value: bool)
+    {
+        data::set_liquidity_guard_status(value);
+    }
+
+    fn get_liquidity_guard_status(&self) -> bool
+    {
+        data::liquidity_guard_status()
+    }
+    
 
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String

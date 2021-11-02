@@ -108,7 +108,7 @@ fn not_past()
 fn not_future()
 {
     let day: U256 = runtime::get_named_arg("day");
-    let ret: bool = HelperStruct::default().not_past(day);
+    let ret: bool = HelperStruct::default().not_future(day);
 
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
@@ -174,9 +174,9 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "calculation_day",
         vec![
-            Parameter::new("day", CLType::U256),
+            Parameter::new("stake", CLType::String),
         ],
-        CLType::Bool,
+        CLType::U256,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -184,9 +184,9 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "not_past",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("day", CLType::U256),
         ],
-        CLType::U256,
+        CLType::Bool,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -194,9 +194,9 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "not_future",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("day", CLType::U256),
         ],
-        CLType::U256,
+        CLType::Bool,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));

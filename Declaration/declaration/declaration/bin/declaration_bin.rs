@@ -149,9 +149,87 @@ fn get_referral_shares_to_end()
 }
 
 #[no_mangle]
+fn set_scheduled_to_end()
+{
+    let key: U256 = runtime::get_named_arg("key");
+    let value: U256 = runtime::get_named_arg("value");
+
+    DeclarationStruct::default().set_scheduled_to_end(key, value);
+}
+
+#[no_mangle]
+fn get_scheduled_to_end()
+{
+    let key: U256 = runtime::get_named_arg("key");
+
+    let ret: U256 = DeclarationStruct::default().get_scheduled_to_end(key);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn set_total_penalties()
+{
+    let key: U256 = runtime::get_named_arg("key");
+    let value: U256 = runtime::get_named_arg("value");
+
+    DeclarationStruct::default().set_total_penalties(key, value);
+}
+
+#[no_mangle]
+fn get_total_penalties()
+{
+    let key: U256 = runtime::get_named_arg("key");
+
+    let ret: U256 = DeclarationStruct::default().get_total_penalties(key);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
 fn get_declaration_constants()
 {
     let ret: String = DeclarationStruct::default().get_declaration_constants();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn set_inflation_rate()
+{
+    let value: U256 = runtime::get_named_arg("value");
+    DeclarationStruct::default().set_inflation_rate(value);
+}
+
+#[no_mangle]
+fn get_inflation_rate()
+{
+    let ret: U256  = DeclarationStruct::default().get_inflation_rate();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn set_liquidity_rate()
+{
+    let value: U256 = runtime::get_named_arg("value");
+    DeclarationStruct::default().set_liquidity_rate(value);
+}
+
+#[no_mangle]
+fn get_liquidity_rate()
+{
+    let ret: U256  = DeclarationStruct::default().get_liquidity_rate();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn set_liquidity_guard_status()
+{
+    let value: bool = runtime::get_named_arg("value");
+    DeclarationStruct::default().set_liquidity_guard_status(value);
+}
+
+#[no_mangle]
+fn get_liquidity_guard_status()
+{
+    let ret: bool  = DeclarationStruct::default().get_liquidity_guard_status();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -290,11 +368,106 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_scheduled_to_end",
+        vec![
+            Parameter::new("key", CLType::U256),
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     
     entry_points.add_entry_point(EntryPoint::new(
-        "get_declaration_constants",
+        "get_scheduled_to_end",
         vec![
+            Parameter::new("key", CLType::U256)
         ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_total_penalties",
+        vec![
+            Parameter::new("key", CLType::U256),
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_total_penalties",
+        vec![
+            Parameter::new("key", CLType::U256)
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_inflation_rate",
+        vec![
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_inflation_rate",
+        vec![],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_liquidity_rate",
+        vec![
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_liquidity_rate",
+        vec![],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_liquidity_guard_status",
+        vec![],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_liquidity_guard_status",
+        vec![
+            Parameter::new("value", CLType::Bool)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_declaration_constants",
+        vec![],
         CLType::String,
         EntryPointAccess::Public,
         EntryPointType::Contract,

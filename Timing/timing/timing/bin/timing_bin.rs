@@ -50,19 +50,22 @@ fn constructor()
 #[no_mangle]
 fn current_wise_day()
 {
-    TimingStruct::default().current_wise_day();
+    let ret: u64 = TimingStruct::default().current_wise_day();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn _current_wise_day()
 {
-    TimingStruct::default().current_wise_day_only();
+    let ret: u64 = TimingStruct::default().current_wise_day_only();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn _previous_wise_day()
 {
-    TimingStruct::default().previous_wise_day();
+    let ret: u64 = TimingStruct::default().previous_wise_day();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 fn get_entry_points() -> EntryPoints 

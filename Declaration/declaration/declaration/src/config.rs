@@ -20,8 +20,6 @@ pub mod parameters
         min_stake_amount: U256,
         referrals_rate: U256,                       // 1.000% (direct value, can be used right away)
         inflation_rate_max: U256,                   // 3.000% (indirect -> checks through LiquidityGuard)
-        inflation_rate: U256,                       // 3.000% (indirect -> checks through LiquidityGuard)
-        liquidity_rate: U256,                       // 0.006% (indirect -> checks through LiquidityGuard)
         precision_rate: U256, 
         threshold_limit: U256,                      // $10,000 $BUSD
         daily_bonus_a: U256,                        // 25%:1825 = 0.01369863013 per day;
@@ -52,8 +50,6 @@ pub mod parameters
                 min_stake_amount: 1000000.into(),
                 referrals_rate: 366816973.into(),
                 inflation_rate_max: 103000.into(),
-                inflation_rate: 103000.into(),
-                liquidity_rate: 100006.into(),
                 precision_rate: precision_rate.into(),         
                 threshold_limit: threshold_limit.into(),    
                 daily_bonus_a: daily_bonus_a.into(),

@@ -15,6 +15,10 @@ pub const LIQUIDITY_GUARD_HASH: &str = "liquidity_guard_hash";
 pub const LTBALANCE: &str = "lt_balance";
 pub const LAUNCH_TIME: &str = "launch_time";
 pub const SYNTHETIC_BNB: &str = "synthetic_bnb";
+pub const INFLATION_RATE: &str = "inflation_rate";
+pub const LIQUIDITY_RATE: &str = "liquidity_rate";
+pub const LIQUIDITY_GUARD_STATUS: &str = "liquidity_guard_status";
+
 
 // mappings
 pub const STAKE_COUNT: &str = "stake_count";
@@ -57,6 +61,15 @@ pub fn set_lt_balance(balance: U256) { set_key(LTBALANCE, balance);}
 
 pub fn launch_time() -> U256 {get_key(LAUNCH_TIME).unwrap_or_default()}
 pub fn set_launch_time(launch_time: U256) { set_key(LAUNCH_TIME, launch_time);}
+
+pub fn inflation_rate() -> U256 {get_key(INFLATION_RATE).unwrap_or_default()}
+pub fn set_inflation_rate(inflation_rate: U256) { set_key(INFLATION_RATE, inflation_rate);}
+
+pub fn liquidity_rate() -> U256 {get_key(LIQUIDITY_RATE).unwrap_or_default()}
+pub fn set_liquidity_rate(liquidity_rate: U256) { set_key(LIQUIDITY_RATE, liquidity_rate);}
+
+pub fn liquidity_guard_status() -> bool {get_key(LIQUIDITY_GUARD_STATUS).unwrap_or_default()}
+pub fn set_liquidity_guard_status(status: bool) { set_key(LIQUIDITY_GUARD_STATUS, status);}
 
 
 // mappings
