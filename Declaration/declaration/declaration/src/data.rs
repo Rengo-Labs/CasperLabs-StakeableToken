@@ -245,7 +245,7 @@ impl CriticalMass {
         let result: U256 = self.dict.get(&key).unwrap_or_default();
         result
 
-        // Set =  let json_string = serde_json::to_string(&value).unwrap();                    // convert structure to json string and save
+        // let json_string = serde_json::to_string(&value).unwrap();                    // convert structure to json string and save
         //let ret: config::CriticalMass = serde_json::from_str(&json_string).unwrap();
         //let json_string = serde_json::to_string(&value).unwrap();                             // convert structure to json string and save
         //ret

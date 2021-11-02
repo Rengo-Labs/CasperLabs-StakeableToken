@@ -28,10 +28,17 @@ pub trait Timing<Storage: ContractStorage>: ContractContext<Storage>
         if Self::_get_now() >= launch_time { Self::_current_wise_day() } else {0}
     }
 
-    fn current_wise_day_only(&mut self) -> u64
+    fn current_wise_day_only(&self) -> u64
     {
         Self::_current_wise_day()
     }
+
+    fn previous_wise_day(&self) -> u64
+    {
+        Self::_previous_wise_day()
+    }
+
+    
 
     // Helper methods
 

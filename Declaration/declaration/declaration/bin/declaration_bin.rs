@@ -73,7 +73,7 @@ fn set_stake_count()
     let staker: Key = runtime::get_named_arg("staker");
     let value: U256 = runtime::get_named_arg("value");
 
-    let _: () = DeclarationStruct::default().set_stake_count(staker, value);
+    DeclarationStruct::default().set_stake_count(staker, value);
 }
 
 #[no_mangle]
@@ -90,7 +90,7 @@ fn set_referral_count()
     let referrer: Key = runtime::get_named_arg("referrer");
     let value: U256 = runtime::get_named_arg("value");
 
-    let _: () = DeclarationStruct::default().set_referral_count(referrer, value);
+    DeclarationStruct::default().set_referral_count(referrer, value);
 }
 
 #[no_mangle]
@@ -106,12 +106,12 @@ fn set_liquidity_stake_count()
 {
     let staker: Key = runtime::get_named_arg("staker");
     let value: U256 = runtime::get_named_arg("value");
-    let _: () = DeclarationStruct::default().set_liquidity_stake_count(staker, value);
+    DeclarationStruct::default().set_liquidity_stake_count(staker, value);
 }
 
 
 #[no_mangle]
-fn get_stuct_from_key()
+fn get_struct_from_key()
 {
     let key: String = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
@@ -119,6 +119,42 @@ fn get_stuct_from_key()
     let ret: String = DeclarationStruct::default().get_struct_from_key(key, struct_name);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
+
+#[no_mangle]
+fn set_struct_from_key()
+{
+    let key: String = runtime::get_named_arg("key");
+    let value: String = runtime::get_named_arg("value");
+    let struct_name: String = runtime::get_named_arg("struct_name");
+
+    DeclarationStruct::default().set_struct_from_key(key, value, struct_name);
+}
+
+#[no_mangle]
+fn set_referral_shares_to_end()
+{
+    let key: U256 = runtime::get_named_arg("key");
+    let value: U256 = runtime::get_named_arg("value");
+
+    DeclarationStruct::default().set_referral_shares_to_end(key, value);
+}
+
+#[no_mangle]
+fn get_referral_shares_to_end()
+{
+    let key: U256 = runtime::get_named_arg("key");
+
+    let ret: U256 = DeclarationStruct::default().get_referral_shares_to_end(key);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_declaration_constants()
+{
+    let ret: String = DeclarationStruct::default().get_declaration_constants();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -221,7 +257,49 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_struct_from_key",
+        vec![
+            Parameter::new("key", CLType::String),
+            Parameter::new("value", CLType::String),
+            Parameter::new("struct_name", CLType::String),
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_referral_shares_to_end",
+        vec![
+            Parameter::new("key", CLType::U256),
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_referral_shares_to_end",
+        vec![
+            Parameter::new("key", CLType::U256)
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_declaration_constants",
+        vec![
+        ],
+        CLType::String,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
 }
 

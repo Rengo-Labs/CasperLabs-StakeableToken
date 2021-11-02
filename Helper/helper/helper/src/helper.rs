@@ -180,7 +180,45 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
     }
 
 
-    
+    fn stake_ended(&self, stake: String) -> bool           // stake struct
+    {
+        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        Self::_stake_ended(stake)
+    }
+
+    fn days_diff(&self, start_date: U256, end_date: U256) -> U256 
+    {
+        Self::_days_diff(start_date, end_date)
+    }
+
+    fn is_mature_stake(&self, stake: String) -> bool      // stake struct
+    {
+        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        Self::_is_mature_stake(stake)
+    }
+
+    fn not_critical_mass_referrer(&self, referrer: Key) -> bool
+    {
+        Self::_not_critical_mass_referrer(referrer)
+    }
+
+    fn calculation_day(&self, stake: String) -> U256
+    {
+        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        Self::_calculation_day(stake)
+    } 
+
+    fn not_past(&self, day: U256) -> bool 
+    {
+        Self::_not_past(day)
+    }
+
+    fn not_future(&self, day: U256) -> bool 
+    {
+        Self::_not_future(day)
+    }
+
+
     // ************************ HELPER METHODS ***************************
 
     fn _increase_stake_count(&self, _staker: Key)
