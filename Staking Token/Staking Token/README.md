@@ -1,6 +1,6 @@
-# CasperLabs REFERRAL TOKEN
+# CasperLabs STAKING TOKEN
 
-Implementation of the REFERRAL TOKEN Contract for the Casper platform.
+Implementation of the STAKING TOKEN Contract for the Casper platform.
 
 ## Usage
 ### Install
@@ -25,12 +25,12 @@ make test
 
 ## Repository overview
 
-### REFERRAL TOKEN
+### STAKING TOKEN
 
-The `referral-token` crate contains the implementation of the REFERRAL TOKEN Contract and ERC20 standard.
+The `staking-token` crate contains the implementation of the STAKING TOKEN Contract and ERC20 standard.
 
-#### REFERRAL TOKEN as library
-It can be used as a library to create referral-tokens of two erc20 tokens and it can be used to build custom tokens. The code structure allows for easy entry points extensions and overrides.
+#### STAKING TOKEN as library
+It can be used as a library to create staking-tokens of two erc20 tokens and it can be used to build custom tokens. The code structure allows for easy entry points extensions and overrides.
 
 
 ##### Entry Point override example
@@ -39,39 +39,39 @@ one additional token for a sender.
 
 ```rust
 #[derive(Default)]
-struct ReferralToken(ContractStorage);
+struct StakingToken(ContractStorage);
 
-impl ContractContext for ReferralToken {
+impl ContractContext for StakingToken {
     fn storage(&self) -> &ContractStorage {
         &self.0
     }
 }
 
-impl REFERRAL TOKEN for ReferralToken {}
+impl STAKING TOKEN for StakingToken {}
 
-impl ReferralToken {
+impl StakingToken {
     fn constructor(&mut self, name: String, symbol: String, decimals: u8, initial_supply: U256, nonce:U256, domain_separator: String, permit_type_hash: String, contract_hash: ContractHash) {
-        REFERRAL TOKEN::init(self, name, symbol, decimals, domain_separator, permit_type_hash, Key::from(contract_hash));
-        REFERRAL TOKEN::mint(self, self.get_caller(), initial_supply);
-        REFERRAL TOKEN::set_nonce(self, self.get_caller(), nonce);
+        STAKING TOKEN::init(self, name, symbol, decimals, domain_separator, permit_type_hash, Key::from(contract_hash));
+        STAKING TOKEN::mint(self, self.get_caller(), initial_supply);
+        STAKING TOKEN::set_nonce(self, self.get_caller(), nonce);
     }
 }
 ```
 
-#### REFERRAL TOKEN Vanilla Contract
-The library comes with a vanilla implementation of the REFERRAL TOKEN contract and ERC20 contract that is
-ready to use. It is implemented in `referral-token/bin/referral-token_token.rs` and after 
-compilation the `referral-token.wasm` file is produced.
+#### STAKING TOKEN Vanilla Contract
+The library comes with a vanilla implementation of the STAKING TOKEN contract and ERC20 contract that is
+ready to use. It is implemented in `staking-token/bin/staking-token_token.rs` and after 
+compilation the `staking-token.wasm` file is produced.
 
-### REFERRAL TOKEN Tests
-The `referral-token-tests` crate implements multiple integration test scenarios that
+### STAKING TOKEN Tests
+The `staking-token-tests` crate implements multiple integration test scenarios that
 check the compatibility with the ERC20 standard.
 
 Tests provide the `ERC20Instance` struct that can be reused in larger smart
 contract projects with multiple ERC20 tokens and other smart contracts
 to interact with the instance of an ERC20 token.
 
-Tests are implemented in `referral-token-tests/src/referral-token_tests.rs`.
+Tests are implemented in `staking-token-tests/src/staking-token_tests.rs`.
 
 ### Utils
 

@@ -1,0 +1,11 @@
+[workspace]
+
+members = [
+  "staking-token",
+  "test-contract",
+  "staking-token-tests",
+]
+
+[profile.release]
+codegen-units = 1
+lto = true

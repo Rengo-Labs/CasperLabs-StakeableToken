@@ -1256,33 +1256,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "referral-token"
-version = "0.1.0"
-dependencies = [
- "casper-contract",
- "casper-types",
- "contract-utils",
- "cryptoxide",
- "hex",
- "renvm-sig",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "referral-token-tests"
-version = "0.2.1"
-dependencies = [
- "blake2",
- "casper-contract",
- "casper-engine-test-support",
- "casper-types",
- "contract-utils",
- "hex",
- "test-env",
-]
-
-[[package]]
 name = "regex"
 version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1475,6 +1448,33 @@ checksum = "29f060a7d147e33490ec10da418795238fd7545bba241504d6b31a409f2e6210"
 dependencies = [
  "digest 0.9.0",
  "rand_core 0.5.1",
+]
+
+[[package]]
+name = "staking-token"
+version = "0.1.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "contract-utils",
+ "cryptoxide",
+ "hex",
+ "renvm-sig",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "staking-token-tests"
+version = "0.2.1"
+dependencies = [
+ "blake2",
+ "casper-contract",
+ "casper-engine-test-support",
+ "casper-types",
+ "contract-utils",
+ "hex",
+ "test-env",
 ]
 
 [[package]]

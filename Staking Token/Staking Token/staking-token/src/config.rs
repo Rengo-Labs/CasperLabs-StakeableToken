@@ -1,5 +1,5 @@
 pub mod parameters {
-    use casper_types::U256;
+    use casper_types::{Key, U256};
     extern crate serde;
     use serde::{Deserialize, Serialize};
 

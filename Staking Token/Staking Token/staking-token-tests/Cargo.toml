@@ -1,7 +1,7 @@
 [package]
 authors = ["Muhammad Adrees <muhammad.adrees@scytalelabs.com>"]
 edition = "2018"
-name = "referral-token-tests"
+name = "staking-token-tests"
 version = "0.2.1"
 
 [dependencies]
