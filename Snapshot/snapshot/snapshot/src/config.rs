@@ -1,3 +1,5 @@
+#[allow(non_snake_case)]
+
 pub mod Structs {
     use casper_types::U256;
     extern crate serde;
