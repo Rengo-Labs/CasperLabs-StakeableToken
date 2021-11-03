@@ -32,7 +32,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_sbnb_hash(sbnb_contract_hash);
         data::set_pair_hash(pair_contract_hash);
         data::set_bep20_hash(bep20_contract_hash);
-        data::set_guard_hash(guard_contract_hash),
+        data::set_guard_hash(guard_contract_hash);
         data::SnapshotsDict::init();
         data::RSnapshotsDict::init();
         data::LSnapshotsDict::init();
