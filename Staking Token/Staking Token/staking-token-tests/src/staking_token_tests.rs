@@ -2,17 +2,19 @@ use casper_engine_test_support::AccountHash;
 use casper_types::{runtime_args, Key, RuntimeArgs, U256};
 use test_env::{Sender, TestContract, TestEnv};
 
-use crate::referral_token_instance::REFERRALTOKENInstance;
+use crate::staking_token_instance::STAKINGTOKENInstance;
 use crate::test_instance::TESTInstance;
 
-const NAME: &str = "Referral Token";
+const NAME: &str = "Staking Token";
 
-fn deploy() -> (TestEnv, REFERRALTOKENInstance, AccountHash) {
+fn deploy() -> (TestEnv, STAKINGTOKENInstance, AccountHash) {
     let env = TestEnv::new();
     let owner = env.next_user();
 
+    // deploy factory contract
     let _env_factory = TestEnv::new();
-    let token = REFERRALTOKENInstance::new(
+    // let owner_factory = env.next_user();
+    let token = STAKINGTOKENInstance::new(
         &env,
         NAME,
         Sender(owner),
@@ -24,7 +26,6 @@ fn deploy() -> (TestEnv, REFERRALTOKENInstance, AccountHash) {
     );
     (env, token, owner)
 }
-
 
 #[test]
 #[should_panic]
