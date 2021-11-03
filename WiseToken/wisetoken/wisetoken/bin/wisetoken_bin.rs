@@ -30,9 +30,9 @@ impl ContractContext<OnChainContractStorage> for WiseTokenStruct
 impl WiseToken<OnChainContractStorage> for WiseTokenStruct{}
 impl WiseTokenStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, declaration_contract: Key, synthetic_bnb_address: Key, bep20_address: Key) 
     {
-        WiseToken::init(self, Key::from(contract_hash), package_hash);
+        WiseToken::init(self, Key::from(contract_hash), package_hash, declaration_contract, synthetic_bnb_address, bep20_address);
     }
 }
 
@@ -42,8 +42,11 @@ fn constructor()
 {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
+    let declaration_contract: Key = runtime::get_named_arg("declaration_contract");
+    let synthetic_bnb_address: Key = runtime::get_named_arg("synthetic_bnb_address");
+    let bep20_address: Key = runtime::get_named_arg("bep20_address");
 
-    WiseTokenStruct::default().constructor(contract_hash, package_hash);
+    WiseTokenStruct::default().constructor(contract_hash, package_hash, declaration_contract, synthetic_bnb_address, bep20_address);
 }
 
 
@@ -55,7 +58,10 @@ fn get_entry_points() -> EntryPoints
         "constructor",
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
-            Parameter::new("package_hash", ContractPackageHash::cl_type())
+            Parameter::new("package_hash", ContractPackageHash::cl_type()),
+            Parameter::new("declaration_contract", CLType::Key),
+            Parameter::new("synthetic_bnb_address", CLType::Key),
+            Parameter::new("bep20_address", CLType::Key),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -75,11 +81,16 @@ pub extern "C" fn call()
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
     let declaration_contract: Key = runtime::get_named_arg("declaration_contract");
+    let synthetic_bnb_address: Key = runtime::get_named_arg("synthetic_bnb_address");
+    let bep20_address: Key = runtime::get_named_arg("bep20_address");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
+        "declaration_contract" => declaration_contract,
+        "synthetic_bnb_address" => synthetic_bnb_address,
+        "bep20_address" => bep20_address
     };
 
     // Add the constructor group to the package hash with a single URef.
