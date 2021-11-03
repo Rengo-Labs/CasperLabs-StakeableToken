@@ -127,6 +127,10 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("declaration", Key::cl_type()),
             Parameter::new("globals", Key::cl_type()),
             Parameter::new("helper", Key::cl_type()),
+            Parameter::new("sbnb", Key::cl_type()),
+            Parameter::new("pair", Key::cl_type()),
+            Parameter::new("bep20", Key::cl_type()),
+            Parameter::new("guard", Key::cl_type()),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -182,6 +186,10 @@ pub extern "C" fn call() {
     let declaration_contract_hash: Key = runtime::get_named_arg("declaration");
     let globals_contract_hash: Key = runtime::get_named_arg("globals");
     let helper_contract_hash: Key = runtime::get_named_arg("helper");
+    let sbnb_contract_hash: Key = runtime::get_named_arg("sbnb");
+    let pair_contract_hash: Key = runtime::get_named_arg("pair");
+    let bep20_contract_hash: Key = runtime::get_named_arg("bep20");
+    let guard_contract_hash: Key = runtime::get_named_arg("guard");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
@@ -191,6 +199,10 @@ pub extern "C" fn call() {
         "declaration" => declaration_contract_hash,
         "globals"=> globals_contract_hash,
         "helper" => helper_contract_hash,
+        "sbnb"=>sbnb_contract_hash,
+        "pair"=>pair_contract_hash,
+        "bep20"=>bep20_contract_hash,
+        "guard"=>guard_contract_hash
     };
 
     // Add the constructor group to the package hash with a single URef.

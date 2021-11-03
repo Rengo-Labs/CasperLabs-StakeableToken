@@ -21,7 +21,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         sbnb_contract_hash: Key,
         pair_contract_hash: Key,
         bep20_contract_hash: Key,
-        guard_contract_hash: Key,
+        guard_contract_hash: Key
     ) {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -32,7 +32,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_sbnb_hash(sbnb_contract_hash);
         data::set_pair_hash(pair_contract_hash);
         data::set_bep20_hash(bep20_contract_hash);
-        data::set_guard_hash(guard_contract_hash);
+        data::set_guard_hash(guard_contract_hash),
         data::SnapshotsDict::init();
         data::RSnapshotsDict::init();
         data::LSnapshotsDict::init();
@@ -42,7 +42,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         let pair_hash = data::pair_hash();
         let sbnb_hash = data::sbnb_hash();
         let bep20_hash = data::bep20_hash();
-        let guard_hash = data::guard_hash();
+        let declaration_hash = data::declaration_hash();
 
         let total_supply: U256 = runtime::call_contract(
             Self::_create_hash_from_key(bep20_hash),
@@ -50,7 +50,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {},
         );
         let liquidity_guard_status: bool = runtime::call_contract(
-            Self::_create_hash_from_key(guard_hash),
+            Self::_create_hash_from_key(declaration_hash),
             "get_liquidity_guard_status",
             runtime_args! {},
         );
@@ -247,7 +247,6 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
             l_snapshot.total_shares = liquidity_shares;
 
-            // VERIFY that this endpoint exists
             let inflation: U256 = runtime::call_contract(
                 Self::_create_hash_from_key(guard_hash),
                 "get_inflation",
@@ -263,9 +262,8 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
             self._adjust_liquidity_rates();
 
-            // VERIFY the day=currentWiseDay mechanic of the loop
-            // loop invariant
-            day = day + 1;
+
+            
             let () = runtime::call_contract(
                 Self::_create_hash_from_key(globals_hash),
                 "set_globals",
@@ -273,6 +271,8 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
                     data::CURRENT_WISE_DAY=>day
                 },
             );
+
+            day = day + 1;
         }
     }
 
