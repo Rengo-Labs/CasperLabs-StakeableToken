@@ -109,6 +109,11 @@ fn get_struct_from_key() {
 }
 
 #[no_mangle]
+fn snapshot_trigger() {
+    SnapshotStruct::default()._snapshot_trigger();
+}
+
+#[no_mangle]
 fn set_struct_from_key() {
     let key: U256 = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
@@ -172,6 +177,13 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "snapshot_trigger",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     entry_points
 }
 

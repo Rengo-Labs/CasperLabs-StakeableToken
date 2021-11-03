@@ -21,7 +21,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         sbnb_contract_hash: Key,
         pair_contract_hash: Key,
         bep20_contract_hash: Key,
-        guard_contract_hash: Key
+        guard_contract_hash: Key,
     ) {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -262,8 +262,6 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
             self._adjust_liquidity_rates();
 
-
-            
             let () = runtime::call_contract(
                 Self::_create_hash_from_key(globals_hash),
                 "set_globals",
@@ -276,6 +274,16 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         }
     }
 
+    fn _snapshot_trigger(&self) {
+        let timing_hash: Key = data::timing_hash();
+        let current_wise_day: u64 = runtime::call_contract(
+            Self::_create_hash_from_key(timing_hash),
+            "current_wise_day",
+            runtime_args! {},
+        );
+        self._daily_snapshot_point(current_wise_day);
+    }
+    
     fn _manual_daily_snapshot(&self) {
         let timing_hash: Key = data::timing_hash();
         let current_wise_day: u64 = runtime::call_contract(

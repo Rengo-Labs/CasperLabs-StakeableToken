@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "liquidity_token"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
