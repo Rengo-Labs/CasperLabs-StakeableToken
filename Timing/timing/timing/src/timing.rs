@@ -38,7 +38,10 @@ pub trait Timing<Storage: ContractStorage>: ContractContext<Storage>
         Self::_previous_wise_day()
     }
 
-    
+    fn next_wise_day(&self) -> u64
+    {
+        Self::_next_wise_day()
+    }
 
     // Helper methods
 

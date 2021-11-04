@@ -161,9 +161,9 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::liquidity_guard_status()
     }
     
-    fn set_sbnb(&self, SBNB: Key)
+    fn set_sbnb(&self, sbnb: Key)
     {
-        data::set_sbnb(SBNB);
+        data::set_sbnb(sbnb);
     }
 
     fn get_sbnb(&self) -> Key
@@ -176,6 +176,16 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::wbnb()
     }
 
+    fn set_busd_eq(&self, address: Key)
+    {
+        data::set_busd_eq(address);
+    }
+
+    fn get_busd_eq(&self) -> Key
+    {
+        data::busd_eq()
+    }
+    
 
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String

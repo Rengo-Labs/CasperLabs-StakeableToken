@@ -20,7 +20,7 @@ pub const LIQUIDITY_RATE: &str = "liquidity_rate";
 pub const LIQUIDITY_GUARD_STATUS: &str = "liquidity_guard_status";
 pub const WBNB: &str = "wbnb";
 pub const SBNB: &str = "sbnb";
-
+pub const BUSD_EQ: &str = "busd_eq";
 
 // mappings
 pub const STAKE_COUNT: &str = "stake_count";
@@ -78,6 +78,10 @@ pub fn set_wbnb(wbnb: Key) { set_key(WBNB, wbnb);}
 
 pub fn sbnb() -> Key {get_key(SBNB).unwrap_or_revert()}
 pub fn set_sbnb(sbnb: Key) { set_key(SBNB, sbnb);}
+
+pub fn busd_eq() -> Key {get_key(BUSD_EQ).unwrap_or_revert()}
+pub fn set_busd_eq(busd: Key) { set_key(BUSD_EQ, busd);}
+
 
 
 // mappings

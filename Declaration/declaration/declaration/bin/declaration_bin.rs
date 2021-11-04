@@ -256,6 +256,22 @@ fn get_wbnb()
 }
 
 
+#[no_mangle]
+fn set_busd_eq()
+{
+    let value: Key = runtime::get_named_arg("busd_eq");
+    DeclarationStruct::default().set_busd_eq(value);
+}
+
+#[no_mangle]
+fn get_busd_eq()
+{
+    let ret: Key = DeclarationStruct::default().get_busd_eq();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -516,6 +532,24 @@ fn get_entry_points() -> EntryPoints
 
     entry_points.add_entry_point(EntryPoint::new(
         "get_wbnb",
+        vec![],
+        CLType::Key,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_busd_eq",
+        vec![
+            Parameter::new("busd_eq", CLType::Key)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_busd_eq",
         vec![],
         CLType::Key,
         EntryPointAccess::Public,
