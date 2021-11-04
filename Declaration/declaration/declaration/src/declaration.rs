@@ -12,7 +12,7 @@ use crate::config::parameters;
 pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair_hash: Key, liquidity_guard: Key, synthetic_bnb: Key, launch_time: U256)
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair_hash: Key, liquidity_guard: Key, synthetic_bnb: Key, WBNB: Key, launch_time: U256)
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -24,7 +24,8 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::set_launch_time(launch_time);
         data::set_inflation_rate(U256::from(103000));           // 3.000% (indirect -> checks through LiquidityGuard)
         data::set_liquidity_rate(U256::from(100006));           // 0.006% (indirect -> checks through LiquidityGuard)
-        
+        data::set_wbnb(WBNB);
+
         data::StakeCount::init();
         data::ReferralCount::init();
         data::LiquidityStakeCount::init();
@@ -160,6 +161,21 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::liquidity_guard_status()
     }
     
+    fn set_sbnb(&self, SBNB: Key)
+    {
+        data::set_sbnb(SBNB);
+    }
+
+    fn get_sbnb(&self) -> Key
+    {
+        data::sbnb()
+    }
+
+    fn get_wbnb(&self) -> Key
+    {
+        data::wbnb()
+    }
+
 
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String

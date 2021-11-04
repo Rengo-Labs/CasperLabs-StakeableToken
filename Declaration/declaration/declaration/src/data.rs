@@ -18,6 +18,8 @@ pub const SYNTHETIC_BNB: &str = "synthetic_bnb";
 pub const INFLATION_RATE: &str = "inflation_rate";
 pub const LIQUIDITY_RATE: &str = "liquidity_rate";
 pub const LIQUIDITY_GUARD_STATUS: &str = "liquidity_guard_status";
+pub const WBNB: &str = "wbnb";
+pub const SBNB: &str = "sbnb";
 
 
 // mappings
@@ -70,6 +72,12 @@ pub fn set_liquidity_rate(liquidity_rate: U256) { set_key(LIQUIDITY_RATE, liquid
 
 pub fn liquidity_guard_status() -> bool {get_key(LIQUIDITY_GUARD_STATUS).unwrap_or_default()}
 pub fn set_liquidity_guard_status(status: bool) { set_key(LIQUIDITY_GUARD_STATUS, status);}
+
+pub fn wbnb() -> Key {get_key(WBNB).unwrap_or_revert()}
+pub fn set_wbnb(wbnb: Key) { set_key(WBNB, wbnb);}
+
+pub fn sbnb() -> Key {get_key(SBNB).unwrap_or_revert()}
+pub fn set_sbnb(sbnb: Key) { set_key(SBNB, sbnb);}
 
 
 // mappings

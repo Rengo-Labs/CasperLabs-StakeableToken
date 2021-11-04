@@ -30,10 +30,10 @@ impl ContractContext<OnChainContractStorage> for DeclarationStruct
 impl Declaration<OnChainContractStorage> for DeclarationStruct{}
 impl DeclarationStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair: Key, liquidity_guard: Key, synthetic_bnb: Key) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair: Key, liquidity_guard: Key, synthetic_bnb: Key, wbnb: Key) 
     {
         let launch_time: U256 = U256::from(1619395200);             // set launch time as per the requirments.
-        Declaration::init(self, Key::from(contract_hash), package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, launch_time);
+        Declaration::init(self, Key::from(contract_hash), package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb, launch_time);
     }
 }
 
@@ -48,8 +48,9 @@ fn constructor()
     let pair: Key = runtime::get_named_arg("pair");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
     let synthetic_bnb: Key = runtime::get_named_arg("synthetic_bnb");
-
-    DeclarationStruct::default().constructor(contract_hash, package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb);
+    let wbnb: Key = runtime::get_named_arg("wbnb");
+    
+    DeclarationStruct::default().constructor(contract_hash, package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb);
 }
 
 #[no_mangle]
@@ -233,6 +234,27 @@ fn get_liquidity_guard_status()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn set_sbnb()
+{
+    let value: Key = runtime::get_named_arg("sbnb");
+    DeclarationStruct::default().set_sbnb(value);
+}
+
+#[no_mangle]
+fn get_sbnb()
+{
+    let ret: Key = DeclarationStruct::default().get_sbnb();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_wbnb()
+{
+    let ret: Key = DeclarationStruct::default().get_wbnb();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -247,7 +269,8 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("factory", Key::cl_type()),
             Parameter::new("pair", Key::cl_type()),
             Parameter::new("liquidity_guard", Key::cl_type()),
-            Parameter::new("synthetic_bnb", Key::cl_type())
+            Parameter::new("synthetic_bnb", Key::cl_type()),
+            Parameter::new("wbnb", Key::cl_type())
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -265,7 +288,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "get_stake_count",
         vec![
-            Parameter::new("staker", Key::cl_type())
+            Parameter::new("staker", CLType::Key)
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -275,7 +298,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "set_stake_count",
         vec![
-            Parameter::new("staker", Key::cl_type()),
+            Parameter::new("staker", CLType::Key),
             Parameter::new("value", CLType::U256)
         ],
         <()>::cl_type(),
@@ -286,7 +309,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "get_referral_count",
         vec![
-            Parameter::new("referrer", Key::cl_type())
+            Parameter::new("referrer", CLType::Key)
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -296,7 +319,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "set_referral_count",
         vec![
-            Parameter::new("referrer", Key::cl_type()),
+            Parameter::new("referrer", CLType::Key),
             Parameter::new("value", CLType::U256)
         ],
         <()>::cl_type(),
@@ -307,7 +330,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "get_liquidity_stake_count",
         vec![
-            Parameter::new("staker", Key::cl_type())
+            Parameter::new("staker", CLType::Key)
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -317,7 +340,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "set_liquidity_stake_count",
         vec![
-            Parameter::new("staker", Key::cl_type()),
+            Parameter::new("staker", CLType::Key),
             Parameter::new("value", CLType::U256)
         ],
         <()>::cl_type(),
@@ -473,6 +496,32 @@ fn get_entry_points() -> EntryPoints
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_sbnb",
+        vec![
+            Parameter::new("sbnb", CLType::Key)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_sbnb",
+        vec![],
+        CLType::Key,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_wbnb",
+        vec![],
+        CLType::Key,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
 }
 
@@ -490,6 +539,7 @@ pub extern "C" fn call()
     let pair: Key = runtime::get_named_arg("pair");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
     let synthetic_bnb: Key = runtime::get_named_arg("synthetic_bnb");
+    let wbnb: Key = runtime::get_named_arg("wbnb");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
@@ -499,7 +549,8 @@ pub extern "C" fn call()
         "factory" => factory,
         "pair" => pair,
         "liquidity_guard" => liquidity_guard,
-        "synthetic_bnb" => synthetic_bnb
+        "synthetic_bnb" => synthetic_bnb,
+        "wbnb" => wbnb
     };
 
     // Add the constructor group to the package hash with a single URef.
