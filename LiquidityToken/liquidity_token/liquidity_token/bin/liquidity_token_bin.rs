@@ -2,7 +2,8 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{collections::BTreeSet, format, string::String, vec};
+use alloc::{collections::BTreeSet, format, string::String, vec, vec::Vec};
+// use std::boxed::Box;
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -14,7 +15,7 @@ use casper_types::{
     EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
-use snapshot::{self, LiquidityToken};
+use liquidity_token::{self, LiquidityToken};
 
 #[derive(Default)]
 struct LiquidityTokenStruct(OnChainContractStorage);
@@ -110,15 +111,27 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
+    // VERIFY CLType for returning Vec<32>
+    // entry_points.add_entry_point(EntryPoint::new(
+    //     "create_liquidity_stake",
+    //     vec![
+    //         Parameter::new("liquidity_tokens", U256::cl_type())
+    //         ],
+    //         CLType::List(),
+    //         EntryPointAccess::Public,
+    //         EntryPointType::Contract
+    //     ));
     entry_points
 }
 
 #[no_mangle]
-fn create_liquidity_stake(){
+fn create_liquidity_stake() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
 
     // VERIFY how to work with Vec<> as return types
-   let liquidity_stake_id: Vec<16> = LiquidityTokenStruct::default()._create_liquidity_stake(liquidity_tokens);
+    let liquidity_stake_id: Vec<u32> =
+        LiquidityTokenStruct::default()._create_liquidity_stake(liquidity_tokens);
+    runtime::ret(CLValue::from_t(liquidity_stake_id).unwrap_or_revert());
 }
 // All session code must have a `call` entrypoint.
 #[no_mangle]
@@ -147,7 +160,7 @@ pub extern "C" fn call() {
         "sbnb"=>sbnb_contract_hash,
         "pair"=>pair_contract_hash,
         "bep20"=>bep20_contract_hash,
-        "guard"=>guard_contract_hash
+        "guard"=>guard_contract_hash,
         "snapshot"=>snapshot_contract_hash
     };
 

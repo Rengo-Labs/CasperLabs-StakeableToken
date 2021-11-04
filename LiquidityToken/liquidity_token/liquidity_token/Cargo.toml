@@ -17,7 +17,7 @@ serde_json = "1.0"
 
 [[bin]]
 name = "liquidity_token"
-path = "bin/liquidity_token.rs"
+path = "bin/liquidity_token_bin.rs"
 bench = false
 doctest = false
 test = false

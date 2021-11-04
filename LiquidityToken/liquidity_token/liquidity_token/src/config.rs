@@ -24,7 +24,12 @@ pub mod Structs {
         pub daily_bonus_a: U256,   // 25%:1825 = 0.01369863013 per day;
         pub daily_bonus_b: U256,   // 5%:13505 = 0.00037023324 per day;
     }
-
+    // liquidity shares
+    #[derive(Serialize, Deserialize)]
+    pub struct LSnapShot {
+        pub total_shares: U256,
+        pub inflation_amount: U256,
+    }
     #[derive(Serialize, Deserialize)]
     pub struct LiquidityStake {
         pub staked_amount: U256,

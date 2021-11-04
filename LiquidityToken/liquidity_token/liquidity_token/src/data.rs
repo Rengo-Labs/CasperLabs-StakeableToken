@@ -23,6 +23,10 @@ pub const PAIR_HASH: &str = "pair_hash";
 pub const BEP20_HASH: &str = "pair_hash";
 pub const GUARD_HASH: &str = "guard_hash";
 pub const SNAPSHOT_HASH: &str = "snapshot_hash";
+// Keys for Snapshot structs
+pub const SNAPSHOTS_DICT: &str = "snapshots_dicts";
+pub const RSNAPSHOTS_DICT: &str = "rsnapshots_dicts";
+pub const LSNAPSHOTS_DICT: &str = "lsnapshots_dicts";
 
 pub fn self_hash() -> Key {
     get_key(SELF_HASH).unwrap_or_revert()
