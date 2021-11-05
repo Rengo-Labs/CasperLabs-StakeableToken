@@ -72,11 +72,12 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         );
 
         // TODO better error handling
-        if liquidity_guard_status == true {
+        if liquidity_guard_status == false {
             runtime::revert(ApiError::None);
         }
 
         // VERIFY args name with entrypoint implementation
+        // VERIFY this transfer_from is from bep20 or helper(helper then calls this endpoint from pair)
         let () = runtime::call_contract(
             Self::_create_hash_from_key(helper_hash),
             "transfer_from",
@@ -151,6 +152,24 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         liquidity_stake_id
     }
 
+    fn _check_liquidity_stake_by_id(
+        &self,
+        _staker: Key,
+        _liquidity_stake_id: Vec<u32>,
+    ) -> String {
+        let declaration_hash = data::declaration_hash();
+        let liquidity_stake_string: String = runtime::call_contract(
+            Self::_create_hash_from_key(declaration_hash),
+            "get_liquidity_stake",
+            runtime_args! {
+                "staker"=>_staker,
+                "id"=>_liquidity_stake_id
+            },
+        );
+
+        liquidity_stake_string
+    }
+
     fn _end_liquidity_stake(&self, _liquidity_stake_id: Vec<u32>) -> U256 {
         let timing_hash = data::timing_hash();
         let declaration_hash = data::declaration_hash();
@@ -186,6 +205,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             self._calculate_reward_amount(&liquidity_stake_struct);
 
         // VERIFY this end point exists and argument names
+        // verify which contract mint is from
         let () = runtime::call_contract(
             Self::_create_hash_from_key(bep20_hash),
             "mint",
@@ -233,7 +253,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {
                 "staker"=>self.get_caller(),
                 "id"=>Vec::clone(&_liquidity_stake_id),
-                "stake"=>liquidity_stake_string
+                "value"=>liquidity_stake_string
             },
         );
 
@@ -302,28 +322,6 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             .map(|a| u16::from_ne_bytes([a[0], a[1]]))
             .collect(); // Create a native endian integer value
         result
-    }
-    fn _set_constant_in_contract(contract_hash: Key, constant_name: &str, constant_value: U256) {
-        let args: RuntimeArgs = runtime_args! {
-            constant_name => constant_value
-        };
-        let () = runtime::call_contract(
-            Self::_create_hash_from_key(contract_hash),
-            &format!("set_{}", constant_name),
-            args,
-        );
-    }
-
-    fn _set_liquidity_guard_status(status: bool) {
-        let declaration_hash: Key = data::declaration_hash();
-        let args: RuntimeArgs = runtime_args! {
-            "status"=>status
-        };
-        let () = runtime::call_contract(
-            Self::_create_hash_from_key(declaration_hash),
-            "set_liquidity_guard_status",
-            args,
-        );
     }
 
     fn _create_hash_from_key(key: Key) -> ContractHash {

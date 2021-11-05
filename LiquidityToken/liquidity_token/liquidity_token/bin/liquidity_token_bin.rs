@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{collections::BTreeSet, format, string::String, vec, vec::Vec};
+use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec, vec::Vec};
 // use std::boxed::Box;
 
 use casper_contract::{
@@ -111,17 +111,50 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
-    // VERIFY CLType for returning Vec<32>
-    // entry_points.add_entry_point(EntryPoint::new(
-    //     "create_liquidity_stake",
-    //     vec![
-    //         Parameter::new("liquidity_tokens", U256::cl_type())
-    //         ],
-    //         CLType::List(),
-    //         EntryPointAccess::Public,
-    //         EntryPointType::Contract
-    //     ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_liquidity_stake",
+        vec![Parameter::new("liquidity_tokens", U256::cl_type())],
+        CLType::List(Box::new(u32::cl_type())),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_liquidity_stake",
+        vec![Parameter::new("id", CLType::List(Box::new(u32::cl_type())))],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_liquidity_stake_by_id",
+        vec![Parameter::new("staker",  Key::cl_type())],
+        CLType::String,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
+}
+
+#[no_mangle]
+fn end_liquidity_stake() {
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("id");
+
+    let ret = LiquidityTokenStruct::default()._end_liquidity_stake(liquidity_stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn check_liquidity_stake_by_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("id");
+
+    let liquidity_stake_string: String =
+        LiquidityTokenStruct::default()._check_liquidity_stake_by_id(staker, liquidity_stake_id);
+
+    runtime::ret(CLValue::from_t(liquidity_stake_string).unwrap_or_revert());
 }
 
 #[no_mangle]
