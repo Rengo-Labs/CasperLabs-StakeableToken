@@ -79,6 +79,15 @@ fn mint_supply()
 }
 
 
+#[no_mangle]
+fn create_stake_with_bnb()
+{
+    let lock_days: Key = runtime::get_named_arg("lock_days");
+    let referrer: Key = runtime::get_named_arg("referrer");
+
+    (U256, ) = WiseTokenStruct::default().create_stake_with_bnb(lock_days, referrer);
+}
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -132,6 +141,18 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("amount", CLType::U256)
         ],
         <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_with_bnb",
+        vec![
+            Parameter::new("lock_days", CLType::U64),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::Key,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));

@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, vec, string::String};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec, string::String};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -53,8 +53,8 @@ fn constructor()
 fn stake_ended()
 {
     let stake: String = runtime::get_named_arg("stake");
-    let ret: bool = HelperStruct::default().stake_ended(stake);
 
+    let ret: bool = HelperStruct::default().stake_ended(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -72,8 +72,8 @@ fn days_diff()
 fn is_mature_stake()
 {
     let stake: String = runtime::get_named_arg("stake");
-    let ret: bool = HelperStruct::default().is_mature_stake(stake);
 
+    let ret: bool = HelperStruct::default().is_mature_stake(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -81,8 +81,8 @@ fn is_mature_stake()
 fn not_critical_mass_referrer()
 {
     let referrer: Key = runtime::get_named_arg("referrer");
-    let ret: bool = HelperStruct::default().not_critical_mass_referrer(referrer);
 
+    let ret: bool = HelperStruct::default().not_critical_mass_referrer(referrer);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -90,8 +90,8 @@ fn not_critical_mass_referrer()
 fn calculation_day()
 {
     let stake: String = runtime::get_named_arg("stake");
-    let ret: U256 = HelperStruct::default().calculation_day(stake);
 
+    let ret: U256 = HelperStruct::default().calculation_day(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 } 
 
@@ -99,8 +99,8 @@ fn calculation_day()
 fn not_past()
 {
     let day: U256 = runtime::get_named_arg("day");
-    let ret: bool = HelperStruct::default().not_past(day);
 
+    let ret: bool = HelperStruct::default().not_past(day);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -108,10 +108,35 @@ fn not_past()
 fn not_future()
 {
     let day: U256 = runtime::get_named_arg("day");
-    let ret: bool = HelperStruct::default().not_future(day);
 
+    let ret: bool = HelperStruct::default().not_future(day);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
+
+#[no_mangle]
+fn stakes_pagination()
+{
+    let staker: Key = runtime::get_named_arg("staker");
+    let offset: U256 = runtime::get_named_arg("offset");
+    let length: U256 = runtime::get_named_arg("length");
+
+    let ret: Vec<Vec<u32>> = HelperStruct::default().stakes_pagination(staker, offset, length);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+
+}
+
+
+#[no_mangle]
+fn referrals_pagination()
+{
+    let referrer: Key = runtime::get_named_arg("referrer");
+    let offset: U256 = runtime::get_named_arg("offset");
+    let length: U256 = runtime::get_named_arg("length");
+
+    let ret: Vec<Vec<u32>> = HelperStruct::default().referrals_pagination(referrer, offset, length);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -202,13 +227,13 @@ fn get_entry_points() -> EntryPoints
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "referrals_pagination",
+        "stakes_pagination",
         vec![
-            Parameter::new("_referrer", Key::cl_type()),
-            Parameter::new("_offset", CLType::U256),
-            Parameter::new("_length", CLType::U256)
+            Parameter::new("staker", Key::cl_type()),
+            Parameter::new("offset", CLType::U256),
+            Parameter::new("length", CLType::U256)
         ],
-        <()>::cl_type(),
+        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -216,11 +241,11 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "referrals_pagination",
         vec![
-            Parameter::new("_referrer", Key::cl_type()),
-            Parameter::new("_offset", CLType::U256),
-            Parameter::new("_length", CLType::U256)
+            Parameter::new("referrer", Key::cl_type()),
+            Parameter::new("offset", CLType::U256),
+            Parameter::new("length", CLType::U256)
         ],
-        <()>::cl_type(),
+        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
