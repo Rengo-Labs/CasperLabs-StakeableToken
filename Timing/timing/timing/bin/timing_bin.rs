@@ -68,6 +68,14 @@ fn _previous_wise_day()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn _next_wise_day()
+{
+    let ret: u64 = TimingStruct::default().next_wise_day();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -102,6 +110,14 @@ fn get_entry_points() -> EntryPoints
 
     entry_points.add_entry_point(EntryPoint::new(
         "_previous_wise_day",
+        vec![],
+        CLType::U64,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "_next_wise_day",
         vec![],
         CLType::U64,
         EntryPointAccess::Public,

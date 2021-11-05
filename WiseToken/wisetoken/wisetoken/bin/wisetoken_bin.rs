@@ -14,6 +14,7 @@ use casper_types::{
     Group, Key, Parameter, RuntimeArgs, URef, U256, CLType, CLValue,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
+use wisetoken::config::*;
 use wisetoken::{self, WiseToken};
 
 #[derive(Default)]
@@ -49,6 +50,34 @@ fn constructor()
     WiseTokenStruct::default().constructor(contract_hash, package_hash, declaration_contract, synthetic_bnb_address, bep20_address);
 }
 
+#[no_mangle]
+fn set_liquidity_transfomer()
+{
+    let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
+    WiseTokenStruct::default().set_liquidity_transfomer(immutable_transformer);
+}
+
+#[no_mangle]
+fn set_busd()
+{
+    let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
+    WiseTokenStruct::default().set_busd(equalizer_address);
+}
+
+#[no_mangle]
+fn renounce_keeper()
+{
+    WiseTokenStruct::default().renounce_keeper();
+}
+
+#[no_mangle]
+fn mint_supply()
+{
+    let investor_address: Key = runtime::get_named_arg("investor_address");
+    let amount: U256 = runtime::get_named_arg("amount");
+    WiseTokenStruct::default().mint_supply(investor_address, amount);
+}
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -65,6 +94,45 @@ fn get_entry_points() -> EntryPoints
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_liquidity_transfomer",
+        vec![
+            Parameter::new("immutable_transformer", CLType::Key)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_busd",
+        vec![
+            Parameter::new("equalizer_address", CLType::Key)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "renounce_keeper",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "mint_supply",
+        vec![
+            Parameter::new("investor_address", CLType::Key),
+            Parameter::new("amount", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
