@@ -129,7 +129,7 @@ fn get_entry_points() -> EntryPoints {
 
     entry_points.add_entry_point(EntryPoint::new(
         "check_liquidity_stake_by_id",
-        vec![Parameter::new("staker",  Key::cl_type())],
+        vec![Parameter::new("staker", Key::cl_type())],
         CLType::String,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -161,7 +161,6 @@ fn check_liquidity_stake_by_id() {
 fn create_liquidity_stake() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
 
-    // VERIFY how to work with Vec<> as return types
     let liquidity_stake_id: Vec<u32> =
         LiquidityTokenStruct::default()._create_liquidity_stake(liquidity_tokens);
     runtime::ret(CLValue::from_t(liquidity_stake_id).unwrap_or_revert());

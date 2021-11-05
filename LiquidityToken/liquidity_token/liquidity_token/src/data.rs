@@ -1,8 +1,7 @@
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
-use casper_types::{contracts::ContractPackageHash, Key, U256};
-use contract_utils::{get_key, set_key, Dict};
+use casper_types::{contracts::ContractPackageHash, Key};
+use contract_utils::{get_key, set_key};
 extern crate alloc;
-use alloc::string::{String, ToString};
 
 // Keys for global struct
 pub const TOTAL_STAKED: &str = "total_staked";
