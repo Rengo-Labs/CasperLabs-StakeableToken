@@ -1,6 +1,6 @@
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
-use casper_types::{contracts::{ContractPackageHash}, Key, U256};
-use contract_utils::{get_key, set_key, Dict};
+use casper_types::{contracts::{ContractPackageHash}, Key};
+use contract_utils::{get_key, set_key};
 
 pub const SELF_HASH: &str = "self_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
@@ -8,6 +8,8 @@ pub const LIQUIDITY_TRANSFORMER: &str = "liquidity_transformer";
 pub const TRANSFORMER_GATE_KEEPER: &str = "transformer_gate_keeper";
 pub const DECLARATION_HASH: &str = "declaration_hash";
 pub const BEP_HASH: &str = "bep_hash";
+pub const ROUTER_HASH: &str = "router_hash";
+pub const STAKING_TOKEN_HASH: &str = "staking_token_hash";
 
 pub fn self_hash() -> Key { get_key(SELF_HASH).unwrap_or_revert()}
 pub fn set_self_hash(hash: Key) { set_key(SELF_HASH, hash);}
@@ -26,3 +28,9 @@ pub fn set_declaration_hash(hash: Key) { set_key(DECLARATION_HASH, hash);}
 
 pub fn bep20_hash() -> Key {get_key(BEP_HASH).unwrap_or_revert()}
 pub fn set_bep20_hash(hash: Key) {set_key(BEP_HASH, hash);}
+
+pub fn router_hash() -> Key {get_key(ROUTER_HASH).unwrap_or_revert()}
+pub fn set_router_hash(hash: Key) {set_key(ROUTER_HASH, hash);}
+
+pub fn staking_token_hash() -> Key {get_key(STAKING_TOKEN_HASH).unwrap_or_revert()}
+pub fn set_staking_token_hash(hash: Key) {set_key(STAKING_TOKEN_HASH, hash);}

@@ -1,8 +1,8 @@
 extern crate alloc;
-
-use casper_contract::{ contract_api::{runtime}, unwrap_or_revert::UnwrapOrRevert};
+use alloc::{vec, vec::Vec, string::String}; 
+use casper_contract::{ contract_api::{runtime, system}, unwrap_or_revert::UnwrapOrRevert};
 use casper_types::{
-    contracts::{ContractHash, ContractPackageHash},Key, ApiError, U256, BlockTime, CLType::U64, runtime_args, RuntimeArgs};
+    contracts::{ContractHash, ContractPackageHash},Key, ApiError, U256, U512, BlockTime, CLType::U64, runtime_args, RuntimeArgs, URef};
 use contract_utils::{ContractContext, ContractStorage};
 
 use crate::config::*;
@@ -11,12 +11,14 @@ use crate::data::{self};
 pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, synthetic_bnb_address: Key, bep20_address: Key) 
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key) 
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
         data::set_declaration_hash(declaration_contract);
         data::set_bep20_hash(bep20_address);
+        data::set_router_hash(router_address);
+        data::set_staking_token_hash(staking_token_address);
 
         let _: () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_sbnb", runtime_args!{"sbnb" => synthetic_bnb_address});
         data::set_transformer_gate_keeper(self.get_caller());
@@ -67,7 +69,111 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         }
     }
 
+    fn create_stake_with_bnb(&self, lock_days: u64, referrer: Key, amount: U256, caller_purse: URef) -> (Vec<u32>, U256 ,Vec<u32>)
+    {
+        let declaration_contract: Key = data::declaration_hash();
+        let router_contract: Key = data::router_hash();
+        let staking_token_contract: Key = data::staking_token_hash();
 
+        let wbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_wbnb", runtime_args![]);
+        let sbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_sbnb", runtime_args![]);
+        let path : Vec<Key> = vec![wbnb, sbnb, self.get_caller()];
+
+        // get the consts struct from declaration
+        let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
+        let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
+
+        let blocktime = runtime::get_blocktime();                                   // current blocktime in epoch (milliseconds)
+        let two_hours_milliseconds: u64 = 2*((1000*60)*60);
+        //let deadline = U256::from(blocktime + BlockTime::new(two_hours_milliseconds));
+        let deadline: U256 = 0.into();
+
+        let self_purse = system::create_purse();                    // create new temporary purse and transfer cspr from caller purse to this
+        let _:() = system::transfer_from_purse_to_purse(caller_purse, self_purse,  U512::from(amount.as_u128()), None).unwrap_or_revert();
+
+
+        // call swap method from router
+        let args: RuntimeArgs = runtime_args! {
+            "amount_out_min" => constant_struct.yodas_per_wise,
+            "amount_in" => amount,
+            "path" => path.clone(),
+            "to" => Key::from(self.get_caller()),
+            "deadline" => deadline,
+            "purse" => self_purse
+        };
+        let amounts: Vec<U256> = runtime::call_contract(ContractHash::from(router_contract.into_hash().unwrap_or_revert()), "swap_exact_cspr_for_tokens", args);
+        
+
+        // call create_stake
+        let args: RuntimeArgs = runtime_args! {
+            "staked_amount" => amounts[2],
+            "lock_days" => lock_days,
+            "referrer" => referrer
+        };
+        let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = 
+            runtime::call_contract(ContractHash::from(staking_token_contract.into_hash().unwrap_or_revert()), "create_stake", args);
+        
+        (stake_id, start_day, referrer_id)
+    }
+
+    fn create_stake_with_token(&self, token_address: Key, token_amount: U256, lock_days: u64, referrer: Key) -> (Vec<u32>, U256 ,Vec<u32>)
+    {
+        let args: RuntimeArgs = runtime_args! {
+            "sender" => self.get_caller(),
+            "recipient" =>  Key::from(data::package_hash()),
+            "amount" => token_amount
+        };
+        let _:() = runtime::call_contract(ContractHash::from(token_address.into_hash().unwrap_or_revert()), "transfer_from", args);
+
+        // Approve the router. First need router's package hash
+        let router_contract_hash: Key = data::router_hash();
+        let router_package_hash: Key = runtime::call_contract(ContractHash::from(router_contract_hash.into_hash().unwrap_or_revert()), "package_hash", runtime_args![]);    // need to create this method in router. It currently doesnot exist
+        
+        // Now approve the router packageHash
+        let args: RuntimeArgs = runtime_args! {
+            "spender"=> router_package_hash, 
+            "amount"=> token_amount
+        };
+        let _:() = runtime::call_contract(ContractHash::from(token_address.into_hash().unwrap_or_revert()), "approve", args);
+
+        let declaration_contract: Key = data::declaration_hash();
+        let router_address: Key = data::router_hash();
+        let staking_token_contract: Key = data::staking_token_hash();
+        let wbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_wbnb", runtime_args![]);
+        let sbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_sbnb", runtime_args![]);
+        let path : Vec<Key> = vec![token_address, wbnb, sbnb, self.get_caller()];
+
+        // get the consts struct from declaration
+        let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
+        let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
+        
+        let blocktime = runtime::get_blocktime();                                   // current blocktime in epoch (milliseconds)
+        let two_hours_milliseconds: u64 = 2*((1000*60)*60);
+        //let deadline = U256::from(blocktime + BlockTime::new(two_hours_milliseconds));
+        let deadline: U256 = 0.into();
+
+        let args: RuntimeArgs = runtime_args! {
+            "amount_in" => token_amount,
+            "amount_out_min" => constant_struct.yodas_per_wise,
+            "path" => path,
+            "to" => self.get_caller(),
+            "deadline" => deadline
+        };
+    
+        let amounts: Vec<U256> =
+            runtime::call_contract(ContractHash::from(router_address.into_hash().unwrap_or_revert()), "swap_exact_tokens_for_tokens", args);
+
+        // call create_stake
+        let args: RuntimeArgs = runtime_args! {
+            "staked_amount" => amounts[3],
+            "lock_days" => lock_days,
+            "referrer" => referrer
+        };
+        let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = 
+            runtime::call_contract(ContractHash::from(staking_token_contract.into_hash().unwrap_or_revert()), "create_stake", args);
+        
+        (stake_id, start_day, referrer_id)
+    }
 
 
     // ************************** Helper Methods *************************

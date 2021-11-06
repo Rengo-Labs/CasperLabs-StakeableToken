@@ -1460,6 +1460,8 @@ dependencies = [
  "casper-contract",
  "casper-types",
  "contract-utils",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

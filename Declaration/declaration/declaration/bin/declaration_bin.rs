@@ -255,7 +255,6 @@ fn get_wbnb()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
-
 #[no_mangle]
 fn set_busd_eq()
 {
