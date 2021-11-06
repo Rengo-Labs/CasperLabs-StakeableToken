@@ -101,8 +101,8 @@ fn create_stake_with_token()
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
 
-    //let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = WiseTokenStruct::default().create_stake_with_token(token_address, token_amount, lock_days, referrer);
-    //runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
+    let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = WiseTokenStruct::default().create_stake_with_token(token_address, token_amount, lock_days, referrer);
+    runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
 }
 
 
