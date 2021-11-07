@@ -11,7 +11,7 @@ use crate::data::{self};
 pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key) 
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, globals_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key) 
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -19,7 +19,8 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         data::set_bep20_hash(bep20_address);
         data::set_router_hash(router_address);
         data::set_staking_token_hash(staking_token_address);
-
+        data::set_globals_hash(globals_contract);
+        
         let _: () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_sbnb", runtime_args!{"sbnb" => synthetic_bnb_address});
         data::set_transformer_gate_keeper(self.get_caller());
     }
@@ -83,10 +84,10 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
         let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
 
-        let blocktime = runtime::get_blocktime();                                   // current blocktime in epoch (milliseconds)
+        let blocktime:u64 = runtime::get_blocktime().into();                    // current blocktime in epoch (milliseconds)
         let two_hours_milliseconds: u64 = 2*((1000*60)*60);
-        //let deadline = U256::from(blocktime + BlockTime::new(two_hours_milliseconds));
-        let deadline: U256 = 0.into();
+        let deadline: U256 = U256::from(blocktime + two_hours_milliseconds);
+
 
         let self_purse = system::create_purse();                    // create new temporary purse and transfer cspr from caller purse to this
         let _:() = system::transfer_from_purse_to_purse(caller_purse, self_purse,  U512::from(amount.as_u128()), None).unwrap_or_revert();
@@ -147,10 +148,10 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
         let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
         
-        let blocktime = runtime::get_blocktime();                                   // current blocktime in epoch (milliseconds)
+        let blocktime:u64 = runtime::get_blocktime().into();                    // current blocktime in epoch (milliseconds)
         let two_hours_milliseconds: u64 = 2*((1000*60)*60);
-        //let deadline = U256::from(blocktime + BlockTime::new(two_hours_milliseconds));
-        let deadline: U256 = 0.into();
+        let deadline: U256 = U256::from(blocktime + two_hours_milliseconds);
+
 
         let args: RuntimeArgs = runtime_args! {
             "amount_in" => token_amount,
@@ -175,6 +176,34 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         (stake_id, start_day, referrer_id)
     }
 
+    fn get_pair_address(&self) -> Key
+    {
+        let declaration_contract: Key = data::declaration_hash();
+        let pair: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_pancake_pair", runtime_args!{});
+
+        pair
+    }
+
+    fn get_total_staked(&self) -> U256
+    {
+        let globals_contract: Key = data::globals_hash();
+        let total_staked: U256 = runtime::call_contract(ContractHash::from(globals_contract.into_hash().unwrap_or_revert()),"get_globals", runtime_args!{"field" => String::from("total_staked")});
+
+        total_staked
+    }
+
+    fn get_liquidity_transformer(&self) -> Key
+    {
+        data::liquidity_transformer()
+    }
+
+    fn get_synthetic_token_address(&self) -> Key
+    {
+        let declaration_contract: Key = data::declaration_hash();
+        let sbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_sbnb", runtime_args![]);
+
+        sbnb
+    }
 
     // ************************** Helper Methods *************************
 
