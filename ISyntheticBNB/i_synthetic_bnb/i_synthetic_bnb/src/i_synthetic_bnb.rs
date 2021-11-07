@@ -1,11 +1,8 @@
-use crate::config::*;
 use crate::data::{self};
-use alloc::{string::String, vec::Vec};
 use casper_contract::contract_api::runtime;
 use casper_types::{
-    bytesrepr::ToBytes,
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, ApiError, Key, RuntimeArgs, U256,
+    runtime_args, Key, RuntimeArgs, U256,
 };
 use contract_utils::{ContractContext, ContractStorage};
 
@@ -22,7 +19,6 @@ pub trait ISyntheticBNB<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_sbnb_hash(sbnb_contract_hash);
     }
 
-    //TODO make entrypoint
     fn _deposit(&self) {
         let sbnb_hash = data::sbnb_hash();
 
@@ -33,7 +29,6 @@ pub trait ISyntheticBNB<Storage: ContractStorage>: ContractContext<Storage> {
         );
     }
 
-    // TODO make entrypoint
     fn _approve(&self, _spender: Key, _value: U256) -> bool {
         let sbnb_hash = data::sbnb_hash();
         runtime::call_contract(
@@ -43,7 +38,6 @@ pub trait ISyntheticBNB<Storage: ContractStorage>: ContractContext<Storage> {
         )
     }
 
-    //TODO make entrypoint
     fn _transfer_from(&self, _from: Key, _to: Key, _value: U256) -> bool {
         let sbnb_hash = data::sbnb_hash();
         runtime::call_contract(

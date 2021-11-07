@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec, vec::Vec};
+use alloc::{collections::BTreeSet, format, vec};
 // use std::boxed::Box;
 
 use casper_contract::{
@@ -73,7 +73,7 @@ fn transfer_from() {
     let value: U256 = runtime::get_named_arg("value");
 
     let ret: bool = ISyntheticBNBStruct::default()._transfer_from(from, to, value);
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert())
 }
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
@@ -101,6 +101,18 @@ fn get_entry_points() -> EntryPoints {
         "approve",
         vec![
             Parameter::new("spender", CLType::Key),
+            Parameter::new("value", CLType::U256),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "transfer_from",
+        vec![
+            Parameter::new("from", CLType::Key),
+            Parameter::new("to", CLType::Key),
             Parameter::new("value", CLType::U256),
         ],
         CLType::Bool,

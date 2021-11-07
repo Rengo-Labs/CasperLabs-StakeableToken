@@ -1,0 +1,10 @@
+/home/eldarito/repos/CasperLabs-Wise-WiseToken/IBEP20Token/i_bep20_token/i_bep20_token/target/rls/wasm32-unknown-unknown/debug/deps/version_sync-75e30becd5139999.rmeta: /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/lib.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_regex.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_substring.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/helpers.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/html_root_url.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/markdown_deps.rs
+
+/home/eldarito/repos/CasperLabs-Wise-WiseToken/IBEP20Token/i_bep20_token/i_bep20_token/target/rls/wasm32-unknown-unknown/debug/deps/version_sync-75e30becd5139999.d: /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/lib.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_regex.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_substring.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/helpers.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/html_root_url.rs /home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/markdown_deps.rs
+
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/lib.rs:
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_regex.rs:
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/contains_substring.rs:
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/helpers.rs:
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/html_root_url.rs:
+/home/eldarito/.cargo/registry/src/github.com-1ecc6299db9ec823/version-sync-0.9.3/src/markdown_deps.rs:

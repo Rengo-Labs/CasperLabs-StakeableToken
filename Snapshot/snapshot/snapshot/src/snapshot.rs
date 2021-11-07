@@ -189,7 +189,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
                 Self::_create_hash_from_key(guard_hash),
                 "get_inflation",
                 runtime_args! {
-                    "liquidity_rate"=>liquidity_rate
+                    "amount"=>liquidity_rate
                 },
             );
 
@@ -251,7 +251,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
                 Self::_create_hash_from_key(guard_hash),
                 "get_inflation",
                 runtime_args! {
-                    "liquidity_rate"=>liquidity_rate
+                    "amount"=>liquidity_rate
                 },
             );
 

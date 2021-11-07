@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/eldarito/repos/CasperLabs-Wise-WiseToken/ILiquidityGuard/i_liquidity_guard/i_liquidity_guard/target/rls/wasm32-unknown-unknown/debug/build/typenum-180d3da82fb79ca9/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/home/eldarito/repos/CasperLabs-Wise-WiseToken/ILiquidityGuard/i_liquidity_guard/i_liquidity_guard/target/rls/wasm32-unknown-unknown/debug/build/typenum-180d3da82fb79ca9/out/op.rs
