@@ -7,6 +7,7 @@ pub const PACKAGE_HASH: &str = "package_hash";
 pub const LIQUIDITY_TRANSFORMER: &str = "liquidity_transformer";
 pub const TRANSFORMER_GATE_KEEPER: &str = "transformer_gate_keeper";
 pub const DECLARATION_HASH: &str = "declaration_hash";
+pub const GLOBALS_HASH: &str = "globals_hash";
 pub const BEP_HASH: &str = "bep_hash";
 pub const ROUTER_HASH: &str = "router_hash";
 pub const STAKING_TOKEN_HASH: &str = "staking_token_hash";
@@ -25,6 +26,9 @@ pub fn set_transformer_gate_keeper(hash: Key) { set_key(TRANSFORMER_GATE_KEEPER,
 
 pub fn declaration_hash() -> Key {get_key(DECLARATION_HASH).unwrap_or_revert()}
 pub fn set_declaration_hash(hash: Key) { set_key(DECLARATION_HASH, hash);}
+
+pub fn globals_hash() -> Key {get_key(GLOBALS_HASH).unwrap_or_revert()}
+pub fn set_globals_hash(hash: Key) {set_key(GLOBALS_HASH, hash);}
 
 pub fn bep20_hash() -> Key {get_key(BEP_HASH).unwrap_or_revert()}
 pub fn set_bep20_hash(hash: Key) {set_key(BEP_HASH, hash);}

@@ -21,6 +21,7 @@ pub const LIQUIDITY_GUARD_STATUS: &str = "liquidity_guard_status";
 pub const WBNB: &str = "wbnb";
 pub const SBNB: &str = "sbnb";
 pub const BUSD_EQ: &str = "busd_eq";
+pub const PANCAKE_PAIR: &str = "pancake_pair";
 
 // mappings
 pub const STAKE_COUNT: &str = "stake_count";
@@ -49,7 +50,7 @@ pub fn set_router_hash(hash: Key) { set_key(ROUTER_HASH, hash);}
 pub fn factory_hash() -> Key { get_key(FACTORY_HASH).unwrap_or_revert()}
 pub fn set_factory_hash(hash: Key) { set_key(FACTORY_HASH, hash);}
 
-pub fn pair_hash() -> Key {  get_key(PAIR_HASH).unwrap_or_revert() }
+pub fn pair_hash() -> Key {  get_key(PAIR_HASH).unwrap_or_revert() }                    // pair contract
 pub fn set_pair_hash(hash: Key) { set_key(PAIR_HASH, hash); }
 
 pub fn liquidity_guard_hash() -> Key { get_key(LIQUIDITY_GUARD_HASH).unwrap_or_revert()}
@@ -82,6 +83,8 @@ pub fn set_sbnb(sbnb: Key) { set_key(SBNB, sbnb);}
 pub fn busd_eq() -> Key {get_key(BUSD_EQ).unwrap_or_revert()}
 pub fn set_busd_eq(busd: Key) { set_key(BUSD_EQ, busd);}
 
+pub fn pancake_pair() -> Key {get_key(PANCAKE_PAIR).unwrap_or_revert()}
+pub fn set_pancake_pair(pair: Key) { set_key(PANCAKE_PAIR, pair);}
 
 
 // mappings

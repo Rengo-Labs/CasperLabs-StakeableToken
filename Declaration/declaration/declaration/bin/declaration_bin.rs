@@ -269,6 +269,12 @@ fn get_busd_eq()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn get_pancake_pair()
+{
+    let ret: Key = DeclarationStruct::default().get_pancake_pair();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -548,6 +554,14 @@ fn get_entry_points() -> EntryPoints
 
     entry_points.add_entry_point(EntryPoint::new(
         "get_busd_eq",
+        vec![],
+        CLType::Key,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_pancake_pair",
         vec![],
         CLType::Key,
         EntryPointAccess::Public,

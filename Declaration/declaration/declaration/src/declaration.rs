@@ -51,7 +51,9 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
             "token_b" => data::self_hash(),
             "pair_hash" => pair
         };
-        let () = runtime::call_contract(ContractHash::from(factory.into_hash().unwrap_or_default()), "create_pair", args);
+        let () = runtime::call_contract(ContractHash::from(factory.into_hash().unwrap_or_default()), "create_pair", args);          // create pair just initializes the pair that is passed in.
+
+        data::set_pancake_pair(pair);
     }
 
     fn launch_time(&self) -> U256
@@ -186,6 +188,10 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         data::busd_eq()
     }
     
+    fn get_pancake_pair(&self) -> Key
+    {
+        data::pancake_pair()
+    }
 
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String
