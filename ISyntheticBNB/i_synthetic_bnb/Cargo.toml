@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "i_synthetic_bnb"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
