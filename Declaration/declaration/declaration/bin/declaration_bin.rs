@@ -30,10 +30,9 @@ impl ContractContext<OnChainContractStorage> for DeclarationStruct
 impl Declaration<OnChainContractStorage> for DeclarationStruct{}
 impl DeclarationStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair: Key, liquidity_guard: Key, synthetic_bnb: Key, wbnb: Key) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, launch_time: U256, uniswap_router: Key, factory: Key, pair: Key, liquidity_guard: Key, synthetic_bnb: Key, wbnb: Key) 
     {
-        let launch_time: U256 = U256::from(1619395200);             // set launch time as per the requirments.
-        Declaration::init(self, Key::from(contract_hash), package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb, launch_time);
+        Declaration::init(self, Key::from(contract_hash), package_hash, launch_time, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb);
     }
 }
 
@@ -43,6 +42,7 @@ fn constructor()
 {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
+    let launch_time: U256 = runtime::get_named_arg("launch_time");
     let uniswap_router: Key = runtime::get_named_arg("uniswap_router");
     let factory: Key = runtime::get_named_arg("factory");
     let pair: Key = runtime::get_named_arg("pair");
@@ -50,7 +50,7 @@ fn constructor()
     let synthetic_bnb: Key = runtime::get_named_arg("synthetic_bnb");
     let wbnb: Key = runtime::get_named_arg("wbnb");
     
-    DeclarationStruct::default().constructor(contract_hash, package_hash, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb);
+    DeclarationStruct::default().constructor(contract_hash, package_hash, launch_time, uniswap_router, factory, pair, liquidity_guard, synthetic_bnb, wbnb);
 }
 
 #[no_mangle]
@@ -276,6 +276,35 @@ fn get_pancake_pair()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn set_lt_balance()
+{
+    let value: U256 = runtime::get_named_arg("value");
+    DeclarationStruct::default().set_lt_balance(value);
+}
+
+#[no_mangle]
+fn get_lt_balance()
+{
+    let ret: U256 = DeclarationStruct::default().get_lt_balance();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_launchtime()
+{
+    let ret: U256 = DeclarationStruct::default().get_launchtime();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn set_launchtime()
+{
+    let value: U256 = runtime::get_named_arg("value");
+    DeclarationStruct::default().set_launchtime(value);
+}
+
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -285,6 +314,7 @@ fn get_entry_points() -> EntryPoints
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
+            Parameter::new("launch_time", CLType::U256),
             Parameter::new("uniswap_router", Key::cl_type()),
             Parameter::new("factory", Key::cl_type()),
             Parameter::new("pair", Key::cl_type()),
@@ -568,6 +598,42 @@ fn get_entry_points() -> EntryPoints
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_launchtime",
+        vec![],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_launchtime",
+        vec![
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_lt_balance",
+        vec![],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_lt_balance",
+        vec![
+            Parameter::new("value", CLType::U256)
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
 }
 
@@ -580,6 +646,7 @@ pub extern "C" fn call()
     let (contract_hash, _) : (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
+    let launch_time: U256 = runtime::get_named_arg("launch_time");                      // in epoch milliseconds
     let uniswap_router: Key = runtime::get_named_arg("uniswap_router");
     let factory: Key = runtime::get_named_arg("factory");
     let pair: Key = runtime::get_named_arg("pair");
@@ -591,6 +658,7 @@ pub extern "C" fn call()
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
+        "launch_time" => launch_time,
         "uniswap_router" => uniswap_router,
         "factory" => factory,
         "pair" => pair,

@@ -12,7 +12,7 @@ use crate::config::parameters;
 pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, uniswap_router: Key, factory: Key, pair_hash: Key, liquidity_guard: Key, synthetic_bnb: Key, WBNB: Key, launch_time: U256)
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, launch_time: U256, uniswap_router: Key, factory: Key, pair_hash: Key, liquidity_guard: Key, synthetic_bnb: Key, WBNB: Key)
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -192,6 +192,28 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
     {
         data::pancake_pair()
     }
+
+    fn get_launchtime(&self) -> U256
+    {
+        data::launch_time()
+    }
+
+    fn set_launchtime(&self, value: U256)
+    {
+        data::set_launch_time(value);
+    }
+
+    fn get_lt_balance(&self) -> U256
+    {
+        data::launch_time()
+    }
+
+    fn set_lt_balance(&self, value: U256)
+    {
+        data::set_lt_balance(value);
+    }
+
+    
 
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String

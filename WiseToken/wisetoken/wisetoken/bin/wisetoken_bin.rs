@@ -31,9 +31,9 @@ impl ContractContext<OnChainContractStorage> for WiseTokenStruct
 impl WiseToken<OnChainContractStorage> for WiseTokenStruct{}
 impl WiseTokenStruct
 {
-    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, declaration_contract: Key, globals_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key) 
+    fn constructor(&mut self, contract_hash: ContractHash, package_hash: ContractPackageHash, declaration_contract: Key, globals_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key, timing_address: Key) 
     {
-        WiseToken::init(self, Key::from(contract_hash), package_hash, declaration_contract, globals_contract, synthetic_bnb_address, bep20_address, router_address, staking_token_address);
+        WiseToken::init(self, Key::from(contract_hash), package_hash, declaration_contract, globals_contract, synthetic_bnb_address, bep20_address, router_address, staking_token_address, timing_address);
     }
 }
 
@@ -49,8 +49,9 @@ fn constructor()
     let bep20_address: Key = runtime::get_named_arg("bep20_address");
     let router_address: Key = runtime::get_named_arg("router_address");
     let staking_token_address: Key = runtime::get_named_arg("staking_token_address");
+    let timing_address: Key = runtime::get_named_arg("timing_address");
 
-    WiseTokenStruct::default().constructor(contract_hash, package_hash, declaration_contract, globals_contract, synthetic_bnb_address, bep20_address, router_address, staking_token_address);
+    WiseTokenStruct::default().constructor(contract_hash, package_hash, declaration_contract, globals_contract, synthetic_bnb_address, bep20_address, router_address, staking_token_address, timing_address);
 }
 
 #[no_mangle]
@@ -134,6 +135,13 @@ fn get_synthetic_token_address()
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert()); 
 }
 
+#[no_mangle]
+fn extend_lt_auction()
+{
+    WiseTokenStruct::default().extend_lt_auction();
+}
+
+
 fn get_entry_points() -> EntryPoints 
 {
     let mut entry_points = EntryPoints::new();
@@ -148,7 +156,8 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("synthetic_bnb_address", CLType::Key),
             Parameter::new("bep20_address", CLType::Key),
             Parameter::new("router_address", CLType::Key),
-            Parameter::new("staking_token_address", CLType::Key)
+            Parameter::new("staking_token_address", CLType::Key),
+            Parameter::new("timing_address", CLType::Key)
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -252,6 +261,14 @@ fn get_entry_points() -> EntryPoints
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "extend_lt_auction",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
     entry_points
 }
 
@@ -270,6 +287,7 @@ pub extern "C" fn call()
     let bep20_address: Key = runtime::get_named_arg("bep20_address");
     let router_address: Key = runtime::get_named_arg("router_address");
     let staking_token_address: Key = runtime::get_named_arg("staking_token_address");
+    let timing_address: Key = runtime::get_named_arg("timing_address");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
@@ -280,7 +298,8 @@ pub extern "C" fn call()
         "synthetic_bnb_address" => synthetic_bnb_address,
         "bep20_address" => bep20_address,
         "router_address" => router_address,
-        "staking_token_address" => staking_token_address
+        "staking_token_address" => staking_token_address,
+        "timing_address" => timing_address
     };
 
     // Add the constructor group to the package hash with a single URef.

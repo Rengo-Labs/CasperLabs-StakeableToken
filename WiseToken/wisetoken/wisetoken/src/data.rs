@@ -11,6 +11,9 @@ pub const GLOBALS_HASH: &str = "globals_hash";
 pub const BEP_HASH: &str = "bep_hash";
 pub const ROUTER_HASH: &str = "router_hash";
 pub const STAKING_TOKEN_HASH: &str = "staking_token_hash";
+pub const TIMING_HASH: &str = "timing_hash";
+
+
 
 pub fn self_hash() -> Key { get_key(SELF_HASH).unwrap_or_revert()}
 pub fn set_self_hash(hash: Key) { set_key(SELF_HASH, hash);}
@@ -38,3 +41,8 @@ pub fn set_router_hash(hash: Key) {set_key(ROUTER_HASH, hash);}
 
 pub fn staking_token_hash() -> Key {get_key(STAKING_TOKEN_HASH).unwrap_or_revert()}
 pub fn set_staking_token_hash(hash: Key) {set_key(STAKING_TOKEN_HASH, hash);}
+
+pub fn timing_hash() -> Key {get_key(TIMING_HASH).unwrap_or_revert()}
+pub fn set_timing_hash(hash: Key) {set_key(TIMING_HASH, hash);}
+
+

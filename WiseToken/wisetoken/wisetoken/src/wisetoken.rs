@@ -11,7 +11,7 @@ use crate::data::{self};
 pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage> 
 {
     // Will be called by constructor
-    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, globals_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key) 
+    fn init(&mut self, contract_hash: Key, package_hash: ContractPackageHash, declaration_contract: Key, globals_contract: Key, synthetic_bnb_address: Key, bep20_address: Key, router_address: Key, staking_token_address: Key, timing_contract: Key) 
     {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -20,7 +20,8 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         data::set_router_hash(router_address);
         data::set_staking_token_hash(staking_token_address);
         data::set_globals_hash(globals_contract);
-        
+        data::set_timing_hash(timing_contract);
+
         let _: () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_sbnb", runtime_args!{"sbnb" => synthetic_bnb_address});
         data::set_transformer_gate_keeper(self.get_caller());
     }
@@ -203,6 +204,28 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let sbnb: Key = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_sbnb", runtime_args![]);
 
         sbnb
+    }
+
+    fn extend_lt_auction(&self)
+    {
+        let declaration_contract: Key = data::declaration_hash();
+        let timing_contract: Key = data::timing_hash();
+
+        let sixteen_days_milliseconds: u64 = 1382400000;
+        let ten_minutes_milliseconds: u64 = 600000;
+        let blocktime_milliseconds: u64 = runtime::get_blocktime().into();           
+        let current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_contract.into_hash().unwrap_or_revert()), "_current_wise_day", runtime_args![]);
+        let launch_time_milliseconds: U256 = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_launchtime", runtime_args![]);
+
+        if current_wise_day == 15 {
+            if launch_time_milliseconds.as_u64() + sixteen_days_milliseconds - blocktime_milliseconds <= ten_minutes_milliseconds {
+
+            }
+        }
+        // if current_wise_day > 15 {
+        //     runtime::
+        // }
+        
     }
 
     // ************************** Helper Methods *************************
