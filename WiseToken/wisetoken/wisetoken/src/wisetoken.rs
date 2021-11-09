@@ -26,7 +26,7 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         data::set_transformer_gate_keeper(self.get_caller());
     }
 
-    fn set_liquidity_transfomer(&self, immutable_transformer: Key)
+    fn set_liquidity_transfomer(&self, immutable_transformer: Key, transformer_purse: URef)
     {
         if !self.only_keeper(Key::from(self.get_caller()))
         {
@@ -34,6 +34,7 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         }
 
         data::set_liquidity_transformer(immutable_transformer);
+        data::set_liquidity_transformer_purse(transformer_purse);                       // This purse will be used in extend_lt_auction method
     }
 
     fn set_busd(&self, equalizer_address: Key)
@@ -215,16 +216,28 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let ten_minutes_milliseconds: u64 = 600000;
         let blocktime_milliseconds: u64 = runtime::get_blocktime().into();           
         let current_wise_day: u64 = runtime::call_contract(ContractHash::from(timing_contract.into_hash().unwrap_or_revert()), "_current_wise_day", runtime_args![]);
-        let launch_time_milliseconds: U256 = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_launchtime", runtime_args![]);
+        let mut launch_time_milliseconds: U256 = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_launchtime", runtime_args![]);
 
         if current_wise_day == 15 {
             if launch_time_milliseconds.as_u64() + sixteen_days_milliseconds - blocktime_milliseconds <= ten_minutes_milliseconds {
-
+                let liquidity_transformer_purse: URef = data::liquidity_transformer_purse();
+                let new_balance: U512 = system::get_purse_balance(liquidity_transformer_purse).unwrap_or_revert();
+                
+                let new_balance: U256 = U256::from(new_balance.as_u128());               // convert U512 to U256
+                let lt_balance: U256 = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_lt_balance", runtime_args![]);
+                let ten_cspr: i32 = 10;
+                let amount_motes: U256 = U256::from(10 * (ten_cspr.pow(9)));             // 1 cspr = 10^9 motes, therefore 10 cspr = 10 * (10^9)
+                
+                if new_balance.checked_sub(lt_balance).unwrap_or_revert() >= amount_motes {
+                    launch_time_milliseconds = launch_time_milliseconds + 600000;        // add 10 minutes to launch time
+                    let _ : () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_lt_balance", runtime_args!["value" => new_balance]);
+                    let _ : () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_launchtime", runtime_args!["value" => launch_time_milliseconds]);
+                }
             }
         }
-        // if current_wise_day > 15 {
-        //     runtime::
-        // }
+        if current_wise_day > 15 {
+            let _ : () = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "set_launchtime", runtime_args!["value" => U256::from(LAUNCH_TIME)]);
+        }
         
     }
 

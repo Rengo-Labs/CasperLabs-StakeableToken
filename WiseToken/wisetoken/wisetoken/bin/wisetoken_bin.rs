@@ -58,7 +58,9 @@ fn constructor()
 fn set_liquidity_transfomer()
 {
     let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
-    WiseTokenStruct::default().set_liquidity_transfomer(immutable_transformer);
+    let transformer_purse: URef = runtime::get_named_arg("transformer_purse");              // purse of immutable_transformer account
+
+    WiseTokenStruct::default().set_liquidity_transfomer(immutable_transformer, transformer_purse);
 }
 
 #[no_mangle]
@@ -167,7 +169,8 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "set_liquidity_transfomer",
         vec![
-            Parameter::new("immutable_transformer", CLType::Key)
+            Parameter::new("immutable_transformer", CLType::Key),
+            Parameter::new("transformer_purse", CLType::URef)
         ],
         <()>::cl_type(),
         EntryPointAccess::Public,

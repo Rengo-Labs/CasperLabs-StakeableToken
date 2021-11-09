@@ -1,6 +1,11 @@
 use casper_types::{U256};
 use serde::{Serialize, Deserialize};
 
+// change the LAUNCH_TIME as per need. 
+// currently set to Wednesday, 26 April 2023 00:00:00
+// use value in milliseconds. 
+pub const LAUNCH_TIME:u128 = 1682467200000;
+
 #[repr(u16)]
 pub enum ErrorCodes {
     Abort = 35,

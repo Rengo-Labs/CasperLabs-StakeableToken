@@ -205,7 +205,7 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
 
     fn get_lt_balance(&self) -> U256
     {
-        data::launch_time()
+        data::lt_balance()
     }
 
     fn set_lt_balance(&self, value: U256)
