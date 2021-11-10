@@ -88,7 +88,7 @@ pub mod structs
     pub struct ReferrerLink 
     {
         staker: Key,
-        stake_id: u32,
+        stake_id: Vec<u32>,
         reward_amount: U256,
         processed_days: U256,
         is_active: bool

@@ -30,7 +30,8 @@ pub mod structs {
     use casper_types::{Key, U256};
     extern crate serde;
     use serde::{Deserialize, Serialize};
-
+    use alloc::{vec::Vec};
+    
     pub const SCRAPES: &str = "scrapes";
     pub const STAKES: &str = "stakes";
     pub const REFERRER_LINK: &str = "referrer_link";
@@ -66,7 +67,7 @@ pub mod structs {
     #[derive(Serialize, Deserialize)]
     pub struct ReferrerLink {
         pub staker: Key,
-        pub stake_id: u32,
+        pub stake_id: Vec<u32>,
         pub reward_amount: U256,
         pub processed_days: U256,
         pub is_active: bool,

@@ -1,5 +1,5 @@
 [package]
-authors = ["Muhammad Adrees <muhammad.adrees@scytalelabs.com>"]
+authors = ["Muhammad Adrees <muhammad.adrees@scytalelabs.com>", "Muzahir Hussain <muzahir.hussain@scytalelabs.com>", "Muhammad Talha Dar <muhammadtalhadar@scytalelabs.com>"]
 edition = "2018"
 name = "staking-token"
 version = "0.1.0"

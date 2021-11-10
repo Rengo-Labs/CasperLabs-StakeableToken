@@ -7,7 +7,10 @@ pub const SNAPSHOT_CONTRACT_HASH: &str = "snapshot_contract_hash";
 pub const DECLARATION_CONTRACT_HASH: &str = "declaration_contract_hash";
 pub const TIMING_CONTRACT_HASH: &str = "timing_contract_hash";
 pub const HELPER_CONTRACT_HASH: &str = "helper_contract_hash";
+pub const GLOBALS_CONTRACT_HASH: &str = "globals_contract_hash";
 pub const BEP20_CONTRACT_HASH: &str = "bep20_contract_hash";
+pub const REFERRAL_TOKEN_CONTRACT_HASH: &str = "referral_token_contract_hash";
+
 pub const OWNER: &str = "owner";
 
 pub fn set_hash(contract_hash: Key) {
@@ -24,7 +27,13 @@ pub fn set_snapshot_hash(snapshot_hash: Key) {
 pub fn get_snapshot_hash() -> Key {
     get_key(SNAPSHOT_CONTRACT_HASH).unwrap_or_revert()
 }
+pub fn set_referral_token_hash(referral_token_hash: Key) {
+    set_key(REFERRAL_TOKEN_CONTRACT_HASH, referral_token_hash);
+}
 
+pub fn get_referral_token_hash() -> Key {
+    get_key(REFERRAL_TOKEN_CONTRACT_HASH).unwrap_or_revert()
+}
 pub fn set_declaration_hash(declaration_hash: Key) {
     set_key(DECLARATION_CONTRACT_HASH, declaration_hash);
 }
@@ -47,6 +56,14 @@ pub fn set_helper_hash(helper_hash: Key) {
 
 pub fn get_helper_hash() -> Key {
     get_key(HELPER_CONTRACT_HASH).unwrap_or_revert()
+}
+
+pub fn set_globals_hash(bep20_hash: Key) {
+    set_key(GLOBALS_CONTRACT_HASH, bep20_hash);
+}
+
+pub fn get_globals_hash() -> Key {
+    get_key(GLOBALS_CONTRACT_HASH).unwrap_or_revert()
 }
 
 pub fn set_bep20_hash(bep20_hash: Key) {
