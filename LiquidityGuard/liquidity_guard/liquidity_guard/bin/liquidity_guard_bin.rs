@@ -10,8 +10,8 @@ use casper_contract::{
 };
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, CLTyped, EntryPoint, EntryPointAccess, EntryPointType, EntryPoints, Group, Key,
-    Parameter, RuntimeArgs, URef,
+    runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
+    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use liquidity_guard::{self, LiquidityGuard};
@@ -54,9 +54,35 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_inflation",
+        vec![Parameter::new("amount", u64::cl_type())],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "assign_inflation",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     entry_points
 }
 
+#[no_mangle]
+fn get_inflation() {
+    let amount: u64 = runtime::get_named_arg("amount");
+    let ret: U256 = LiquidityGuardStruct::default().get_inflation(U256::from(amount));
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn assign_inflation() {
+   LiquidityGuardStruct::default().assign_inflation();
+}
 // All session code must have a `call` entrypoint.
 #[no_mangle]
 pub extern "C" fn call() {
