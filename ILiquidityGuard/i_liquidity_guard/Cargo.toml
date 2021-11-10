@@ -1,8 +1,0 @@
-[workspace]
-members = [
-    "i_liquidity_guard",
-]
-
-[profile.release]
-codegen-units = 1
-lto = true

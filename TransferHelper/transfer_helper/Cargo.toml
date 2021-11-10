@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "transfer_helper",
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
