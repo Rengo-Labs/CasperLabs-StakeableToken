@@ -39,6 +39,8 @@ pub mod structs {
     pub const TOTAL_PENALTIES: &str = "total_penalties";
     pub const CRITICAL_MASS: &str = "critical_mass";
     pub const RSNAPSHOT: &str = "rsnapshot";
+    pub const SNAPSHOT: &str = "snapshot";
+    pub const LSNAPSHOT: &str = "lsnapshot";
 
     // Keys for global struct
     pub const TOTAL_STAKED: &str = "total_staked";
@@ -90,6 +92,14 @@ pub mod structs {
     // referral shares
     #[derive(Serialize, Deserialize)]
     pub struct RSnapshot {
+        pub total_shares: U256,
+        pub inflation_amount: U256,
+        pub scheduled_to_end: U256,
+    }
+
+    // regular shares
+    #[derive(Serialize, Deserialize)]
+    pub struct Snapshot {
         pub total_shares: U256,
         pub inflation_amount: U256,
         pub scheduled_to_end: U256,

@@ -40,6 +40,155 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
                 self.create_stake(staked_amount[i], lock_days[i], referrer[i]);
         }
     }
+
+    fn _regular_bonus(&self,
+        _lock_days: U256,
+        _daily: U256,
+        _max_days: U256
+    ) ->U256
+    {
+        let ret: U256 = if _lock_days>_max_days{
+            _max_days * _daily
+        }
+        else{
+            _lock_days * _daily
+        }
+        // TODO verify methods usage
+        ret.checked_div(U256::form(10).checked_pow(U256::from(9)))
+    }
+
+    fn _base_amount(&self,
+        _staked_amount: U256,
+        _share_price: U256
+    )->U256
+    {
+        let declaration_hash: Key = data::declaration_hash();
+        let parameters_string: String = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
+        let parameters_struct: parameters::ConstantParameters = serde_json::from_str(&parameters_string).unwrap();
+       
+        // TODO verify methods usage
+        _staked_amount.checked_mul(U256::from(parameters_struct.precision_rate)).checked_div(_share_price)
+    }
+
+    fn _referrer_shares(&mut self,
+        _staked_amount: U256,
+        _lock_days: U256,
+        _referrer: Key
+    )->U256
+    {
+        let helper_hash = data::helper_hash();
+        let globals_hash = data::globals_hash();
+        let declaration_hash: Key = data::declaration_hash();
+       
+        let parameters_string: String = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
+        let parameters_struct: parameters::ConstantParameters = serde_json::from_str(&parameters_string).unwrap();
+        let share_price: U256 = runtime::call_contract(self.convert_to_contract_hash(globals), "get_globals", runtime_args!{
+            "field"=>"share_price"
+        });
+        let critical_mass_referrer: bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "not_critical_mass_referrer", runtime_args!{
+            "referrer"=>_referrer
+        });
+        let constant: U256 = U256::from(10).checked_pow(U256::from(9));
+
+        // let ret: U256 = if critical_mass_referrer == false{
+        //     U256::from(0)
+        // }else{
+            // if _lock_days < parameters_struct.min_referral_days{
+            //     U256::from(0)
+            // }else{
+
+            // }
+        // }
+
+        // TODO verify return mechanism
+        critical_mass_referrer || if _lock_days < parameters_struct.min_referral_days{
+            U256::from(0)
+        }else{
+            self._shares_amount(_staked_amount, _lock_days, share_price, constant)
+        } 
+    }
+
+    fn _shares_amount(&mut self,
+        _staked_amount: U256,
+        _lock_days: U256,
+        _share_price: U256,
+        _extra_bonus: U256
+    )->U256
+    {
+        let bonus: U256 = self._get_bonus(_lock_days, _extra_bonus);
+        let base_amount = self._base_amount(_staked_amount, _share_price);
+        let constant: U256 = U256::from(10).checked_pow(U256::from(9));
+
+        base_amount.checked_mul(bonus).checked_div(constant)
+    }
+
+    fn _check_reward_amount( &mut self, _stake: Structs::Stake) ->U256 {
+        let stake_struct: Structs::Stake = serde_json::from_str(_stake).unwrap();
+
+        if stake_struct.is_active {
+            self._detect_reward(stake_struct)
+        }else{
+            stake_struct.reward_amount
+        }
+    }
+
+    function _detect_reward(&mut self, _stake: Structs::Stake) ->U256 {
+        let helper_hash = data::helper_hash();
+
+        // TODO verify _stake.unwrap_or_revert()
+        let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
+            "stake"=>serde_json::to_string(&_stake.unwrap());
+        });
+        
+        if stake_status{0} else {self._calculate_reward_amount(_stake)} 
+    }
+
+    fn _calculate_reward_amount(&mut self,
+        _stake: Structs::Stake
+    )->U256
+    {
+        let starting_day: U256: runtime::call_contract(self.convert_to_contract_hash(data::helper_hash()), "starting_day", runtime_args!{
+            "stake"=>serde_json::to_string(&_stake).unwrap();
+        });
+        let calculation_day: U256: runtime::call_contract(self.convert_to_contract_hash(data::helper_hash()), "calculation_day", runtime_args!{
+            "stake"=>serde_json::to_string(&_stake).unwrap();
+        });
+        self._loop_reward_amount(
+            _stake.stakes_shares,
+           starting_day,
+           calculation_day
+        );
+    }
+
+    fn _loop_reward_amount(&mut self,
+        _stake_shares: U256,
+        _start_day: U256,
+        _final_day: U256
+    )->U256
+    {
+        let constants_string: String = runtime::call_contract(self.convert_to_contract_hash(data::declaration_hash()), "get_declaration_constants", runtime_args!{        });
+        let constants_struct: parameters::ConstantParameters = serde_json::from_str(&constants_string)).unwrap();
+        let mut reward_amount: U256=U256::from(0);
+        let mut res: U256=U256::from(0);
+        
+        let snapshot_hash = data::snapshot_hash();
+        for _day in _start_day.as_u64().._final_day.as_u64(){
+            // get snapshot struct and convert to struct type
+            let snapshot_str: String = call_contract(self.convert_to_contract_hash(snapshot_hash), "get_struct_from_key", runtime_args!{
+                "struct_name" =>SNAPSHOT,
+                "key"=>_day
+            });
+            let snapshot_struct: Structs::Snapshot = serde_json.from_str(&snapshot_str).unwrap();
+
+
+            // calc stuff
+            res = (_stake_shares.checked_mul(parameters_struct.precision_rate)).checked_div(snapshot_struct.inflation_amount);
+            // add to reward_amount
+            reward_amount= reward_amount+res;
+        }
+        
+        reward_amount
+    }
     // fn create_stake(
     //     &mut self,
     //     staked_amount: U256,
