@@ -1,10 +1,13 @@
+use crate::alloc::string::ToString;
 use crate::config::*;
 use crate::data::{self};
-use alloc::{format, string::String};
+use alloc::collections::BTreeMap;
+use alloc::{format, string::String, vec, vec::Vec};
 use casper_contract::contract_api::runtime;
+use casper_contract::contract_api::storage;
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, ApiError, Key, RuntimeArgs, U128, U256,
+    runtime_args, ApiError, Key, RuntimeArgs, URef, U128, U256,
 };
 use contract_utils::{ContractContext, ContractStorage};
 
@@ -38,7 +41,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         data::LSnapshotsDict::init();
     }
 
-    fn _liquidity_guard_trigger(&self) {
+    fn _liquidity_guard_trigger(&mut self) {
         let pair_hash = data::pair_hash();
         let sbnb_hash = data::sbnb_hash();
         let bep20_hash = data::bep20_hash();
@@ -55,11 +58,18 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {},
         );
         // third return value is block_timestamp_last
-        let (reserve_a, reserve_b, _): (U128, U128, u64) = runtime::call_contract(
-            Self::_create_hash_from_key(pair_hash),
-            "get_reserves",
-            runtime_args! {},
-        );
+        let (reserve_a, reserve_b, block_timestamp_last): (U128, U128, u64) =
+            runtime::call_contract(
+                Self::_create_hash_from_key(pair_hash),
+                "get_reserves",
+                runtime_args! {},
+            );
+
+        self.emit(&SnapshotEvents::UniswapReserves {
+            reserve_a,
+            reserve_b,
+            block_timestamp_last,
+        });
 
         let token1: Key = runtime::call_contract(
             Self::_create_hash_from_key(pair_hash),
@@ -86,9 +96,13 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         if ratio > 60.into() && liquidity_guard_status == true {
             self._disable_liquidity_guard();
         }
+
+        self.emit(&SnapshotEvents::LiquidityGuardStatus {
+            liquidity_guard_status,
+        });
     }
 
-    fn _daily_snapshot_point(&self, _update_day: u64) {
+    fn _daily_snapshot_point(&mut self, _update_day: u64) {
         self._liquidity_guard_trigger();
 
         let globals_hash: Key = data::globals_hash();
@@ -274,7 +288,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         }
     }
 
-    fn _snapshot_trigger(&self) {
+    fn _snapshot_trigger(&mut self) {
         let timing_hash: Key = data::timing_hash();
         let current_wise_day: u64 = runtime::call_contract(
             Self::_create_hash_from_key(timing_hash),
@@ -283,8 +297,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         );
         self._daily_snapshot_point(current_wise_day);
     }
-    
-    fn _manual_daily_snapshot(&self) {
+    fn _manual_daily_snapshot(&mut self) {
         let timing_hash: Key = data::timing_hash();
         let current_wise_day: u64 = runtime::call_contract(
             ContractHash::from(timing_hash.into_hash().unwrap_or_default()),
@@ -295,7 +308,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         self._daily_snapshot_point(current_wise_day);
     }
 
-    fn _manual_daily_snapshot_point(&self, _update_day: u64) {
+    fn _manual_daily_snapshot_point(&mut self, _update_day: u64) {
         let timing_hash: Key = data::timing_hash();
         let current_wise_day: u64 = runtime::call_contract(
             ContractHash::from(timing_hash.into_hash().unwrap_or_default()),
@@ -467,5 +480,37 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
     fn _create_hash_from_key(key: Key) -> ContractHash {
         ContractHash::from(key.into_hash().unwrap_or_default())
+    }
+
+    fn emit(&mut self, snapshot_event: &SnapshotEvents) {
+        let mut events = Vec::new();
+        let package = data::package_hash();
+        match snapshot_event {
+            SnapshotEvents::UniswapReserves {
+                reserve_a,
+                reserve_b,
+                block_timestamp_last,
+            } => {
+                let mut event = BTreeMap::new();
+                event.insert("contract_package_hash", package.to_string());
+                event.insert("event_type", snapshot_event.type_name());
+                event.insert("reserve_a", reserve_a.to_string());
+                event.insert("reserve_b", reserve_b.to_string());
+                event.insert("block_timestamp_last", block_timestamp_last.to_string());
+                events.push(event);
+            }
+            SnapshotEvents::LiquidityGuardStatus {
+                liquidity_guard_status,
+            } => {
+                let mut event = BTreeMap::new();
+                event.insert("contract_package_hash", package.to_string());
+                event.insert("event_type", snapshot_event.type_name());
+                event.insert("liquidity_guard_status", liquidity_guard_status.to_string());
+                events.push(event);
+            }
+        };
+        for event in events {
+            let _: URef = storage::new_uref(event);
+        }
     }
 }

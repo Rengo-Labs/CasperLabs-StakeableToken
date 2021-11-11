@@ -1,5 +1,4 @@
 #[allow(non_snake_case)]
-
 pub mod Structs {
     use casper_types::U256;
     extern crate serde;
@@ -49,5 +48,36 @@ pub mod Structs {
     pub struct LSnapShot {
         pub total_shares: U256,
         pub inflation_amount: U256,
+    }
+}
+use crate::alloc::string::ToString;
+use alloc::{format, string::String};
+use casper_types::{runtime_args, Key, RuntimeArgs, U128, U256};
+use contract_utils::{ContractContext, ContractStorage};
+
+pub enum SnapshotEvents {
+    UniswapReserves {
+        reserve_a: U128,
+        reserve_b: U128,
+        block_timestamp_last: u64,
+    },
+    LiquidityGuardStatus {
+        liquidity_guard_status: bool,
+    },
+}
+
+impl SnapshotEvents {
+    pub fn type_name(&self) -> String {
+        match self {
+            SnapshotEvents::UniswapReserves {
+                reserve_a: _,
+                reserve_b: _,
+                block_timestamp_last: _,
+            } => "uniswap_reserves",
+            SnapshotEvents::LiquidityGuardStatus {
+                liquidity_guard_status: _,
+            } => "liquidity_guard_status",
+        }
+        .to_string()
     }
 }
