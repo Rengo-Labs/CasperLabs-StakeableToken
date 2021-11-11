@@ -189,6 +189,53 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         
         reward_amount
     }
+
+    fn _get_penalties(&mut self, _stake: Structs::Stake)->U256
+    {
+        let stake_string: String = serde_json::to_string(&_stake).unwrap();
+        let helper_hash = self.convert_to_contract_hash(data::helper_hash());
+        let days_left: U256= runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake"=>stake_string});
+        let locked_days: U256= runtime::call_contract(helper_hash, "get_locked_days", runtime_args!{"stake"=>stake_string});
+
+        _stake.staked_amount * (U256::from(100) + (U256::from(800) * (days_left - U256::from(1)) / locked_days)) / U256::from(1000)
+    }
+
+    fn _calculate_penalty_amount(&mut self,
+         _stake: Structs::ConstantParameters
+    )->U256
+    {
+        let stake_string: String = serde_json::to_string(&_stake.unwrap();
+        let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
+            "stake"=>String::From(stake_string));
+        });
+        let stake_maturity : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "is_stake_mature", runtime_args!{
+            "stake"=>String::From(stake_string));
+
+        return stake_status || stake_maturity{0}else {self._get_penalties(_stake)}
+    }
+
+    fn _store_penalty(&mut self,
+        _store_day: u64,
+        _penalty: U256
+    )
+    {
+        if _penalty > 0.into() {
+            let declaration_hash = self.convert_to_contract_hash(data::declaration_hash());
+            let mut total_penalty : U256 = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{
+                "struct_name"=>"total_penalties",
+                "key"=>U256::from(_store_day)
+            });
+
+            total_penalty = total_penalty+_penalty;
+
+            let () = runtime::call_contract(declaration_hash, "set_struct_from_key", runtime_args!{
+                "struct_name"=>"total_penalties",
+                "key"=>U256::from(_store_day),
+                "value"=>total_penalty
+            });
+        }
+    }
+
     // fn create_stake(
     //     &mut self,
     //     staked_amount: U256,
@@ -308,6 +355,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     //         "generate_stake_id",
     //         runtime_args! {"staker" => staker},
     //     );
+    // FIXME fix type annotation in declaration and provide a default construction method for struct Stakes
     //     let mut new_stake = structs::STAKES;
     //     // new_stake.lock_days = lock_days;
     //     // new_stake.start_day = _start_day;
@@ -341,9 +389,9 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     //         //     "add_critical_mass",
     //         //     runtime_args! {"referrer"=>new_stake.referrer,"dai_equivalend"=>new_stake._dai_equivalent},
     //         // );
+                // FIXME missing semicollon
     //         // new_stake.referrer_shares = referrer_shares(staked_amount, lock_days, referrer)
     //     }
-        
     //     return (new_stake, stake_id, _start_day);
     // }
 
