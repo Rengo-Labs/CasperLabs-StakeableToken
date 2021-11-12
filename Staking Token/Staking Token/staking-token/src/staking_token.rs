@@ -42,164 +42,244 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         }
     }
 
-        // fn create_stake(
-    //     &mut self,
-    //     staked_amount: U256,
-    //     lock_days: u64,
-    //     referrer: Key,
-    // ) -> (Vec<u32>, U256, Vec<u32>) {
+    fn create_stake(
+        &mut self,
+        staked_amount: U256,
+        lock_days: u64,
+        referrer: Key,
+    ) -> (Vec<u32>, U256, Vec<u32>) {
 
-    //     if self.get_caller() == referrer || Self::_is_contract(referrer) == true {
-    //         runtime::revert(ApiError::UnexpectedKeyVariant);
-    //     }
+        if self.get_caller() == referrer || Self::_is_contract(referrer) == true {
+            runtime::revert(ApiError::UnexpectedKeyVariant);
+        }
 
-    //     let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-    //     let constants: String = runtime::call_contract(
-    //         declaration_contract_hash,
-    //         "get_declaration_constants",
-    //         runtime_args! {},
-    //     );
-    //     let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
+        let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let constants: String = runtime::call_contract(
+            declaration_contract_hash,
+            "get_declaration_constants",
+            runtime_args! {},
+        );
+        let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
 
-    //     if lock_days < constants.min_lock_days.into() || lock_days > constants.max_lock_days.into() {
-    //         runtime::revert(ApiError::UnexpectedKeyVariant);
-    //     }
+        if lock_days < constants.min_lock_days.into() || lock_days > constants.max_lock_days.into() {
+            runtime::revert(ApiError::UnexpectedKeyVariant);
+        }
 
-    //     if (staked_amount < constants.min_stake_amount) {
-    //         runtime::revert(ApiError::UnexpectedKeyVariant);
-    //     } 
+        if (staked_amount < constants.min_stake_amount) {
+            runtime::revert(ApiError::UnexpectedKeyVariant);
+        } 
         
-    //     let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
-    //     let (new_stake, stake_id, start_day) = self._create_stake(self.get_caller(), staked_amount, lock_days, referrer);
-    //     if new_stake.referrer_shares > 0.into() {
+        let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
+        let (new_stake, stake_id, start_day) = self._create_stake(self.get_caller(), staked_amount, lock_days, referrer);
+        
+        if new_stake.referrer_shares > 0.into() {
             
-    //         let mut referrer_link = structs::ReferrerLink {
-    //             staker: self.get_caller(), 
-    //             stake_id: stake_id, 
-    //             reward_amount: 0.into(), 
-    //             processed_days: 0.into(), 
-    //             is_active: true
-    //         };
+            let referrer_link = structs::ReferrerLink {
+                staker: self.get_caller(), 
+                stake_id: stake_id.clone(), 
+                reward_amount: 0.into(), 
+                processed_days: 0.into(), 
+                is_active: true,
+            };
 
-    //         let referral_id: Vec<u32> = runtime::call_contract(
-    //             helper_contract_hash,
-    //             "generate_referral_id",
-    //             runtime_args! {"referrer" => referrer},
-    //         );
-    //         let struct_key: String = Self::_generate_key_for_dictionary(&referrer, &referral_id); 
-    //         //generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-    //         let () = runtime::call_contract(
-    //             declaration_contract_hash,
-    //             "set_struct_from_key",
-    //             runtime_args! {"key" => struct_key,"value"=>serde_json::to_string(&referrer_link).unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
-    //         );
+            let referral_id: Vec<u32> = runtime::call_contract(
+                helper_contract_hash,
+                "generate_referral_id",
+                runtime_args! {"referrer" => referrer},
+            );
+            let struct_key: String = Self::_generate_key_for_dictionary(&referrer, &referral_id); 
+            //generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
+            let () = runtime::call_contract(
+                declaration_contract_hash,
+                "set_struct_from_key",
+                runtime_args! {"key" => struct_key,"value"=>serde_json::to_string(&referrer_link).unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
+            );
 
-    //         let () = runtime::call_contract(
-    //             helper_contract_hash,
-    //             "increase_referral_count",
-    //             runtime_args! {"referrer" => referrer},
-    //         );
-    //         let referral_token_contract_hash = self.convert_to_contract_hash(data::get_referral_token_hash());
-    //         let () = runtime::call_contract(
-    //             referral_token_contract_hash,
-    //             "add_referrer_shares_to_end",
-    //             runtime_args! {"final_day" => new_stake.final_day,"shares" => new_stake.referrer_shares},
-    //         );
-    //     }
+            let () = runtime::call_contract(
+                helper_contract_hash,
+                "increase_referral_count",
+                runtime_args! {"referrer" => referrer},
+            );
+            let referral_token_contract_hash = self.convert_to_contract_hash(data::get_referral_token_hash());
+            let () = runtime::call_contract(
+                referral_token_contract_hash,
+                "add_referrer_shares_to_end",
+                runtime_args! {"final_day" => new_stake.final_day,"shares" => new_stake.referrer_shares},
+            );
+        }
 
-    //     let struct_key0: String = Self::_generate_key_for_dictionary(&self.get_caller(), &stake_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-    //     let () = runtime::call_contract(
-    //         declaration_contract_hash,
-    //         "set_struct_from_key",
-    //         runtime_args! {"key" => struct_key0,"value"=>serde_json::to_string(&new_stake).unwrap(), "struct_name" => structs::STAKES}, // convert structure to json string and save
-    //     );
+        let struct_key0: String = Self::_generate_key_for_dictionary(&self.get_caller(), &stake_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
+        let () = runtime::call_contract(
+            declaration_contract_hash,
+            "set_struct_from_key",
+            runtime_args! {"key" => struct_key0,"value"=>serde_json::to_string(&new_stake).unwrap(), "struct_name" => structs::STAKES}, // convert structure to json string and save
+        );
         
-    //     let () = runtime::call_contract(
-    //         helper_contract_hash,
-    //         "increase_stake_count",
-    //         runtime_args! {"staker" => self.get_caller()},
-    //     );
+        let () = runtime::call_contract(
+            helper_contract_hash,
+            "increase_stake_count",
+            runtime_args! {"staker" => self.get_caller()},
+        );
 
-    //     let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
-    //     let referral_id: Vec<u32> = runtime::call_contract(
-    //         helper_contract_hash,
-    //         "generate_referral_id",
-    //         runtime_args! {"referrer" => referrer},
-    //     );
+        let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
+        let referral_id: Vec<u32> = runtime::call_contract(
+            helper_contract_hash,
+            "generate_referral_id",
+            runtime_args! {"referrer" => referrer},
+        );
 
-    //     let global_contract_hash = self.convert_to_contract_hash(data::get_globals_hash());
-    //     let () = runtime::call_contract(
-    //         global_contract_hash,
-    //         "increase_globals",
-    //         runtime_args! {"staked" => new_stake.staked_amount,"shared" => new_stake.stakes_shares,"r_shareds" => new_stake.referrer_shares},
-    //     );
-    //     //self.add_scheduled_shared(new_stake.final_day, new_stake.stakes_shares)
+        let global_contract_hash = self.convert_to_contract_hash(data::get_globals_hash());
+        let () = runtime::call_contract(
+            global_contract_hash,
+            "increase_globals",
+            runtime_args! {"staked" => new_stake.staked_amount,"shared" => new_stake.stakes_shares,"r_shareds" => new_stake.referrer_shares},
+        );
+        //self.add_scheduled_shared(new_stake.final_day, new_stake.stakes_shares)
 
-    //     (stake_id, U256::from(start_day), referral_id)
-    // }
+        (stake_id, U256::from(start_day), referral_id)
+    }
 
-    // fn _create_stake(
-    //     &mut self,
-    //     staker: Key,
-    //     staked_amount: U256,
-    //     lock_days: u64,
-    //     referrer: Key,
-    // ) -> (structs::Stake, Vec<u32>, u64) {
-    //     let bep20_contract_hash = self.convert_to_contract_hash(data::get_bep20_hash());
-    //     let () = runtime::call_contract(
-    //         bep20_contract_hash,
-    //         "_burn",
-    //         runtime_args! {"account" => staker,"amount"=>staked_amount},
-    //     );
-    //     let timing_contract_hash = self.convert_to_contract_hash(data::get_timing_hash());
-    //     let _start_day: u64 =
-    //         runtime::call_contract(timing_contract_hash, "_next_wise_day", runtime_args! {});
-    //     let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
+    fn _create_stake(
+        &mut self,
+        staker: Key,
+        staked_amount: U256,
+        lock_days: u64,
+        referrer: Key,
+    ) -> (structs::Stake, Vec<u32>, u64) {
 
-    //     let stake_id: Vec<u32> = runtime::call_contract(
-    //         helper_contract_hash,
-    //         "generate_stake_id",
-    //         runtime_args! {"staker" => staker},
-    //     );
-    // FIXME fix type annotation in declaration and provide a default construction method for struct Stakes
-    //     let mut new_stake = structs::STAKES;
-    //     // new_stake.lock_days = lock_days;
-    //     // new_stake.start_day = _start_day;
-    //     // new_stake.final_day = _start_day + lock_days;
-    //     // new_stake.is_active = true;
-    //     // new_stake.staked_amount = staked_amount;
-    //     // new_stake.stakes_shares =
-    //     //     stake_shares(staked_amount, lock_days, referrer, globals.share_proce)
-    //     let referral_token_contract_hash =
-    //         self.convert_to_contract_hash(data::get_referral_token_hash());
+        // Get constants from the Declaration contracts, will be used later in this function
+        let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let constants: String = runtime::call_contract(
+            declaration_contract_hash,
+            "get_declaration_constants",
+            runtime_args! {},
+        );
+        let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
 
-    //     let busd_equivalent: U256 = runtime::call_contract(
-    //         referral_token_contract_hash,
-    //         "get_busd_equivalent",
-    //         runtime_args! {},
-    //     );
-    //     let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-    //     let constants: String = runtime::call_contract(
-    //         declaration_contract_hash,
-    //         "get_declaration_constants",
-    //         runtime_args! {},
-    //     );
-    //     let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
 
-    //     // new_stake.dai_equivalent =
-    //     //     (busd_equivalent * new_stake.staked_amount) / constants.yodas_per_wise;
-    //     if (self._non_zero_address(referrer)) {
-    //         // new_stake.referrer = referrer;
-    //         // let () = runtime::call_contract(
-    //         //     referral_token_contract_hash,
-    //         //     "add_critical_mass",
-    //         //     runtime_args! {"referrer"=>new_stake.referrer,"dai_equivalend"=>new_stake._dai_equivalent},
-    //         // );
-                // FIXME missing semicollon
-    //         // new_stake.referrer_shares = referrer_shares(staked_amount, lock_days, referrer)
-    //     }
-    //     return (new_stake, stake_id, _start_day);
-    // }
+        // _burn function
+        let bep20_contract_hash = self.convert_to_contract_hash(data::get_bep20_hash());
+        let () = runtime::call_contract(
+            bep20_contract_hash,
+            "_burn",
+            runtime_args! {"account" => staker,"amount"=>staked_amount},
+        );
+        let timing_contract_hash = self.convert_to_contract_hash(data::get_timing_hash());
+        let _start_day: u64 = runtime::call_contract(timing_contract_hash, "_next_wise_day", runtime_args! {});
+        let helper_contract_hash = self.convert_to_contract_hash(data::get_helper_hash());
+
+        let stake_id: Vec<u32> = runtime::call_contract(
+            helper_contract_hash,
+            "generate_stake_id",
+            runtime_args! {"staker" => staker},
+        );
+
+        //get share_price value from shares
+        let global = self.convert_to_contract_hash(data::get_globals_hash());
+        let share_price: U256 = runtime::call_contract(global, "get_globals", runtime_args!{"field" => String::from("share_price")});
+
+        let mut new_stake = structs::Stake{
+            stakes_shares: self._stakes_shares(staked_amount, U256::from(lock_days), referrer, share_price),
+            staked_amount: staked_amount,
+            reward_amount: 0.into(),
+            start_day: _start_day,
+            lock_days: lock_days,
+            final_day: _start_day + lock_days,
+            close_day: 0,
+            scrape_day: 0.into(),
+            dai_equivalent: 0.into(),
+            referrer_shares: 0.into(),
+            referrer: Key::Hash([0u8; 32]),
+            is_active: false
+        };
+
+        let referral_token_contract_hash = self.convert_to_contract_hash(data::get_referral_token_hash());
+        let busd_equivalent: U256 = runtime::call_contract(
+            referral_token_contract_hash,
+            "get_busd_equivalent",
+            runtime_args! {},
+        );
+
+        new_stake.dai_equivalent = (busd_equivalent.checked_mul(new_stake.staked_amount).unwrap_or_revert()).checked_div(constants.yodas_per_wise).unwrap_or_revert();
+
+        if (self._non_zero_address(referrer)) {
+            new_stake.referrer = referrer;
+            let () = runtime::call_contract(
+                referral_token_contract_hash,
+                "add_critical_mass",
+                runtime_args! {"referrer"=>new_stake.referrer,"dai_equivalent"=>new_stake.dai_equivalent},
+            );
+
+            new_stake.referrer_shares = self._referrer_shares(staked_amount, U256::from(lock_days), referrer);
+        }
+        return (new_stake, stake_id, _start_day);
+    }
+
+    fn end_stake(&mut self, _stake_id: Vec<u32>) -> U256
+    {
+        let globals_hash = self.convert_to_contract_hash(data::get_globals_hash());
+        let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+
+        let (ended_stake, penalty_amount): (structs::Stake, U256) = self._end_stake(self.get_caller(), _stake_id);
+ 
+        //decrease_globals
+        let _ : () = runtime::call_contract(
+                globals_hash, 
+                "decrease_globals", 
+                runtime_args! {"_staked"=>ended_stake.staked_amount,"_shares"=>ended_stake.stakes_shares,"_rshares"=>ended_stake.referrer_shares});
+        
+        self._remove_scheduled_shares(U256::from(ended_stake.final_day), ended_stake.stakes_shares);
+
+
+        1.into()
+    }
+
+    fn _end_stake(&mut self, _staker: Key, _stake_id: Vec<u32>) -> (structs::Stake, U256)
+    {
+        let mut stake = structs::Stake{
+            stakes_shares: 0.into(),
+            staked_amount: 0.into(),
+            reward_amount: 0.into(),
+            start_day: 0,
+            lock_days: 0,
+            final_day: 0,
+            close_day: 0,
+            scrape_day: 0.into(),
+            dai_equivalent: 0.into(),
+            referrer_shares: 0.into(),
+            referrer: Key::Hash([0u8; 32]),
+            is_active: false
+        };
+
+        (stake, 0.into())
+    }
+
+    fn _remove_scheduled_shares(&self, _final_day: U256, _shares: U256)
+    {
+        let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
+        let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let timing_hash = self.convert_to_contract_hash(data::get_timing_hash());
+        let snapshot_hash = self.convert_to_contract_hash(data::get_snapshot_hash());
+
+        let _not_past: bool = runtime::call_contract(helper_hash, "not_past", runtime_args!{"day" => _final_day});
+        let _scheduled_to_end: U256 = runtime::call_contract(declaration_hash, "get_scheduled_to_end", runtime_args!{"key" => _final_day});
+
+        if _not_past {
+            let updated_scheduled_to_end: U256 = if _scheduled_to_end > _shares {_scheduled_to_end.checked_sub(_shares).unwrap_or_revert()} else {0.into()};
+            let _:() = runtime::call_contract(declaration_hash, "set_scheduled_to_end", runtime_args!{"key" => _final_day, "value" => updated_scheduled_to_end});
+        }
+        else {
+            let day: u64 = runtime::call_contract(timing_hash, "_previous_wise_day", runtime_args!{});
+            let day: U256 = U256::from(day);
+            let snapshot_str: String = runtime::call_contract(snapshot_hash, "get_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts")});
+            let mut snapshot_struct: structs::Snapshot = serde_json::from_str(&snapshot_str).unwrap();
+
+            snapshot_struct.scheduled_to_end = if snapshot_struct.scheduled_to_end >_shares {snapshot_struct.scheduled_to_end.checked_sub(_shares).unwrap_or_revert()} else {0.into()};
+            
+            let snapshot_str: String = serde_json::to_string(&snapshot_struct).unwrap();
+            let _:() = runtime::call_contract(snapshot_hash, "set_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts"), "value" => snapshot_str});
+        }
+    }
 
     fn _share_price_update(&mut self,
         _staked_amount: U256,
@@ -301,12 +381,12 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             "key"=>Self::_generate_key_for_dictionary(&_staker, &_stake_id)
         });
         let is_mature : bool = runtime::call_contract(helper_hash, "is_mature_stake", runtime_args!{
-            "stake"=>stake
+            "stake"=>stake.clone()
         });
 
         let mut stake_struct:structs::Stake = serde_json::from_str(&stake).unwrap();
-        stake_struct.reward_amount = self._check_reward_amount(stake_struct);
-        let penalty_amount: U256 = self._calculate_penalty_amount(stake_struct);
+        stake_struct.reward_amount = self._check_reward_amount(&stake_struct);
+        let penalty_amount: U256 = self._calculate_penalty_amount(&stake_struct);
         
         stake = serde_json::to_string(&stake_struct).unwrap();
 
@@ -414,15 +494,15 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
 
     
 
-    fn _check_reward_amount( &mut self, _stake: structs::Stake) ->U256 {
+    fn _check_reward_amount(&self, _stake: &structs::Stake) ->U256 {
         if _stake.is_active {
-            self._detect_reward(_stake)
+            self._detect_reward(&_stake)
         }else{
             _stake.reward_amount
         }
     }
 
-    fn _detect_reward(&mut self, _stake: structs::Stake) ->U256 {
+    fn _detect_reward(&self, _stake: &structs::Stake) ->U256 {
         let helper_hash = data::get_helper_hash();
 
         let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
@@ -455,36 +535,36 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     }
 
     fn _calculate_penalty_amount(&mut self,
-        _stake: structs::Stake
+        _stake: &structs::Stake
    )->U256
    {
        let helper_hash = data::get_helper_hash();
        let stake_string: String = serde_json::to_string(&_stake).unwrap();
        let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
-           "stake"=>String::from(stake_string)
+           "stake"=>String::from(stake_string.clone())
        });
        let stake_maturity : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "is_stake_mature", runtime_args!{
-           "stake"=>String::from(stake_string)});
+           "stake"=>String::from(stake_string.clone())});
 
        if stake_status || stake_maturity{
            U256::from(0)
        }else {
-           self._get_penalties(_stake)
+           self._get_penalties(&_stake)
        }
    }
 
-   fn _get_penalties(&mut self, _stake: structs::Stake)->U256
+   fn _get_penalties(&mut self, _stake: &structs::Stake)->U256
    {
        let stake_string: String = serde_json::to_string(&_stake).unwrap();
        let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
-       let days_left: U256= runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake"=>stake_string});
-       let locked_days: U256= runtime::call_contract(helper_hash, "get_locked_days", runtime_args!{"stake"=>stake_string});
+       let days_left: U256= runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake"=>stake_string.clone()});
+       let locked_days: U256= runtime::call_contract(helper_hash, "get_locked_days", runtime_args!{"stake"=>stake_string.clone()});
 
        _stake.staked_amount * (U256::from(100) + (U256::from(800) * (days_left - U256::from(1)) / locked_days)) / U256::from(1000)
    }
 
-    fn _calculate_reward_amount(&mut self,
-        _stake: structs::Stake
+    fn _calculate_reward_amount(&self,
+        _stake: &structs::Stake
     )->U256
     {
         let starting_day: U256= runtime::call_contract(self.convert_to_contract_hash(data::get_helper_hash()), "starting_day", runtime_args!{
@@ -501,7 +581,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         )
     }
 
-    fn _loop_reward_amount(&mut self,
+    fn _loop_reward_amount(&self,
         _stake_shares: U256,
         _start_day: U256,
         _final_day: U256
@@ -557,14 +637,14 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
 
     //     result
     // }
-    fn convert_to_contract_hash(&mut self, contract_hash: Key) -> ContractHash {
+    fn convert_to_contract_hash(&self, contract_hash: Key) -> ContractHash {
         let contract_hash_add_array = match contract_hash {
             Key::Hash(package) => package,
             _ => runtime::revert(ApiError::UnexpectedKeyVariant),
         };
         return ContractHash::new(contract_hash_add_array);
     }
-    fn _non_zero_address(&mut self, key: Key) -> bool {
+    fn _non_zero_address(&self, key: Key) -> bool {
         let zero_addr: Key = Key::Hash([0u8; 32]);
         return key != zero_addr;
     }

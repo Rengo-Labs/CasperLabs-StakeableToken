@@ -169,10 +169,22 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "get_struct_from_key",
         vec![
-            Parameter::new("struct_name", CLType::String),
             Parameter::new("key", CLType::U256),
+            Parameter::new("struct_name", CLType::String),
         ],
         CLType::String,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_struct_from_key",
+        vec![
+            Parameter::new("key", CLType::U256),
+            Parameter::new("struct_name", CLType::String),
+            Parameter::new("value", CLType::String),
+        ],
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));

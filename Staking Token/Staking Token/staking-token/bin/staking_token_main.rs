@@ -3,7 +3,7 @@
 
 extern crate alloc;
 
-use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec, string::String};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -67,7 +67,7 @@ fn constructor() {
         declaration_hash,
         timing_hash,
         helper_hash,
-        globals_hash
+        globals_hash,
         bep20_hash,
         snapshot_hash,
         referral_token_hash,
@@ -88,6 +88,15 @@ fn create_stake() {
     let referrer: Key = runtime::get_named_arg("referrer");
     StakingToken::default().create_stake(staked_amount, lock_days, referrer);
 }
+
+#[no_mangle]
+fn end_stake() {
+    let stake_id : Vec<u32>= runtime::get_named_arg("stake_id");
+
+    let ret : U256 =  StakingToken::default().end_stake(stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 #[no_mangle]
 fn check_mature_stake(){
     let staker = runtime::get_named_arg("staker");
@@ -102,7 +111,7 @@ fn check_stake_by_id(){
     let staker = runtime::get_named_arg("staker");
     let stake_id : Vec<u32>= runtime::get_named_arg("stake_id");
 
-    (stake, penalty_amount, is_mature) : (String, U256, bool)= StakingToken::default().check_stake_by_id(staker, stake_id);
+    let (stake, penalty_amount, is_mature) : (String, U256, bool)= StakingToken::default().check_stake_by_id(staker, stake_id);
     runtime::ret(CLValue::from_t((stake, penalty_amount, is_mature)).unwrap_or_revert());
 }
 
@@ -125,22 +134,33 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_bulk",
-        vec![
-            Parameter::new("staked_amount", Key::cl_type()),
-            Parameter::new("lock_days", Key::cl_type()),
-            Parameter::new("referrer", ContractHash::cl_type()),
-        ],
-        <()>::cl_type(),
-        EntryPointAccess::Groups(vec![Group::new("constructor")]),
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
         "create_stake",
         vec![
             Parameter::new("staked_amount", U256::cl_type()),
             Parameter::new("lock_days", u64::cl_type()),
             Parameter::new("referrer", Key::cl_type()),
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_stake",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(u32::cl_type()))),
+        ],
+        CLType::U256,
+        EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+    
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_bulk",
+        vec![
+            Parameter::new("staked_amount", Key::cl_type()),
+            Parameter::new("lock_days", Key::cl_type()),
+            Parameter::new("referrer", ContractHash::cl_type()),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -164,7 +184,7 @@ fn get_entry_points() -> EntryPoints {
         Parameter::new("staker", CLType::Key),
         Parameter::new("stake_id", CLType::List(Box::new(u32::cl_type())))
     ],
-    CLType::Tuple2([Box::new(CLType::String), Box::new(CLType::Bool), Box::new(CLType::U256)]),
+    CLType::Tuple3([Box::new(CLType::String), Box::new(CLType::Bool), Box::new(CLType::U256)]),
     EntryPointAccess::Public,
     EntryPointType::Contract 
     ));

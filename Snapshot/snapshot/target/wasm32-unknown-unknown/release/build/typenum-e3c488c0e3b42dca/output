@@ -1,2 +1,2 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/eldarito/repos/CasperLabs-Wise-WiseToken/Snapshot/snapshot/target/wasm32-unknown-unknown/release/build/typenum-e3c488c0e3b42dca/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/eldarito/repos/CasperLabs-Wise-WiseToken/Snapshot/snapshot/target/wasm32-unknown-unknown/release/build/typenum-e3c488c0e3b42dca/out/op.rs
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/hussain/Desktop/Scytalelabs/Tasks/WiseToken/WiseToken/Snapshot/snapshot/target/wasm32-unknown-unknown/release/build/typenum-e3c488c0e3b42dca/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/home/hussain/Desktop/Scytalelabs/Tasks/WiseToken/WiseToken/Snapshot/snapshot/target/wasm32-unknown-unknown/release/build/typenum-e3c488c0e3b42dca/out/op.rs
