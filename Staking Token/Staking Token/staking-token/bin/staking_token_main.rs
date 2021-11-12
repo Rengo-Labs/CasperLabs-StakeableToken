@@ -88,6 +88,23 @@ fn create_stake() {
     let referrer: Key = runtime::get_named_arg("referrer");
     StakingToken::default().create_stake(staked_amount, lock_days, referrer);
 }
+#[no_mangle]
+fn check_mature_stake(){
+    let staker = runtime::get_named_arg("staker");
+    let stake_id : Vec<u32>= runtime::get_named_arg("stake_id");
+
+    let ret : bool =  StakingToken::default().check_mature_stake(staker, stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn check_stake_by_id(){
+    let staker = runtime::get_named_arg("staker");
+    let stake_id : Vec<u32>= runtime::get_named_arg("stake_id");
+
+    (stake, penalty_amount, is_mature) : (String, U256, bool)= StakingToken::default().check_stake_by_id(staker, stake_id);
+    runtime::ret(CLValue::from_t((stake, penalty_amount, is_mature)).unwrap_or_revert());
+}
 
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
@@ -130,6 +147,29 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_mature_stake",
+    vec![
+        Parameter::new("staker", CLType::Key),
+        Parameter::new("stake_id", CLType::List(Box::new(u32::cl_type())))
+    ],
+    CLType::Bool,
+    EntryPointAccess::Public,
+    EntryPointType::Contract 
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_stake_by_id",
+    vec![
+        Parameter::new("staker", CLType::Key),
+        Parameter::new("stake_id", CLType::List(Box::new(u32::cl_type())))
+    ],
+    CLType::Tuple2([Box::new(CLType::String), Box::new(CLType::Bool), Box::new(CLType::U256)]),
+    EntryPointAccess::Public,
+    EntryPointType::Contract 
+    ));
+
+    
     entry_points
 }
 
