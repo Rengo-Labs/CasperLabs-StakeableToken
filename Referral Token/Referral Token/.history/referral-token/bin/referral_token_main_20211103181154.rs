@@ -199,7 +199,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("referrer", Key::cl_type()),
             Parameter::new("dai_equivalent", U256::cl_type()),
-            Parameter::new("start_day", U256::cl_type()),
+            Parameter::new("satrt_day", U256::cl_type()),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),

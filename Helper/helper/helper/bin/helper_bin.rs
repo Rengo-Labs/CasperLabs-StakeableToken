@@ -78,6 +78,15 @@ fn is_mature_stake()
 }
 
 #[no_mangle]
+fn days_left()
+{
+    let stake: String = runtime::get_named_arg("stake");
+
+    let ret: U256 = HelperStruct::default().days_left(stake);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+} 
+
+#[no_mangle]
 fn not_critical_mass_referrer()
 {
     let referrer: Key = runtime::get_named_arg("referrer");
@@ -125,7 +134,6 @@ fn stakes_pagination()
 
 }
 
-
 #[no_mangle]
 fn referrals_pagination()
 {
@@ -134,6 +142,15 @@ fn referrals_pagination()
     let length: U256 = runtime::get_named_arg("length");
 
     let ret: Vec<Vec<u32>> = HelperStruct::default().referrals_pagination(referrer, offset, length);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn starting_day()
+{
+    let stake: String = runtime::get_named_arg("stake");
+
+    let ret: U256= HelperStruct::default().starting_day(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -170,6 +187,16 @@ fn get_entry_points() -> EntryPoints
         vec![
             Parameter::new("start_date", CLType::U256),
             Parameter::new("end_date", CLType::U256),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "days_left",
+        vec![
+            Parameter::new("stake", CLType::String),
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -225,6 +252,17 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "starting_day",
+        vec![
+            Parameter::new("stake", CLType::String),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
 
     entry_points.add_entry_point(EntryPoint::new(
         "stakes_pagination",

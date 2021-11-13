@@ -197,6 +197,12 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_days_diff(start_date, end_date)
     }
 
+    fn days_left(&self, stake: String) -> U256
+    {
+        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        Self::_days_left(stake)
+    }
+
     fn is_mature_stake(&self, stake: String) -> bool      // stake struct
     {
         let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
@@ -224,6 +230,11 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_not_future(day)
     }
 
+    fn starting_day(&self, stake: String) -> U256
+    {
+        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        Self::_starting_day(stake)
+    }
 
     // ************************ HELPER METHODS ***************************
 

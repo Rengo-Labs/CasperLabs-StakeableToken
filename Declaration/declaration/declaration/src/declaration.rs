@@ -133,6 +133,18 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         scheduled_to_end.get(&key)
     }
 
+    fn set_scrapes(&self, key: String, value: U256)
+    {
+        let scrapes = data::Scrapes::instance();
+        scrapes.set(&key, value);
+    }
+
+    fn get_scrapes(&self, key: String) -> U256
+    {
+        let scrapes = data::Scrapes::instance();
+        scrapes.get(&key)
+    }
+
     fn set_inflation_rate(&self, value: U256)
     {
         data::set_inflation_rate(value);
@@ -214,7 +226,6 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
     }
 
     
-
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
     fn get_struct_from_key(&self, key: String, struct_name: String) -> String
     {

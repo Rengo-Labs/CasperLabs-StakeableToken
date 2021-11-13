@@ -63,6 +63,8 @@ pub mod parameters
 
 pub mod structs
 {
+    extern crate alloc;
+    use alloc::{vec, vec::Vec};
     use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}, CLTyped, CLType};
     extern crate serde;
     use serde::{Serialize, Deserialize};

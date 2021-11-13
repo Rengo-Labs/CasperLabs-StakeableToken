@@ -219,8 +219,9 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     {
         let globals_hash = self.convert_to_contract_hash(data::get_globals_hash());
         let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let referral_token_hash = self.convert_to_contract_hash(data::get_referral_token_hash());
 
-        let (ended_stake, penalty_amount): (structs::Stake, U256) = self._end_stake(self.get_caller(), _stake_id);
+        let (ended_stake, penalty_amount): (structs::Stake, U256) = self._end_stake(self.get_caller(), _stake_id.clone());
  
         //decrease_globals
         let _ : () = runtime::call_contract(
@@ -228,30 +229,183 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
                 "decrease_globals", 
                 runtime_args! {"_staked"=>ended_stake.staked_amount,"_shares"=>ended_stake.stakes_shares,"_rshares"=>ended_stake.referrer_shares});
         
+        // removed_scheduled_shares
         self._remove_scheduled_shares(U256::from(ended_stake.final_day), ended_stake.stakes_shares);
+        
+        // remove_referrer_shares_to_end
+        let _:() = runtime::call_contract(
+                referral_token_hash,
+                "remove_referrer_shares_to_end",
+                runtime_args! {"final_day" => ended_stake.final_day, "shares" => ended_stake.referrer_shares},
+        );
 
+        // remove_critical_mass
+        let _:() = runtime::call_contract(
+                referral_token_hash,
+                "remove_critical_mass",
+                runtime_args! {"referrer" => ended_stake.referrer, "dai_equivalent" => ended_stake.dai_equivalent, "start_day" => ended_stake.start_day},
+        );
 
-        1.into()
+        // _store_penalty
+        self._store_penalty(ended_stake.close_day, penalty_amount);
+
+        // _share_price_update
+        let _staked_amount = if (ended_stake.staked_amount > penalty_amount) { ended_stake.staked_amount.checked_sub(penalty_amount).unwrap_or_revert()} else {0.into()};
+        
+        let scrape_key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
+        let _scrapes: U256 = runtime::call_contract(declaration_hash, "get_scrapes", runtime_args!{"key" => scrape_key});
+
+        self._share_price_update(
+            _staked_amount,
+            ended_stake.reward_amount.checked_add(_scrapes).unwrap_or_revert(),
+            ended_stake.referrer,
+            U256::from(ended_stake.lock_days),
+            ended_stake.stakes_shares
+        );
+
+        /*
+        emit StakeEnd(
+            _stakeID,
+            msg.sender,
+            endedStake.referrer,
+            endedStake.stakedAmount,
+            endedStake.stakesShares,
+            endedStake.referrerShares,
+            endedStake.rewardAmount,
+            endedStake.closeDay,
+            penaltyAmount
+        );
+        */
+
+        return ended_stake.reward_amount;
     }
 
-    fn _end_stake(&mut self, _staker: Key, _stake_id: Vec<u32>) -> (structs::Stake, U256)
+    fn _end_stake(&mut self, _staker: Key,  _stake_id: Vec<u32>) -> (structs::Stake, U256)
     {
-        let mut stake = structs::Stake{
-            stakes_shares: 0.into(),
-            staked_amount: 0.into(),
-            reward_amount: 0.into(),
-            start_day: 0,
-            lock_days: 0,
-            final_day: 0,
-            close_day: 0,
-            scrape_day: 0.into(),
-            dai_equivalent: 0.into(),
-            referrer_shares: 0.into(),
-            referrer: Key::Hash([0u8; 32]),
-            is_active: false
+        let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let timing_hash = self.convert_to_contract_hash(data::get_timing_hash());
+        let bep_20_hash = self.convert_to_contract_hash(data::get_bep20_hash());
+
+        let key: String = Self::_generate_key_for_dictionary(&_staker, &_stake_id);
+        let stake_string: String = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
+        let mut stake: structs::Stake = serde_json::from_str(&stake_string).unwrap();
+
+        if stake.is_active == false {
+            runtime::revert(ApiError::InvalidArgument)
+        }
+        let current_wise_day: u64 = runtime::call_contract(timing_hash, "_current_wise_day", runtime_args!{});
+        stake.close_day = current_wise_day;
+        stake.reward_amount = self._calculate_reward_amount(&stake);
+        let penalty: U256 = self._calculate_penalty_amount(&stake);
+        stake.is_active = false;
+
+        // mint
+        let _ : () = runtime::call_contract(bep_20_hash, "_mint", runtime_args!{});                 // need to fill the parameters
+        let _ : () = runtime::call_contract(bep_20_hash, "_mint", runtime_args!{});                 // need to fill the parameters
+
+        (stake, penalty)
+    }
+
+    fn scrape_interest(&mut self, _stake_id: Vec<u32>, _scrape_days: u64) -> (U256, U256, U256, U256, U256)
+    {
+        let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
+
+        let globals_hash = self.convert_to_contract_hash(data::get_globals_hash());
+        let referral_token_hash = self.convert_to_contract_hash(data::get_referral_token_hash());
+        let bep_20_hash = self.convert_to_contract_hash(data::get_bep20_hash());
+
+        let key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
+        let stake_str: String = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
+        let mut stake: structs::Stake = serde_json::from_str(&stake_str).unwrap();
+
+        if stake.is_active == false {
+            runtime::revert(ApiError::InvalidArgument)
+        }
+
+        let starting_day: U256 = runtime::call_contract(helper_hash, "starting_day", runtime_args!{"stake" => String::from(stake_str.clone())});
+        let calculation_day: U256 = runtime::call_contract(helper_hash, "calculation_day", runtime_args!{"stake" => String::from(stake_str.clone())});
+
+
+        let mut scrape_day: U256 = if _scrape_days > 0 {
+            starting_day.checked_add(U256::from(_scrape_days)).unwrap_or_revert()
+        } 
+        else {
+            calculation_day
         };
 
-        (stake, 0.into())
+        scrape_day = if scrape_day > stake.final_day.into() { calculation_day } else { scrape_day };
+        let scrape_amount: U256 = self._loop_reward_amount(stake.stakes_shares, starting_day.clone(), scrape_day.clone());
+
+        let mut referrer_penalty: U256 = 0.into();
+        let mut remaining_days: U256 = 0.into();
+        let mut stakers_penalty: U256 = 0.into();
+        
+        let is_mature_stake: bool = runtime::call_contract(helper_hash, "is_mature_stake", runtime_args!{"stake" => String::from(stake_str.clone())});
+        if is_mature_stake == false 
+        {
+            remaining_days = runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake" => String::from(stake_str.clone())});
+            
+            let share_price: U256 = runtime::call_contract(globals_hash, "get_globals", runtime_args!{"field" => String::from(structs::SHARE_PRICE)});
+            stakers_penalty = self._stakes_shares(scrape_amount, remaining_days, self.get_caller(), share_price.clone());
+            stake.stakes_shares = stake.stakes_shares.checked_sub(stakers_penalty).unwrap_or_revert();
+
+            self._remove_scheduled_shares(U256::from(stake.final_day), stakers_penalty);
+
+            if stake.referrer_shares > 0.into() {
+                let zero_addr: Key = Key::Hash([0u8; 32]);
+                referrer_penalty =  self._stakes_shares(scrape_amount, remaining_days, zero_addr, share_price);
+
+                stake.referrer_shares = stake.referrer_shares.checked_sub(referrer_penalty).unwrap_or_revert();
+
+                // remove_referrer_shares_to_end
+                let _:() = runtime::call_contract(
+                    referral_token_hash,
+                    "remove_referrer_shares_to_end",
+                    runtime_args! {"final_day" => stake.final_day, "shares" => referrer_penalty},
+                );
+            }
+            
+            //decrease_globals
+            let _ : () = runtime::call_contract(
+                globals_hash, 
+                "decrease_globals", 
+                runtime_args! {"_staked"=>U256::from(0),"_shares"=>stakers_penalty,"_rshares"=>referrer_penalty}
+            );
+            self._share_price_update(stake.staked_amount, scrape_amount, stake.referrer, U256::from(stake.lock_days), stake.stakes_shares);
+        }
+        else
+        {
+            let scrape_key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
+            let mut _scrapes: U256 = runtime::call_contract(declaration_hash, "get_scrapes", runtime_args!{"key" => scrape_key.clone()});
+            _scrapes = _scrapes.checked_add(scrape_amount).unwrap_or_revert();
+
+            let _: () = runtime::call_contract(declaration_hash, "set_scrapes", runtime_args!{"key" => scrape_key.clone(), "value" => _scrapes});
+        
+            self._share_price_update(stake.staked_amount, _scrapes, stake.referrer, U256::from(stake.lock_days), stake.stakes_shares);
+        }
+
+        stake.scrape_day = scrape_day;
+
+        let key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
+        let mut stake_str: String = serde_json::to_string(&stake).unwrap();
+        let _: () = runtime::call_contract(declaration_hash, "set_struct_from_key", runtime_args!{"key" => key, "value" => stake_str, "struct_name" => String::from(structs::STAKES)});
+
+        let _ : () = runtime::call_contract(bep_20_hash, "_mint", runtime_args!{});         // need to fill the parameters
+
+        /*
+            emit InterestScraped(
+            _stakeID,
+            msg.sender,
+            scrapeAmount,
+            scrapeDay,
+            stakersPenalty,
+            referrerPenalty,
+            _currentWiseDay()
+        );
+        */
+
+        (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty)
     }
 
     fn _remove_scheduled_shares(&self, _final_day: U256, _shares: U256)

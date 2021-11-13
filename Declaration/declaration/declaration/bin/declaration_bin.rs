@@ -304,6 +304,24 @@ fn set_launchtime()
     DeclarationStruct::default().set_launchtime(value);
 }
 
+#[no_mangle]
+fn set_scrapes()
+{
+    let key: String = runtime::get_named_arg("key");
+    let value: U256 = runtime::get_named_arg("value");
+
+    DeclarationStruct::default().set_scrapes(key, value);
+}
+
+#[no_mangle]
+fn get_scrapes()
+{
+    let key: String = runtime::get_named_arg("key");
+
+    let ret: U256 = DeclarationStruct::default().get_scrapes(key);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 
 fn get_entry_points() -> EntryPoints 
 {
@@ -630,6 +648,27 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("value", CLType::U256)
         ],
         <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_scrapes",
+        vec![
+            Parameter::new("key", CLType::String),
+            Parameter::new("value", CLType::U256),
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_scrapes",
+        vec![
+            Parameter::new("key", CLType::String)
+        ],
+        CLType::U256,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
