@@ -408,6 +408,14 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty)
     }
 
+    fn _add_scheduled_shares(&self, _final_day: U256, _shares: U256)
+    {
+        let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
+        let mut _scheduled_to_end: U256 = runtime::call_contract(declaration_hash, "get_scheduled_to_end", runtime_args!{"key" => _final_day});
+        _scheduled_to_end = _scheduled_to_end.checked_add(_shares).unwrap_or_revert();
+        let _ : () = runtime::call_contract(declaration_hash, "set_scheduled_to_end", runtime_args!{"key" => _final_day, "value" => _scheduled_to_end});
+    }
+
     fn _remove_scheduled_shares(&self, _final_day: U256, _shares: U256)
     {
         let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
