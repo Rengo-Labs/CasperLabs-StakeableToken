@@ -5,6 +5,9 @@ use casper_types::{
     runtime_args, Key, RuntimeArgs, U256,
 };
 use contract_utils::{ContractContext, ContractStorage};
+extern crate alloc;
+use crate::config::*;
+use alloc::{string::String, vec::Vec};
 
 pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
     // Will be called by constructor
@@ -16,7 +19,8 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         sbnb: Key,
         wbnb: Key,
         busd: Key,
-        router: Key
+        router: Key,
+        declaration: Key,
     ) {
         data::set_package_hash(package_hash);
         data::set_self_hash(contract_hash);
@@ -26,6 +30,8 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_wise_hash(wise);
         data::set_router_hash(router);
         data::set_decimals(U256::from(18));
+        data::set_path(wise, sbnb, wbnb, busd);
+        data::set_declaration_hash(declaration);
     }
 
     fn update_busd_equivalent(&self) {
@@ -37,8 +43,28 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         self._get_busd_equivalent()
     }
     fn _get_busd_equivalent(&self) -> U256 {
-        // remove this later
-        U256::from(0)
+        let declaration_constants_string: String = runtime::call_contract(
+            Self::_create_hash_from_key(data::declaration_hash()),
+            "get_declaration_constants",
+            runtime_args! {},
+        );
+        let declaration_constants: parameters::ConstantParameters =
+            serde_json::from_str(&declaration_constants_string).unwrap();
+        let path: Vec<u32> = data::get_path();
+        let results: Vec<u32> = runtime::call_contract(
+            Self::_create_hash_from_key(data::router_hash()),
+            "get_amounts_out",
+            runtime_args! {
+                "yodas_per_wise"=>U256::from(declaration_constants.yodas_per_wise),
+                "path"=>Vec::clone(&path)
+            },
+        );
+
+        if results.len() > 0 {
+            U256::from(results[3])
+        } else {
+            data::latest_busd_equivalent()
+        }
     }
     // ============== Helper functions ==============================//
 

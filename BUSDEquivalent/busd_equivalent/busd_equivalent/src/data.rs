@@ -1,6 +1,8 @@
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
+extern crate alloc;
+use alloc::vec::Vec;
 
 pub const SELF_HASH: &str = "self_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
@@ -10,6 +12,7 @@ pub const SBNB_HASH: &str = "sbnb_hash";
 pub const WISE_HASH: &str = "wise_hash";
 pub const DECIMALS: &str = "decimals";
 pub const YODAS_PER_WISE: &str = "yodas_per_wise";
+pub const DECLARATION_HASH: &str = "declaration_hash";
 pub const ROUTER_HASH: &str = "router_hash";
 pub const PATH: &str = "path";
 pub const LATEST_BUSD_EQUIVALENT: &str = "latest_busd_equivalent";
@@ -27,6 +30,13 @@ pub fn package_hash() -> ContractPackageHash {
 }
 pub fn set_package_hash(hash: ContractPackageHash) {
     set_key(PACKAGE_HASH, hash);
+}
+
+pub fn declaration_hash() -> Key {
+    get_key(DECLARATION_HASH).unwrap_or_revert()
+}
+pub fn set_declaration_hash(hash: Key) {
+    set_key(DECLARATION_HASH, hash);
 }
 
 pub fn busd_hash() -> Key {
@@ -76,11 +86,20 @@ pub fn set_latest_busd_equivalent(latest_busd_equivalent: U256) {
     set_key(LATEST_BUSD_EQUIVALENT, latest_busd_equivalent);
 }
 
-pub fn router_hash() -> U256 {
+pub fn router_hash() -> Key {
     get_key(ROUTER_HASH).unwrap_or_revert()
 }
 pub fn set_router_hash(hash: Key) {
     set_key(ROUTER_HASH, hash);
+}
+
+pub fn set_path(key1: Key, key2: Key, key3: Key, key4: Key){
+    let _path = Vec::from([key1, key2, key3, key4]);
+    set_key(PATH, _path);
+}
+
+pub fn get_path()->Vec<u32>{
+    get_key(PATH).unwrap_or_revert()
 }
 
 pub struct Constants {

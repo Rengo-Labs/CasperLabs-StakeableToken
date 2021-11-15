@@ -36,6 +36,7 @@ impl BUSDEquivalentStruct {
         wbnb: Key,
         busd: Key,
         router: Key,
+        declaration: Key
     ) {
         BUSDEquivalent::init(
             self,
@@ -46,6 +47,7 @@ impl BUSDEquivalentStruct {
             wbnb,
             busd,
             router,
+            declaration
         );
     }
 }
@@ -71,6 +73,8 @@ fn constructor() {
     let wbnb: Key = runtime::get_named_arg("wbnb");
     let busd: Key = runtime::get_named_arg("busd");
     let router: Key = runtime::get_named_arg("router");
+    let declaration: Key = runtime::get_named_arg("declaration");
+
     BUSDEquivalentStruct::default().constructor(
         contract_hash,
         package_hash,
@@ -79,6 +83,7 @@ fn constructor() {
         wbnb,
         busd,
         router,
+        declaration
     );
 }
 
@@ -94,6 +99,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("wbnb", Key::cl_type()),
             Parameter::new("busd", Key::cl_type()),
             Parameter::new("router", Key::cl_type()),
+            Parameter::new("declaration", Key::cl_type())
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -123,6 +129,7 @@ pub extern "C" fn call() {
     let wbnb: Key = runtime::get_named_arg("wbnb");
     let busd: Key = runtime::get_named_arg("busd");
     let router: Key = runtime::get_named_arg("router");
+    let declaration: Key = runtime::get_named_arg("declaration");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
@@ -132,7 +139,8 @@ pub extern "C" fn call() {
         "sbnb" => sbnb,
         "wbnb" => wbnb,
         "busd" => busd,
-        "router"=>router
+        "router"=>router,
+        "declaration"=>declaration
     };
 
     // Add the constructor group to the package hash with a single URef.
