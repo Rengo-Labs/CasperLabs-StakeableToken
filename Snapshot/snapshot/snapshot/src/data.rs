@@ -16,7 +16,7 @@ pub const SNAPSHOTS_DICT: &str = "snapshots_dicts";
 pub const RSNAPSHOTS_DICT: &str = "rsnapshots_dicts";
 pub const LSNAPSHOTS_DICT: &str = "lsnapshots_dicts";
 // keys for global k-v items
-pub const SELF_HASH: &str = "self_hash";
+pub const CONTRACT_HASH: &str = "contract_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
 pub const HELPER_HASH: &str = "helper_hash";
 pub const TIMING_HASH: &str = "timing_hash";
@@ -99,11 +99,11 @@ impl RSnapshotsDict {
     }
 }
 
-pub fn self_hash() -> Key {
-    get_key(SELF_HASH).unwrap_or_revert()
+pub fn contract_hash() -> Key {
+    get_key(CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_self_hash(hash: Key) {
-    set_key(SELF_HASH, hash);
+pub fn set_contract_hash(hash: Key) {
+    set_key(CONTRACT_HASH, hash);
 }
 
 pub fn package_hash() -> ContractPackageHash {

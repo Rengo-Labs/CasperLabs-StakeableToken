@@ -27,7 +27,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         guard_contract_hash: Key,
     ) {
         data::set_package_hash(package_hash);
-        data::set_self_hash(contract_hash);
+        data::set_contract_hash(contract_hash);
         data::set_helper_hash(helper_contract_hash);
         data::set_timing_hash(timing_contract_hash);
         data::set_declaration_hash(declaration_contract_hash);
