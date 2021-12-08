@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "busd_equivalent",
+    "busd_equivalent_tests",
+    "test_contract"
 ]
 
 [profile.release]
