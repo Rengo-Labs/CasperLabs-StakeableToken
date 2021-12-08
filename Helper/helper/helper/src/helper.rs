@@ -1,9 +1,9 @@
 use casper_contract::{ contract_api::{runtime}};
-use alloc::{collections::BTreeSet, format, vec::Vec, vec, string::String, string::ToString};
+use alloc::{format, vec::Vec, string::String, string::ToString};
 use casper_types::{
-    contracts::{ContractHash, ContractPackageHash},Key,  U256, BlockTime, CLType::U64, runtime_args, RuntimeArgs, bytesrepr::ToBytes};
+    contracts::{ContractHash, ContractPackageHash},Key,  U256, runtime_args, RuntimeArgs, bytesrepr::{ToBytes, FromBytes}};
 use contract_utils::{ContractContext, ContractStorage};
-
+// use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use renvm_sig::keccak256;
 
 
@@ -102,9 +102,8 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         {
             let _stake_id: Vec<u32> = Self::generate_id(self, _staker, U256::from(_stake_index), 0x01);             // no need to do _staker_index - 1 because start in this loop already is exclusive and finish is inclusive
             let struct_key: String = Self::_generate_key_for_dictionary(&_staker, &_stake_id);                      // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-            let stakes_struct: String = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::STAKES});
-            let stake: Structs::Stake = serde_json::from_str(&stakes_struct).unwrap();                              // convert json string received, back to Stake Structure
-
+            let stakes_struct: Vec<u8> = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::STAKES});
+            let stake: Structs::Stake = Structs::Stake::from_bytes(&stakes_struct).unwrap().0;
             if stake.staked_amount > 0.into()
             {
                 _stakes[i.as_usize()] = _stake_id;
@@ -133,9 +132,8 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         {
             let _referrer_id: Vec<u32> = Self::generate_id(self, _referrer, U256::from(_referrer_index), 0x01);                 // no need to do _staker_index - 1 because start in this loop already is exclusive and finish is inclusive
             let struct_key: String = Self::_generate_key_for_dictionary(&_referrer, &_referrer_id);                             // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-            let referrer_link_struct: String = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::REFERRER_LINK});
-            let referral_link: Structs::ReferrerLink = serde_json::from_str(&referrer_link_struct).unwrap();                                  // convert json string received, back to Stake Structure
-
+            let referrer_link_struct: Vec<u8> = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::REFERRER_LINK});
+            let referral_link: Structs::ReferrerLink = Structs::ReferrerLink::from_bytes(&referrer_link_struct).unwrap().0;                                  // convert json string received, back to Stake Structure
             if Self::_non_zero_address(referral_link.staker)
             {
                 _referrers[i.as_usize()] = _referrer_id;
@@ -186,9 +184,9 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
     }
 
 
-    fn stake_ended(&self, stake: String) -> bool           // stake struct
+    fn stake_ended(&self, stake: Vec<u8>) -> bool           // stake struct
     {
-        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
         Self::_stake_ended(stake)
     }
 
@@ -197,15 +195,15 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_days_diff(start_date, end_date)
     }
 
-    fn days_left(&self, stake: String) -> U256
+    fn days_left(&self, stake: Vec<u8>) -> U256
     {
-        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
         Self::_days_left(stake)
     }
 
-    fn is_mature_stake(&self, stake: String) -> bool      // stake struct
+    fn is_mature_stake(&self, stake: Vec<u8>) -> bool      // stake struct
     {
-        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
         Self::_is_mature_stake(stake)
     }
 
@@ -214,9 +212,9 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_not_critical_mass_referrer(referrer)
     }
 
-    fn calculation_day(&self, stake: String) -> U256
+    fn calculation_day(&self, stake: Vec<u8>) -> U256
     {
-        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
         Self::_calculation_day(stake)
     } 
 
@@ -230,9 +228,9 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_not_future(day)
     }
 
-    fn starting_day(&self, stake: String) -> U256
+    fn starting_day(&self, stake: Vec<u8>) -> U256
     {
-        let stake: Structs::Stake = serde_json::from_str(&stake).unwrap();  // get struct from json string
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
         Self::_starting_day(stake)
     }
 
@@ -283,8 +281,8 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         let declaration_hash: Key = data::declaration_hash();
         let struct_key: String = _referrer.to_formatted_string();
 
-        let critical_mass: String = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::CRITICAL_MASS});
-        let critical_mass: Structs::CriticalMass = serde_json::from_str(&critical_mass).unwrap();
+        let critical_mass: Vec<u8> = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_struct_from_key", runtime_args!{"key" => struct_key, "struct_name" => Structs::CRITICAL_MASS});
+        let critical_mass: Structs::CriticalMass = Structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
         return critical_mass.activation_day == 0.into();
     }
 

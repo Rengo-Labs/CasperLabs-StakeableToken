@@ -3,6 +3,7 @@ use casper_contract::contract_api::runtime;
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, Key, RuntimeArgs, U256,
+    bytesrepr::{FromBytes, ToBytes}
 };
 use contract_utils::{ContractContext, ContractStorage};
 extern crate alloc;
@@ -43,13 +44,13 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         self._get_busd_equivalent()
     }
     fn _get_busd_equivalent(&self) -> U256 {
-        let declaration_constants_string: String = runtime::call_contract(
+        let declaration_constants_bytes: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(data::declaration_hash()),
             "get_declaration_constants",
             runtime_args! {},
         );
         let declaration_constants: parameters::ConstantParameters =
-            serde_json::from_str(&declaration_constants_string).unwrap();
+        parameters::ConstantParameters::from_bytes(&declaration_constants_bytes).unwrap().0;
         let path: Vec<u32> = data::get_path();
         let results: Vec<u32> = runtime::call_contract(
             Self::_create_hash_from_key(data::router_hash()),

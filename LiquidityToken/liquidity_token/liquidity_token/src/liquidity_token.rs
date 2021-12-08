@@ -1,9 +1,9 @@
 use crate::config::*;
 use crate::data::{self};
-use alloc::{string::String, vec::Vec};
+use alloc::{vec::Vec};
 use casper_contract::contract_api::runtime;
 use casper_types::{
-    bytesrepr::ToBytes,
+    bytesrepr::{ToBytes, FromBytes},
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, ApiError, Key, RuntimeArgs, U256,
 };
@@ -123,8 +123,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             },
         );
 
-        let new_liquidity_stake_string: String =
-            serde_json::to_string(&new_liquidity_stake).unwrap();
+        let new_liquidity_stake_bytes: Vec<u8> = new_liquidity_stake.clone().into_bytes().unwrap();
 
         let () = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
@@ -132,7 +131,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {
                 "staker"=>self.get_caller(),
                 "id"=>Vec::clone(&liquidity_stake_id),
-                "value"=>new_liquidity_stake_string
+                "value"=>Vec::clone(&new_liquidity_stake_bytes)
             },
         );
 
@@ -146,9 +145,9 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         liquidity_stake_id
     }
 
-    fn _check_liquidity_stake_by_id(&self, _staker: Key, _liquidity_stake_id: Vec<u32>) -> String {
+    fn _check_liquidity_stake_by_id(&self, _staker: Key, _liquidity_stake_id: Vec<u32>) -> Vec<u8> {
         let declaration_hash = data::declaration_hash();
-        let liquidity_stake_string: String = runtime::call_contract(
+        let liquidity_stake_bytes: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_liquidity_stake",
             runtime_args! {
@@ -157,7 +156,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             },
         );
 
-        liquidity_stake_string
+        liquidity_stake_bytes
     }
 
     fn _end_liquidity_stake(&self, _liquidity_stake_id: Vec<u32>) -> U256 {
@@ -168,7 +167,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         let globals_hash = data::globals_hash();
         let helper_hash = data::helper_hash();
 
-        let mut liquidity_stake_string: String = runtime::call_contract(
+        let mut liquidity_stake_bytes: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_liquidity_stake",
             runtime_args! {
@@ -176,8 +175,10 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
                 "id"=>Vec::clone(&_liquidity_stake_id)
             },
         );
-        let mut liquidity_stake_struct: Structs::LiquidityStake =
-            serde_json::from_str(&liquidity_stake_string).unwrap();
+        let mut liquidity_stake_struct: Structs::LiquidityStake =  Structs::LiquidityStake::from_bytes(
+            &liquidity_stake_bytes
+        )
+        .unwrap().0;
 
         if !liquidity_stake_struct.is_active {
             runtime::revert(ApiError::InvalidDictionaryItemKey)
@@ -233,14 +234,14 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             },
         );
 
-        liquidity_stake_string = serde_json::to_string(&liquidity_stake_struct).unwrap();
+        liquidity_stake_bytes = liquidity_stake_struct.clone().into_bytes().unwrap();
         let () = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "set_liquidity_stake",
             runtime_args! {
                 "staker"=>self.get_caller(),
                 "id"=>Vec::clone(&_liquidity_stake_id),
-                "value"=>liquidity_stake_string
+                "value"=>Vec::clone(&liquidity_stake_bytes)
             },
         );
 
@@ -251,13 +252,13 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         let snapshot_hash = data::snapshot_hash();
         let globals_hash = data::globals_hash();
 
-        let constant_parameters_string: String = runtime::call_contract(
+        let constant_parameters_bytes: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_declaration_constants",
             runtime_args! {},
         );
         let constant_parameters_struct: Structs::ConstantParameters =
-            serde_json::from_str(&constant_parameters_string).unwrap();
+        Structs::ConstantParameters::from_bytes(&constant_parameters_bytes).unwrap().0;
 
         let max_calculation_day: U256 = U256::from(_liquidity_stake.start_day)
             + U256::from(constant_parameters_struct.min_referral_days);
@@ -277,7 +278,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
         let mut reward_amount: U256 = U256::from(0);
         let mut day: U256 = U256::from(_liquidity_stake.start_day);
 
-        let l_snapshot_string: String = runtime::call_contract(
+        let l_snapshot_string: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(snapshot_hash),
             "get_struct_from_key",
             runtime_args! {
@@ -286,7 +287,7 @@ pub trait LiquidityToken<Storage: ContractStorage>: ContractContext<Storage> {
             },
         );
         let l_snapshot_struct: Structs::LSnapShot =
-            serde_json::from_str(&l_snapshot_string).unwrap();
+        Structs::LSnapShot::from_bytes(&l_snapshot_string).unwrap().0;
 
         while day < calculation_day {
             reward_amount = reward_amount

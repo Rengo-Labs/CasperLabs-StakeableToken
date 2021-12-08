@@ -2,10 +2,12 @@
 
 pub mod Structs {
     use casper_types::U256;
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 
-    #[derive(Serialize, Deserialize)]
+    extern crate alloc;
+    use alloc::{vec::Vec};
+
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters {
         pub _decimals: u32,
         pub yodas_per_wise: U256,
@@ -25,12 +27,12 @@ pub mod Structs {
         pub daily_bonus_b: U256,   // 5%:13505 = 0.00037023324 per day;
     }
     // liquidity shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct LSnapShot {
         pub total_shares: U256,
         pub inflation_amount: U256,
     }
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct LiquidityStake {
         pub staked_amount: U256,
         pub reward_amount: U256,

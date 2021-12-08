@@ -5,9 +5,12 @@ pub mod parameters
 
 pub mod Structs
 {
-    use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}, CLTyped, CLType};
-    extern crate serde;
-    use serde::{Serialize, Deserialize};
+    use casper_types::{U256, Key};
+    
+    extern crate alloc;
+    use alloc::{vec::Vec};
+
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 
 
     pub const SCRAPES: &str = "scrapes";
@@ -26,7 +29,7 @@ pub mod Structs
     pub const REFERRAL_SHARES: &str = "referral_shares";
     pub const LIQUIDITY_SHARES: &str = "liquidity_shares";
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Stake 
     {
         pub stakes_shares: U256,
@@ -43,7 +46,7 @@ pub mod Structs
         pub is_active: bool
     }
     
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ReferrerLink 
     {
         pub staker: Key,
@@ -62,7 +65,7 @@ pub mod Structs
         pub is_active: bool
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct CriticalMass 
     {
         pub total_amount: U256,

@@ -1,6 +1,6 @@
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
-use casper_types::{contracts::{ContractPackageHash}, Key, U256};
-use contract_utils::{get_key, set_key, Dict};
+use casper_types::{contracts::{ContractPackageHash}, Key};
+use contract_utils::{get_key, set_key};
 
 pub const SELF_HASH: &str = "self_hash";
 pub const PACKAGE_HASH: &str = "package_hash";

@@ -3,10 +3,11 @@ pub mod structs {
         bytesrepr::{FromBytes, ToBytes},
         CLType, CLTyped, Key, U256,
     };
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
+    use alloc::{vec::Vec};
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Constants {
         pub _decimals: u32,
         pub yodas_per_wise: U256,
@@ -20,11 +21,12 @@ pub mod structs {
 }
 
 pub mod parameters {
-    use casper_types::{Key, U256};
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
-
-    #[derive(Serialize, Deserialize)]
+    use casper_types::{Key, U256, bytesrepr::{FromBytes, ToBytes}};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
+    use alloc::{vec::Vec};
+    
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters {
         pub _decimals: u32,
         pub yodas_per_wise: U256,

@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec, vec::Vec};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec};
 // use std::boxed::Box;
 
 use casper_contract::{
@@ -130,7 +130,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_liquidity_stake_by_id",
         vec![Parameter::new("staker", Key::cl_type())],
-        CLType::String,
+        CLType::List(Box::new(u8::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -151,10 +151,10 @@ fn check_liquidity_stake_by_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("id");
 
-    let liquidity_stake_string: String =
+    let liquidity_stake_bytes: Vec<u8> =
         LiquidityTokenStruct::default()._check_liquidity_stake_by_id(staker, liquidity_stake_id);
 
-    runtime::ret(CLValue::from_t(liquidity_stake_string).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(liquidity_stake_bytes).unwrap_or_revert());
 }
 
 #[no_mangle]

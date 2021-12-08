@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::{vec, vec::Vec, string::String}; 
 use casper_contract::{ contract_api::{runtime, system}, unwrap_or_revert::UnwrapOrRevert};
 use casper_types::{
-    contracts::{ContractHash, ContractPackageHash},Key, ApiError, U256, U512, BlockTime, CLType::U64, runtime_args, RuntimeArgs, URef};
+    contracts::{ContractHash, ContractPackageHash},Key, ApiError, U256, U512, runtime_args, RuntimeArgs, URef, bytesrepr::{FromBytes}};
 use contract_utils::{ContractContext, ContractStorage};
 
 use crate::config::*;
@@ -83,8 +83,8 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let path : Vec<Key> = vec![wbnb, sbnb, self.get_caller()];
 
         // get the consts struct from declaration
-        let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
-        let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
+        let constant_struct_json: Vec<u8> = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
+        let constant_struct: DeclarationConstantParameters = DeclarationConstantParameters::from_bytes(&constant_struct_json).unwrap().0;
 
         let blocktime:u64 = runtime::get_blocktime().into();                    // current blocktime in epoch (milliseconds)
         let two_hours_milliseconds: u64 = 2*((1000*60)*60);
@@ -147,8 +147,8 @@ pub trait WiseToken<Storage: ContractStorage>: ContractContext<Storage>
         let path : Vec<Key> = vec![token_address, wbnb, sbnb, self.get_caller()];
 
         // get the consts struct from declaration
-        let constant_struct_json: String = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
-        let constant_struct: DeclarationConstantParameters = serde_json::from_str(&constant_struct_json).unwrap();
+        let constant_struct_json: Vec<u8> = runtime::call_contract(ContractHash::from(declaration_contract.into_hash().unwrap_or_revert()), "get_declaration_constants", runtime_args![]);
+        let constant_struct: DeclarationConstantParameters = DeclarationConstantParameters::from_bytes(&constant_struct_json).unwrap().0;
         
         let blocktime:u64 = runtime::get_blocktime().into();                    // current blocktime in epoch (milliseconds)
         let two_hours_milliseconds: u64 = 2*((1000*60)*60);

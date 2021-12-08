@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec, string::String};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, vec::Vec};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -52,7 +52,7 @@ fn constructor()
 #[no_mangle]
 fn stake_ended()
 {
-    let stake: String = runtime::get_named_arg("stake");
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
 
     let ret: bool = HelperStruct::default().stake_ended(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -71,7 +71,7 @@ fn days_diff()
 #[no_mangle]
 fn is_mature_stake()
 {
-    let stake: String = runtime::get_named_arg("stake");
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
 
     let ret: bool = HelperStruct::default().is_mature_stake(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -80,7 +80,7 @@ fn is_mature_stake()
 #[no_mangle]
 fn days_left()
 {
-    let stake: String = runtime::get_named_arg("stake");
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
 
     let ret: U256 = HelperStruct::default().days_left(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -98,7 +98,7 @@ fn not_critical_mass_referrer()
 #[no_mangle]
 fn calculation_day()
 {
-    let stake: String = runtime::get_named_arg("stake");
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
 
     let ret: U256 = HelperStruct::default().calculation_day(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -148,7 +148,7 @@ fn referrals_pagination()
 #[no_mangle]
 fn starting_day()
 {
-    let stake: String = runtime::get_named_arg("stake");
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
 
     let ret: U256= HelperStruct::default().starting_day(stake);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -175,7 +175,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "stake_ended",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type()))),
         ],
         CLType::Bool,
         EntryPointAccess::Public,
@@ -196,7 +196,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "days_left",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type()))),
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -206,7 +206,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "is_mature_stake",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type()))),
         ],
         CLType::Bool,
         EntryPointAccess::Public,
@@ -226,7 +226,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "calculation_day",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type()))),
         ],
         CLType::U256,
         EntryPointAccess::Public,
@@ -256,7 +256,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "starting_day",
         vec![
-            Parameter::new("stake", CLType::String),
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type()))),
         ],
         CLType::U256,
         EntryPointAccess::Public,
