@@ -56,7 +56,7 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
             Self::_create_hash_from_key(data::router_hash()),
             "get_amounts_out",
             runtime_args! {
-                "yodas_per_wise"=>U256::from(declaration_constants.yodas_per_wise),
+                "amount_in"=>U256::from(declaration_constants.yodas_per_wise),
                 "path"=>Vec::clone(&path)
             },
         );

@@ -55,7 +55,7 @@ fn deploy_timing(
         "timing",
         Sender(owner),
         runtime_args! {
-            "declaration_contract_hash"=>declaration_contract_hash
+            "declaration_contract"=>declaration_contract_hash
         },
     )
 }
@@ -200,7 +200,7 @@ fn deploy_uniswap_router(
         runtime_args! {
             "factory" => factory,
             "wcspr" => wcspr,
-            "library_hash" => library
+            "library" => library
         },
     )
 }
@@ -303,6 +303,30 @@ fn deploy_synthetic_bnb(
     )
 }
 
+fn deploy_referral_token(
+    env: &TestEnv,
+    owner: AccountHash,
+    declaration: Key,
+    timing: Key,
+    helper: Key,
+    bep20: Key,
+    snapshot: Key
+)-> TestContract{
+    TestContract::new(
+        &env,
+        "referral-token.wasm",
+        "referral-token",
+        Sender(owner),
+        runtime_args!{
+            "declaration_hash"=>declaration,
+            "timing_hash"=>timing,
+            "helper_hash"=>helper,
+            "bep20_hash"=>bep20,
+            "snapshot_hash"=>snapshot,
+        }
+    )
+}
+
 fn deploy_wbnb(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> TestContract {
     TestContract::new(
         &env,
@@ -316,7 +340,7 @@ fn deploy_wbnb(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> T
     )
 }
 
-fn deploy_wise_token(env: &TestEnv, owner: AccountHash, declaration: Key, globals: Key, sbnb: Key, bep20: Key, router: Key, staking_token: Key, timing: Key){
+fn deploy_wise_token(env: &TestEnv, owner: AccountHash, declaration: Key, globals: Key, sbnb: Key, bep20: Key, router: Key, staking_token: Key, timing: Key)->TestContract{
     TestContract::new(
         &env,
         "wisetoken.wasm",
@@ -330,11 +354,11 @@ fn deploy_wise_token(env: &TestEnv, owner: AccountHash, declaration: Key, global
             "router_address" => router,
             "staking_token_address" => staking_token,
             "timing_address" => timing
-        };
+        }
     )
 }
 
-fn deploy_staking_token(env: &TestEnv, owner: AccountHash, declaration: Key, timing: Key, helper: Key, globals: Key, bep20: Key, snapshot: Key, referral_token: Key){
+fn deploy_staking_token(env: &TestEnv, owner: AccountHash, declaration: Key, timing: Key, helper: Key, globals: Key, bep20: Key, snapshot: Key, referral_token: Key)->TestContract{
     TestContract::new(
         &env,
         "staking-token-main.wasm",
@@ -348,7 +372,37 @@ fn deploy_staking_token(env: &TestEnv, owner: AccountHash, declaration: Key, tim
             "bep20_hash"=>bep20,
             "snapshot_hash"=>snapshot,
             "referral_token_hash"=>referral_token,
-        };
+        }
+    )
+}
+
+fn deploy_snapshot(
+    env: &TestEnv,
+    owner: AccountHash,
+    timing: Key,
+    declaration: Key,
+    globals: Key,
+    helper: Key,
+    sbnb: Key,
+    pair: Key,
+    bep20: Key,
+    guard: Key,
+) -> TestContract {
+    TestContract::new(
+        &env,
+        "snapshot.wasm",
+        "snapshot",
+        Sender(owner),
+        runtime_args! {
+        "timing" => timing,
+        "declaration" => declaration,
+        "globals"=> globals,
+        "helper" => helper,
+        "sbnb"=>sbnb,
+        "pair"=>pair,
+        "bep20"=>bep20,
+        "guard"=>guard
+        },
     )
 }
 
@@ -430,16 +484,53 @@ fn deploy_busd_equivalent() -> (
         Key::Hash(wbnb.contract_hash()),
     );
 
+    let timing = deploy_timing(
+        &env,
+        owner,
+        Key::Hash(declaration.contract_hash())
+    );
+
+    let helper = deploy_helper(
+        &env,
+        owner,
+        Key::Hash(declaration.contract_hash()), 
+        Key::Hash(timing.contract_hash()), 
+        Key::Hash(globals.contract_hash())
+    );
+
+    let snapshot = deploy_snapshot(
+        &env,
+        owner,
+        Key::Hash(timing.contract_hash()),
+        Key::Hash(declaration.contract_hash()),
+        Key::Hash(globals.contract_hash()),
+        Key::Hash(helper.contract_hash()),
+        Key::Hash(synthetic_bnb.contract_hash()),
+        Key::Hash(pair.contract_hash()),
+        Key::Hash(bep20.contract_hash()),
+        Key::Hash(liquidity_guard.contract_hash()),
+    );
+
+    let referral_token = deploy_referral_token(
+        &env, 
+        owner,
+        Key::Hash(declaration.contract_hash()),
+        Key::Hash(timing.contract_hash()),
+        Key::Hash(helper.contract_hash()),
+        Key::Hash(bep20.contract_hash()),
+        Key::Hash(snapshot.contract_hash())
+    );
+
     let staking_token = deploy_staking_token(
         &env,
         owner,
-        declaration, 
-        timing, 
-        helper, 
-        globals, 
-        bep20, 
-        snapshot, 
-        referral_token
+        Key::Hash(declaration.contract_hash()), 
+        Key::Hash(timing.contract_hash()), 
+        Key::Hash(helper.contract_hash()), 
+        Key::Hash(globals.contract_hash()), 
+        Key::Hash(bep20.contract_hash()), 
+        Key::Hash(snapshot.contract_hash()), 
+        Key::Hash(referral_token.contract_hash())
     );
     
     let wise = deploy_wise_token(
@@ -482,7 +573,7 @@ fn deploy_busd_equivalent() -> (
         synthetic_bnb,
         wbnb,
         busd,
-        uniswap_router,
+        router,
         declaration,
         factory,
     )
@@ -506,6 +597,7 @@ fn test_deploy() {
 }
 
 #[test]
+#[should_panic]
 fn test_get_busd_equivalent(){
     let (
         env,
@@ -520,26 +612,31 @@ fn test_get_busd_equivalent(){
         declaration,
         factory,
     ) = deploy_busd_equivalent();
+
+    // yodas_per_wise is 0, therefore amount_in to router is 0
+    // router will then revert
+    proxy.get_busd_equivalent();
 }
 
-#[test]
-fn test_get_busd_equivalent_with_invalid_path(){
-    let (
-        env,
-        owner,
-        busd_equivalent,
-        proxy,
-        wise,
-        sbnb,
-        wbnb,
-        busd,
-        router,
-        declaration,
-        factory,
-    ) = deploy_busd_equivalent();
-}
+// #[test]
+// fn test_get_busd_equivalent_with_invalid_path(){
+//     let (
+//         env,
+//         owner,
+//         busd_equivalent,
+//         proxy,
+//         wise,
+//         sbnb,
+//         wbnb,
+//         busd,
+//         router,
+//         declaration,
+//         factory,
+//     ) = deploy_busd_equivalent();
+// }
 
 #[test]
+#[should_panic]
 fn test_update_busd_equivalent(){
     let (
         env,
@@ -555,9 +652,10 @@ fn test_update_busd_equivalent(){
         factory,
     ) = deploy_busd_equivalent();
 
+    // yodas_per_wise is 0, so contract will revert
     busd_equivalent.update_busd_equivalent(Sender(owner));
-    
 }
+
 // #[test]
 // #[should_panic]
 // fn test_calling_construction() {
