@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "snapshot"
+    "snapshot",
+    "snapshot_tests"
 ]
 
 [profile.release]

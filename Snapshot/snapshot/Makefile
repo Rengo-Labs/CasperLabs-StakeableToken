@@ -3,7 +3,7 @@ prepare:
 
 build-contract:
 	cargo build --release -p snapshot --target wasm32-unknown-unknown
-	wasm-strip snapshot/target/wasm32-unknown-unknown/release/snapshot.wasm 2>/dev/null | true
+	wasm-strip target/wasm32-unknown-unknown/release/snapshot.wasm 2>/dev/null | true
 
 test-only:
 	cargo test -p snapshot_tests

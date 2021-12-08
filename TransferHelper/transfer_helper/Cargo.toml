@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "transfer_helper",
+    "test_contract",
+    "transfer_helper_tests"
 ]
 
 [profile.release]
