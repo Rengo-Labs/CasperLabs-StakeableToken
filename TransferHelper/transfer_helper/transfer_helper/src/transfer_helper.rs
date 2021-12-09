@@ -20,14 +20,20 @@ pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
     }
 
     fn forward_funds(&self, _token_address: Key, _forward_amount: U256) -> bool {
-        self._only_transfer_invoker();
-
+        // self._only_transfer_invoker();
+    
+        let caller: Key = Key::from(self.get_caller());
         let transfer_invoker: Key = data::transfer_invoker();
+
+        if !caller.eq(&transfer_invoker){
+            runtime::revert(ApiError::NoAccessRights);
+        }
+        
         let ret: bool = runtime::call_contract(
             Self::_create_hash_from_key(_token_address),
             "transfer",
             runtime_args! {
-                "to"=>transfer_invoker,
+                "recipient"=>transfer_invoker,
                 "amount"=>_forward_amount
             },
         );
