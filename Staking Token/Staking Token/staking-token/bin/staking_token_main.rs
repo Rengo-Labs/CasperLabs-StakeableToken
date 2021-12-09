@@ -111,7 +111,7 @@ fn check_stake_by_id(){
     let staker = runtime::get_named_arg("staker");
     let stake_id : Vec<u32>= runtime::get_named_arg("stake_id");
 
-    let (stake, penalty_amount, is_mature) : (String, U256, bool)= StakingToken::default().check_stake_by_id(staker, stake_id);
+    let (stake, penalty_amount, is_mature) : (Vec<u8>, U256, bool)= StakingToken::default().check_stake_by_id(staker, stake_id);
     runtime::ret(CLValue::from_t((stake, penalty_amount, is_mature)).unwrap_or_revert());
 }
 
@@ -184,7 +184,7 @@ fn get_entry_points() -> EntryPoints {
         Parameter::new("staker", CLType::Key),
         Parameter::new("stake_id", CLType::List(Box::new(u32::cl_type())))
     ],
-    CLType::Tuple3([Box::new(CLType::String), Box::new(CLType::Bool), Box::new(CLType::U256)]),
+    CLType::Tuple3([Box::new(CLType::List(Box::new(u8::cl_type()))), Box::new(CLType::Bool), Box::new(CLType::U256)]),
     EntryPointAccess::Public,
     EntryPointType::Contract 
     ));

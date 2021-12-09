@@ -6,7 +6,7 @@ use crate::data::{self};
 use crate::config::*;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_contract::contract_api::runtime;
-use casper_types::{runtime_args, ApiError, ContractHash, Key, RuntimeArgs, U256};
+use casper_types::{runtime_args, ApiError, ContractHash, Key, RuntimeArgs, U256, bytesrepr::{ToBytes, FromBytes}};
 use contract_utils::{ContractContext, ContractStorage};
 
 pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
@@ -54,12 +54,12 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         }
 
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-        let constants: String = runtime::call_contract(
+        let constants: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_declaration_constants",
             runtime_args! {},
         );
-        let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
+        let constants: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&constants).unwrap().0;
 
         if lock_days < constants.min_lock_days.into() || lock_days > constants.max_lock_days.into() {
             runtime::revert(ApiError::UnexpectedKeyVariant);
@@ -92,7 +92,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let () = runtime::call_contract(
                 declaration_contract_hash,
                 "set_struct_from_key",
-                runtime_args! {"key" => struct_key,"value"=>serde_json::to_string(&referrer_link).unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
+                runtime_args! {"key" => struct_key,"value"=>referrer_link.clone().into_bytes().unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
             );
 
             let () = runtime::call_contract(
@@ -112,7 +112,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let () = runtime::call_contract(
             declaration_contract_hash,
             "set_struct_from_key",
-            runtime_args! {"key" => struct_key0,"value"=>serde_json::to_string(&new_stake).unwrap(), "struct_name" => structs::STAKES}, // convert structure to json string and save
+            runtime_args! {"key" => struct_key0,"value"=>new_stake.clone().into_bytes().unwrap(), "struct_name" => structs::STAKES}, // convert structure to json string and save
         );
         
         let () = runtime::call_contract(
@@ -149,12 +149,12 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
 
         // Get constants from the Declaration contracts, will be used later in this function
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-        let constants: String = runtime::call_contract(
+        let constants: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_declaration_constants",
             runtime_args! {},
         );
-        let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
+        let constants: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&constants).unwrap().0;
 
 
         // _burn function
@@ -287,8 +287,8 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let bep_20_hash = self.convert_to_contract_hash(data::get_bep20_hash());
 
         let key: String = Self::_generate_key_for_dictionary(&_staker, &_stake_id);
-        let stake_string: String = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
-        let mut stake: structs::Stake = serde_json::from_str(&stake_string).unwrap();
+        let stake_string: Vec<u8> = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
+        let mut stake: structs::Stake = structs::Stake::from_bytes(&stake_string).unwrap().0;
 
         if stake.is_active == false {
             runtime::revert(ApiError::InvalidArgument)
@@ -316,15 +316,15 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let bep_20_hash = self.convert_to_contract_hash(data::get_bep20_hash());
 
         let key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
-        let stake_str: String = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
-        let mut stake: structs::Stake = serde_json::from_str(&stake_str).unwrap();
+        let stake_str: Vec<u8> = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{"key" => key, "struct_name" => String::from(structs::STAKES)});
+        let mut stake: structs::Stake = structs::Stake::from_bytes(&stake_str).unwrap().0;
 
         if stake.is_active == false {
             runtime::revert(ApiError::InvalidArgument)
         }
 
-        let starting_day: U256 = runtime::call_contract(helper_hash, "starting_day", runtime_args!{"stake" => String::from(stake_str.clone())});
-        let calculation_day: U256 = runtime::call_contract(helper_hash, "calculation_day", runtime_args!{"stake" => String::from(stake_str.clone())});
+        let starting_day: U256 = runtime::call_contract(helper_hash, "starting_day", runtime_args!{"stake" => stake_str.clone()});
+        let calculation_day: U256 = runtime::call_contract(helper_hash, "calculation_day", runtime_args!{"stake" => stake_str.clone()});
 
 
         let mut scrape_day: U256 = if _scrape_days > 0 {
@@ -341,10 +341,10 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let mut remaining_days: U256 = 0.into();
         let mut stakers_penalty: U256 = 0.into();
         
-        let is_mature_stake: bool = runtime::call_contract(helper_hash, "is_mature_stake", runtime_args!{"stake" => String::from(stake_str.clone())});
+        let is_mature_stake: bool = runtime::call_contract(helper_hash, "is_mature_stake", runtime_args!{"stake" => stake_str.clone()});
         if is_mature_stake == false 
         {
-            remaining_days = runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake" => String::from(stake_str.clone())});
+            remaining_days = runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake" => stake_str.clone() });
             
             let share_price: U256 = runtime::call_contract(globals_hash, "get_globals", runtime_args!{"field" => String::from(structs::SHARE_PRICE)});
             stakers_penalty = self._stakes_shares(scrape_amount, remaining_days, self.get_caller(), share_price.clone());
@@ -388,7 +388,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         stake.scrape_day = scrape_day;
 
         let key: String = Self::_generate_key_for_dictionary(&self.get_caller(), &_stake_id);
-        let mut stake_str: String = serde_json::to_string(&stake).unwrap();
+        let mut stake_str: Vec<u8> = stake.clone().into_bytes().unwrap();
         let _: () = runtime::call_contract(declaration_hash, "set_struct_from_key", runtime_args!{"key" => key, "value" => stake_str, "struct_name" => String::from(structs::STAKES)});
 
         let _ : () = runtime::call_contract(bep_20_hash, "_mint", runtime_args!{});         // need to fill the parameters
@@ -433,13 +433,13 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         else {
             let day: u64 = runtime::call_contract(timing_hash, "_previous_wise_day", runtime_args!{});
             let day: U256 = U256::from(day);
-            let snapshot_str: String = runtime::call_contract(snapshot_hash, "get_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts")});
-            let mut snapshot_struct: structs::Snapshot = serde_json::from_str(&snapshot_str).unwrap();
+            let snapshot_str: Vec<u8> = runtime::call_contract(snapshot_hash, "get_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts")});
+            let mut snapshot_struct: structs::Snapshot = structs::Snapshot::from_bytes(&snapshot_str).unwrap().0;
 
             snapshot_struct.scheduled_to_end = if snapshot_struct.scheduled_to_end >_shares {snapshot_struct.scheduled_to_end.checked_sub(_shares).unwrap_or_revert()} else {0.into()};
             
-            let snapshot_str: String = serde_json::to_string(&snapshot_struct).unwrap();
-            let _:() = runtime::call_contract(snapshot_hash, "set_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts"), "value" => snapshot_str});
+            let snapshot_str: Vec<u8> = snapshot_struct.clone().into_bytes().unwrap();
+            let _:() = runtime::call_contract(snapshot_hash, "set_struct_from_key", runtime_args!{"key" => day, "struct_name" => String::from("snapshots_dicts"), "value" => snapshot_str.clone()});
         }
     }
 
@@ -455,8 +455,8 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let declaration_hash = self.convert_to_contract_hash(data::get_timing_hash());
         let timing_hash = self.convert_to_contract_hash(data::get_timing_hash());
         let mut current_wise_day: u64 = runtime::call_contract(timing_hash, "_current_wise_day", runtime_args!{});
-        let declaration_constants_string : String = runtime::call_contract(declaration_hash, "get_declaration_constants", runtime_args!{});
-        let declaration_constants_struct : parameters::ConstantParameters = serde_json::from_str(&declaration_constants_string).unwrap();
+        let declaration_constants_string : Vec<u8> = runtime::call_contract(declaration_hash, "get_declaration_constants", runtime_args!{});
+        let declaration_constants_struct : parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&declaration_constants_string).unwrap().0;
         let mut globals_share_price: U256 = runtime::call_contract(globals_hash, "get_globals", runtime_args!{"field"=>structs::SHARE_PRICE});
        
         if _stake_shares > 0.into() && current_wise_day > (declaration_constants_struct.formula_day).into(){
@@ -520,7 +520,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     {
         let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
         let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-        let stake_string: String =  runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{
+        let stake_string: Vec<u8> =  runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{
             "struct_name"=>"stakes",
             "key"=>Self::_generate_key_for_dictionary(&_staker, &_stake_id)
         });
@@ -534,11 +534,11 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     fn check_stake_by_id(&mut self,
         _staker: Key,
         _stake_id: Vec<u32>
-    )->(String, U256, bool)
+    )->(Vec<u8>, U256, bool)
     {
         let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
-        let mut stake: String = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{
+        let mut stake: Vec<u8> = runtime::call_contract(declaration_hash, "get_struct_from_key", runtime_args!{
             "struct_name"=>"stakes",
             "key"=>Self::_generate_key_for_dictionary(&_staker, &_stake_id)
         });
@@ -546,11 +546,11 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             "stake"=>stake.clone()
         });
 
-        let mut stake_struct:structs::Stake = serde_json::from_str(&stake).unwrap();
+        let mut stake_struct:structs::Stake = structs::Stake::from_bytes(&stake).unwrap().0;
         stake_struct.reward_amount = self._check_reward_amount(&stake_struct);
         let penalty_amount: U256 = self._calculate_penalty_amount(&stake_struct);
         
-        stake = serde_json::to_string(&stake_struct).unwrap();
+        stake = stake_struct.clone().into_bytes().unwrap();
 
         (stake, penalty_amount, is_mature)
     }
@@ -590,8 +590,8 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     )-> U256
     {
         let declaration_hash = self.convert_to_contract_hash(data::get_declaration_hash());
-        let constants_string: String = runtime::call_contract(declaration_hash, "get_declaration_constants", runtime_args!{});
-        let constants_struct: parameters::ConstantParameters = serde_json::from_str(&constants_string).unwrap();
+        let constants_string: Vec<u8> = runtime::call_contract(declaration_hash, "get_declaration_constants", runtime_args!{});
+        let constants_struct: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&constants_string).unwrap().0;
         
         self._regular_bonus(_lock_days, constants_struct.daily_bonus_a, U256::from(constants_struct.max_bonus_days_a)) + if _lock_days>U256::from(constants_struct.max_bonus_days_a){ 
             self._regular_bonus(_lock_days - constants_struct.max_bonus_days_a, U256::from(0), U256::from(0))
@@ -621,8 +621,8 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     )->U256
     {
         let declaration_hash: Key = data::get_declaration_hash();
-        let parameters_string: String = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
-        let parameters_struct: parameters::ConstantParameters = serde_json::from_str(&parameters_string).unwrap();
+        let parameters_string: Vec<u8> = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
+        let parameters_struct: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&parameters_string).unwrap().0;
        
         _staked_amount.checked_mul(U256::from(parameters_struct.precision_rate)).unwrap().checked_div(_share_price).unwrap()
     }
@@ -637,8 +637,8 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let globals_hash = data::get_globals_hash();
         let declaration_hash: Key = data::get_declaration_hash();
        
-        let parameters_string: String = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
-        let parameters_struct: parameters::ConstantParameters = serde_json::from_str(&parameters_string).unwrap();
+        let parameters_string: Vec<u8> = runtime::call_contract(self.convert_to_contract_hash(declaration_hash), "get_declaration_constants", runtime_args!{});
+        let parameters_struct: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&parameters_string).unwrap().0;
         let share_price: U256 = runtime::call_contract(self.convert_to_contract_hash(globals_hash), "get_globals", runtime_args!{
             "field"=>"share_price"
         });
@@ -668,7 +668,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let helper_hash = data::get_helper_hash();
 
         let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
-            "stake"=>serde_json::to_string(&_stake).unwrap()
+            "stake"=>_stake.clone().into_bytes().unwrap()
         });
         
         if stake_status{U256::from(0)} else {self._calculate_reward_amount(_stake)} 
@@ -701,12 +701,13 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
    )->U256
    {
        let helper_hash = data::get_helper_hash();
-       let stake_string: String = serde_json::to_string(&_stake).unwrap();
+       let stake_string: Vec<u8> = _stake.clone().into_bytes().unwrap();
        let stake_status : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "stake_not_started", runtime_args!{
-           "stake"=>String::from(stake_string.clone())
+           "stake"=>stake_string.clone()
        });
        let stake_maturity : bool = runtime::call_contract(self.convert_to_contract_hash(helper_hash), "is_stake_mature", runtime_args!{
-           "stake"=>String::from(stake_string.clone())});
+           "stake"=>stake_string.clone()
+        });
 
        if stake_status || stake_maturity{
            U256::from(0)
@@ -717,7 +718,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
 
    fn _get_penalties(&mut self, _stake: &structs::Stake)->U256
    {
-       let stake_string: String = serde_json::to_string(&_stake).unwrap();
+       let stake_string: Vec<u8> = _stake.clone().into_bytes().unwrap();
        let helper_hash = self.convert_to_contract_hash(data::get_helper_hash());
        let days_left: U256= runtime::call_contract(helper_hash, "days_left", runtime_args!{"stake"=>stake_string.clone()});
        let locked_days: U256= runtime::call_contract(helper_hash, "get_locked_days", runtime_args!{"stake"=>stake_string.clone()});
@@ -730,10 +731,10 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     )->U256
     {
         let starting_day: U256= runtime::call_contract(self.convert_to_contract_hash(data::get_helper_hash()), "starting_day", runtime_args!{
-            "stake"=>serde_json::to_string(&_stake).unwrap()
+            "stake"=>_stake.clone().into_bytes().unwrap()
         });
         let calculation_day: U256 = runtime::call_contract(self.convert_to_contract_hash(data::get_helper_hash()), "calculation_day", runtime_args!{
-            "stake"=>serde_json::to_string(&_stake).unwrap()
+            "stake"=>_stake.clone().into_bytes().unwrap()
         });
 
         self._loop_reward_amount(
@@ -749,19 +750,19 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         _final_day: U256
     )->U256
     {
-        let constants_string: String = runtime::call_contract(self.convert_to_contract_hash(data::get_declaration_hash()), "get_declaration_constants", runtime_args!{});
-        let constants_struct: parameters::ConstantParameters = serde_json::from_str(&constants_string).unwrap();
+        let constants_string: Vec<u8> = runtime::call_contract(self.convert_to_contract_hash(data::get_declaration_hash()), "get_declaration_constants", runtime_args!{});
+        let constants_struct: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&constants_string).unwrap().0;
         let mut reward_amount: U256=U256::from(0);
         let mut res: U256=U256::from(0);
         
         let snapshot_hash = data::get_snapshot_hash();
         for _day in _start_day.as_u64().._final_day.as_u64(){
             // get snapshot struct and convert to struct type
-            let snapshot_str: String = runtime::call_contract(self.convert_to_contract_hash(snapshot_hash), "get_struct_from_key", runtime_args!{
+            let snapshot_str: Vec<u8> = runtime::call_contract(self.convert_to_contract_hash(snapshot_hash), "get_struct_from_key", runtime_args!{
                 "struct_name" =>"snapshot",
                 "key"=>_day
             });
-            let snapshot_struct: structs::Snapshot = serde_json::from_str(&snapshot_str).unwrap();
+            let snapshot_struct: structs::Snapshot = structs::Snapshot::from_bytes(&snapshot_str).unwrap().0;
 
 
             // calc stuff
