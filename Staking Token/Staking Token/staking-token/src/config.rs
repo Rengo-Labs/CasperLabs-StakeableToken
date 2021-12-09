@@ -1,9 +1,10 @@
 pub mod parameters {
-    use casper_types::{Key, U256};
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
+    use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
+    use alloc::{vec::Vec};
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters {
         pub _decimals: u32,
         pub yodas_per_wise: U256,
@@ -27,9 +28,9 @@ pub mod parameters {
 }
 
 pub mod structs {
-    use casper_types::{Key, U256};
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
+    use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
     use alloc::{vec::Vec};
     
     pub const SCRAPES: &str = "scrapes";
@@ -50,7 +51,7 @@ pub mod structs {
     pub const REFERRAL_SHARES: &str = "referral_shares";
     pub const LIQUIDITY_SHARES: &str = "liquidity_shares";
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Stake {
         pub stakes_shares: U256,
         pub staked_amount: U256,
@@ -66,7 +67,7 @@ pub mod structs {
         pub is_active: bool,
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ReferrerLink {
         pub staker: Key,
         pub stake_id: Vec<u32>,
@@ -83,14 +84,14 @@ pub mod structs {
         pub is_active: bool,
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct CriticalMass {
         pub total_amount: U256,
         pub activation_day: U256,
     }
 
     // referral shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct RSnapshot {
         pub total_shares: U256,
         pub inflation_amount: U256,
@@ -98,7 +99,7 @@ pub mod structs {
     }
 
     // regular shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Snapshot {
         pub total_shares: U256,
         pub inflation_amount: U256,

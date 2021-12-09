@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{collections::BTreeSet, format, string::String, vec};
+use alloc::{collections::BTreeSet, format, string::String, vec, vec::Vec, boxed::Box};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -11,7 +11,7 @@ use casper_contract::{
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
+    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use snapshot::{self, Snapshot};
@@ -104,7 +104,7 @@ fn get_struct_from_key() {
     let key: U256 = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
 
-    let ret: String = SnapshotStruct::default()._get_struct_from_key(&key, struct_name);
+    let ret: Vec<u8> = SnapshotStruct::default()._get_struct_from_key(&key, struct_name);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -117,7 +117,7 @@ fn snapshot_trigger() {
 fn set_struct_from_key() {
     let key: U256 = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
-    let value: String = runtime::get_named_arg("value");
+    let value: Vec<u8> = runtime::get_named_arg("value");
 
     SnapshotStruct::default()._set_struct_from_key(&key, value, struct_name);
 }
@@ -172,7 +172,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("key", CLType::U256),
             Parameter::new("struct_name", CLType::String),
         ],
-        CLType::String,
+        CLType::List(Box::new(u8::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -182,7 +182,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("key", CLType::U256),
             Parameter::new("struct_name", CLType::String),
-            Parameter::new("value", CLType::String),
+            Parameter::new("value", CLType::List(Box::new(u8::cl_type()))),
         ],
         <()>::cl_type(),
         EntryPointAccess::Public,

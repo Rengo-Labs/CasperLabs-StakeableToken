@@ -6,7 +6,7 @@ use crate::data::{self};
 use crate::config::*;
 // use crate::config::parameters::*;
 use casper_contract::contract_api::runtime;
-use casper_types::{runtime_args, ApiError, ContractHash, Key, RuntimeArgs, U256};
+use casper_types::{runtime_args, ApiError, ContractHash, Key, RuntimeArgs, U256, bytesrepr::{ToBytes, FromBytes}};
 use contract_utils::{ContractContext, ContractStorage};
 
 pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
@@ -81,12 +81,12 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             );
             let snapshot_contract_hash = self.convert_to_contract_hash(data::get_snapshot_hash());
             let struct_key: U256 = U256::from(_day);
-            let snapshots: String = runtime::call_contract(
+            let snapshots: Vec<u8> = runtime::call_contract(
                 snapshot_contract_hash,
                 "get_struct_from_key",
                 runtime_args! {"key" => struct_key.clone(), "struct_name" => structs::RSNAPSHOT},
             );
-            let mut snapshots: structs::RSnapshot = serde_json::from_str(&snapshots).unwrap();
+            let mut snapshots: structs::RSnapshot = structs::RSnapshot::from_bytes(&snapshots).unwrap().0;
 
             if snapshots.scheduled_to_end > _shares {
                 snapshots.scheduled_to_end = snapshots.scheduled_to_end - _shares;
@@ -96,26 +96,26 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let () = runtime::call_contract(
                 snapshot_contract_hash,
                 "set_struct_from_key",
-                runtime_args! {"key" => struct_key.clone(),"value"=>serde_json::to_string(&snapshots).unwrap(),"struct_name" => structs::RSNAPSHOT}, // convert structure to json string and save
+                runtime_args! {"key" => struct_key.clone(),"value"=>snapshots.clone().into_bytes().unwrap(),"struct_name" => structs::RSNAPSHOT}, // convert structure to json string and save
             );
         }
     }
     fn _below_threshhold_level(&mut self, _referrer: Key) -> bool {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key: String = _referrer.to_formatted_string();
-        let critical_mass: String = runtime::call_contract(
+        let critical_mass: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key, "struct_name" => structs::CRITICAL_MASS},
         );
-        let critical_mass: structs::CriticalMass = serde_json::from_str(&critical_mass).unwrap();
+        let critical_mass: structs::CriticalMass = structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
 
-        let constants: String = runtime::call_contract(
+        let constants: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_declaration_constants",
             runtime_args! {},
         );
-        let constants: parameters::ConstantParameters = serde_json::from_str(&constants).unwrap();
+        let constants: parameters::ConstantParameters = parameters::ConstantParameters::from_bytes(&constants).unwrap().0;
         if critical_mass.total_amount > constants.threshold_limit {
             return true;
         } else {
@@ -125,19 +125,19 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     fn _add_critical_mass(&mut self, _referrer: Key, _dai_equivalent: U256) {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key: String = _referrer.to_formatted_string();
-        let critical_mass: String = runtime::call_contract(
+        let critical_mass: Vec<u8> = runtime::call_contract(
             ContractHash::from(declaration_contract_hash),
             "get_struct_from_key",
             runtime_args! {"key" => struct_key.clone(), "struct_name" => structs::CRITICAL_MASS},
         );
         let mut critical_mass: structs::CriticalMass =
-            serde_json::from_str(&critical_mass).unwrap();
+        structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
         critical_mass.total_amount = critical_mass.total_amount + _dai_equivalent;
         critical_mass.activation_day = self._determine_activation_day(_referrer);
         let () = runtime::call_contract(
             declaration_contract_hash,
             "set_struct_from_key",
-            runtime_args! {"key" => struct_key.clone(),"value"=>serde_json::to_string(&critical_mass).unwrap(),"struct_name" => structs::CRITICAL_MASS}, // convert structure to json string and save
+            runtime_args! {"key" => struct_key.clone(),"value"=>critical_mass.clone().into_bytes().unwrap(),"struct_name" => structs::CRITICAL_MASS}, // convert structure to json string and save
         );
     }
     fn _remove_critical_mass(&mut self, _referrer: Key, _dai_equivalent: U256, _start_day: U256) {
@@ -152,13 +152,13 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let declaration_contract_hash =
                 self.convert_to_contract_hash(data::get_declaration_hash());
             let struct_key: String = _referrer.to_formatted_string();
-            let critical_mass: String = runtime::call_contract(
+            let critical_mass: Vec<u8> = runtime::call_contract(
                 ContractHash::from(declaration_contract_hash),
                 "get_struct_from_key",
                 runtime_args! {"key" => struct_key.clone(), "struct_name" => structs::CRITICAL_MASS},
             );
             let mut critical_mass: structs::CriticalMass =
-                serde_json::from_str(&critical_mass).unwrap();
+            structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
 
             if critical_mass.total_amount > _dai_equivalent {
                 critical_mass.total_amount = critical_mass.total_amount - _dai_equivalent;
@@ -169,7 +169,7 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let () = runtime::call_contract(
                 declaration_contract_hash,
                 "set_struct_from_key",
-                runtime_args! {"key" => struct_key,"value"=>serde_json::to_string(&critical_mass).unwrap(), "struct_name" => structs::CRITICAL_MASS}, // convert structure to json string and save
+                runtime_args! {"key" => struct_key,"value"=>critical_mass.clone().into_bytes().unwrap(), "struct_name" => structs::CRITICAL_MASS}, // convert structure to json string and save
             );
         }
     }
@@ -183,12 +183,12 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     fn _activation_day(&mut self, _referrer: Key) -> U256 {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key: String = _referrer.to_formatted_string();
-        let critical_mass: String = runtime::call_contract(
+        let critical_mass: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key.clone(), "struct_name" => structs::CRITICAL_MASS},
         );
-        let critical_mass: structs::CriticalMass = serde_json::from_str(&critical_mass).unwrap();
+        let critical_mass: structs::CriticalMass = structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
 
         if critical_mass.activation_day > 0.into() {
             return critical_mass.activation_day;
@@ -222,23 +222,23 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     fn _referrer_interest(&mut self, _referrer: Key, _referral_id: u32, _process_days: U256) {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key0: String = Self::_generate_key_for_dictionary(&_referrer, &_referral_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-        let referrer_link_struct: String = runtime::call_contract(
+        let referrer_link_struct: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key0.clone(), "struct_name" => structs::REFERRER_LINK},
         );
         let mut referral_link: structs::ReferrerLink =
-            serde_json::from_str(&referrer_link_struct).unwrap();
+        structs::ReferrerLink::from_bytes(&referrer_link_struct).unwrap().0;
         if referral_link.is_active == true {
             let _staker: Key = referral_link.staker;
             let _stake_id: u32 = referral_link.stake_id;
             let struct_key1: String = Self::_generate_key_for_dictionary(&_staker, &_stake_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-            let stakes_struct: String = runtime::call_contract(
+            let stakes_struct: Vec<u8> = runtime::call_contract(
                 declaration_contract_hash,
                 "get_struct_from_key",
                 runtime_args! {"key" => struct_key1, "struct_name" => structs::STAKES},
             );
-            let stake: structs::Stake = serde_json::from_str(&stakes_struct).unwrap(); // convert json string received, back to Stake Structure
+            let stake: structs::Stake = structs::Stake::from_bytes(&stakes_struct).unwrap().0; // convert json string received, back to Stake Structure
 
             let start_day: U256 = self._determine_start_day(&stake, &referral_link);
             let mut final_day: U256 = self._determine_final_day(&stake);
@@ -246,7 +246,7 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let is_stake_ended: bool = runtime::call_contract(
                 helper_contract_hash,
                 "_stake_ended",
-                runtime_args! {"_stake" => serde_json::to_string(&stake).unwrap()}, // convert structure to json string and save
+                runtime_args! {"_stake" => stake.clone().into_bytes().unwrap()}, // convert structure to json string and save
             );
 
             if is_stake_ended {
@@ -281,7 +281,7 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let () = runtime::call_contract(
                 declaration_contract_hash,
                 "set_struct_from_key",
-                runtime_args! {"key" => struct_key0.clone(),"value"=>serde_json::to_string(&referral_link).unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
+                runtime_args! {"key" => struct_key0.clone(),"value"=>referral_link.clone().into_bytes().unwrap(), "struct_name" => structs::REFERRER_LINK}, // convert structure to json string and save
             );
             let bep20_contract_hash = self.convert_to_contract_hash(data::get_bep20_hash());
             let () = runtime::call_contract(
@@ -298,23 +298,23 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     ) -> (Key, u32, U256, U256, bool, bool, bool, bool) {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key: String = Self::_generate_key_for_dictionary(&_referrer, &_referral_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-        let referrer_link_struct: String = runtime::call_contract(
+        let referrer_link_struct: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key, "struct_name" => structs::REFERRER_LINK},
         );
         let referral_link: structs::ReferrerLink =
-            serde_json::from_str(&referrer_link_struct).unwrap();
+        structs::ReferrerLink::from_bytes(&referrer_link_struct).unwrap().0;
         let _staker: Key = referral_link.staker;
         let _stake_id: u32 = referral_link.stake_id;
         let is_active_referral: bool = referral_link.is_active;
         let struct_key: String = Self::_generate_key_for_dictionary(&_staker, &_stake_id); // generate key and pass it to Declaration contract which will return the struct stored against this key in that contract
-        let stakes_struct: String = runtime::call_contract(
+        let stakes_struct: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key, "struct_name" => structs::STAKES},
         );
-        let stake: structs::Stake = serde_json::from_str(&stakes_struct).unwrap(); // convert json string received, back to Stake Structure
+        let stake: structs::Stake = structs::Stake::from_bytes(&stakes_struct).unwrap().0; // convert json string received, back to Stake Structure
 
         let referrer_shares = stake.referrer_shares;
         let start_day: U256 = self._determine_start_day(&stake, &referral_link);
@@ -326,13 +326,13 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
         let is_stake_ended: bool = runtime::call_contract(
             helper_contract_hash,
             "stake_ended",
-            runtime_args! {"stake" => serde_json::to_string(&stake).unwrap()}, // convert structure to json string and save
+            runtime_args! {"stake" => stake.clone().into_bytes().unwrap()}, // convert structure to json string and save
         );
         let is_ended_stake = is_stake_ended;
         let is_stake_mature: bool = runtime::call_contract(
             helper_contract_hash,
             "is_mature_stake",
-            runtime_args! {"stake" => serde_json::to_string(&stake).unwrap()}, // convert structure to json string and save
+            runtime_args! {"stake" => stake.clone().into_bytes().unwrap()}, // convert structure to json string and save
         );
         let is_mature_stake = is_stake_mature;
         return (
@@ -376,22 +376,22 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
 
         for _day in _start_day.as_u64().._final_day.as_u64() {
             let struct_key: U256 = U256::from(_day);
-            let snapshots: String = runtime::call_contract(
+            let snapshots: Vec<u8> = runtime::call_contract(
                 snapshot_contract_hash,
                 "get_struct_from_key",
                 runtime_args! {"key" => struct_key, "struct_name" => structs::RSNAPSHOT},
             );
-            let snapshots: structs::RSnapshot = serde_json::from_str(&snapshots).unwrap();
+            let snapshots: structs::RSnapshot = structs::RSnapshot::from_bytes(&snapshots).unwrap().0;
 
             let declaration_contract_hash =
                 self.convert_to_contract_hash(data::get_declaration_hash());
-            let constants: String = runtime::call_contract(
+            let constants: Vec<u8> = runtime::call_contract(
                 declaration_contract_hash,
                 "get_declaration_constants",
                 runtime_args! {},
             );
             let constants: parameters::ConstantParameters =
-                serde_json::from_str(&constants).unwrap();
+            parameters::ConstantParameters::from_bytes(&constants).unwrap().0;
             _referral_interest = _referral_interest
                 + _stake.stakes_shares * constants.precision_rate / snapshots.inflation_amount;
         }
@@ -404,12 +404,12 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
     ) -> U256 {
         let declaration_contract_hash = self.convert_to_contract_hash(data::get_declaration_hash());
         let struct_key: String = _stake.referrer.to_formatted_string();
-        let critical_mass: String = runtime::call_contract(
+        let critical_mass: Vec<u8> = runtime::call_contract(
             declaration_contract_hash,
             "get_struct_from_key",
             runtime_args! {"key" => struct_key, "struct_name" => structs::CRITICAL_MASS},
         );
-        let critical_mass: structs::CriticalMass = serde_json::from_str(&critical_mass).unwrap();
+        let critical_mass: structs::CriticalMass = structs::CriticalMass::from_bytes(&critical_mass).unwrap().0;
 
         if critical_mass.activation_day > U256::from(_stake.start_day) {
             return critical_mass.activation_day;
@@ -426,7 +426,7 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>: ContractContext<Storage> {
             let calculation_day: U256 = runtime::call_contract(
                 helper_contract_hash,
                 "calculation_day",
-                runtime_args! {"stake" => serde_json::to_string(&_stake).unwrap()}, // convert structure to json string and save
+                runtime_args! {"stake" => _stake.clone().into_bytes().unwrap()}, // convert structure to json string and save
             );
             return calculation_day;
         }

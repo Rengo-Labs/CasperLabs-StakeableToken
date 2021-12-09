@@ -2,7 +2,7 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, vec, string::String};
+use alloc::{boxed::Box, collections::BTreeSet, format, vec, string::String, vec::Vec};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -117,7 +117,7 @@ fn get_struct_from_key()
     let key: String = runtime::get_named_arg("key");
     let struct_name: String = runtime::get_named_arg("struct_name");
 
-    let ret: String = DeclarationStruct::default().get_struct_from_key(key, struct_name);
+    let ret: Vec<u8> = DeclarationStruct::default().get_struct_from_key(key, struct_name);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -125,7 +125,7 @@ fn get_struct_from_key()
 fn set_struct_from_key()
 {
     let key: String = runtime::get_named_arg("key");
-    let value: String = runtime::get_named_arg("value");
+    let value: Vec<u8> = runtime::get_named_arg("value");
     let struct_name: String = runtime::get_named_arg("struct_name");
 
     DeclarationStruct::default().set_struct_from_key(key, value, struct_name);
@@ -188,7 +188,7 @@ fn get_total_penalties()
 #[no_mangle]
 fn get_declaration_constants()
 {
-    let ret: String = DeclarationStruct::default().get_declaration_constants();
+    let ret: Vec<u8> = DeclarationStruct::default().get_declaration_constants();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -422,7 +422,7 @@ fn get_entry_points() -> EntryPoints
             Parameter::new("key", CLType::String),
             Parameter::new("struct_name", CLType::String),
         ],
-        CLType::String,
+        CLType::List(Box::new(u8::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -431,7 +431,7 @@ fn get_entry_points() -> EntryPoints
         "set_struct_from_key",
         vec![
             Parameter::new("key", CLType::String),
-            Parameter::new("value", CLType::String),
+            Parameter::new("value", CLType::List(Box::new(u8::cl_type()))),
             Parameter::new("struct_name", CLType::String),
         ],
         <()>::cl_type(),
@@ -559,7 +559,7 @@ fn get_entry_points() -> EntryPoints
     entry_points.add_entry_point(EntryPoint::new(
         "get_declaration_constants",
         vec![],
-        CLType::String,
+        CLType::List(Box::new(u8::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));

@@ -255,15 +255,15 @@ impl CriticalMass {
     }
 
     // key is the string representation of the Key type
-    pub fn get(&self, key: &str) -> String
+    pub fn get(&self, key: &str) -> Vec<u8>
     {
-        let result: String = self.dict.get(&key).unwrap_or_default();
+        let result: Vec<u8> = self.dict.get(&key).unwrap_or_default();
         result
     }
     
     // value is the json string representation of the 'CriticalMass' structure
     // key should the string representation of the Key type
-    pub fn set(&self, key : &str, value: String ) 
+    pub fn set(&self, key : &str, value: Vec<u8> ) 
     {
         self.dict.set(&key, value);
     }
@@ -334,15 +334,15 @@ impl Stakes {
     }
 
     // key is the string representation of the Key and ID concatinated
-    pub fn get(&self, key: &str) -> String
+    pub fn get(&self, key: &str) -> Vec<u8>
     {
-        let result: String = self.dict.get(&key).unwrap_or_default();
+        let result: Vec<u8> = self.dict.get(&key).unwrap_or_default();
         result
     }
 
     // value is the json string representation of the 'Stakes' structure
     // key should the string representation of the Key and Vec<u16> concatinated
-    pub fn set(&self, key : &str, value: String ) 
+    pub fn set(&self, key : &str, value: Vec<u8> ) 
     {
         self.dict.set(&key, value);
     }
@@ -365,15 +365,15 @@ impl ReferrerLink {
     }
 
     // key is the string representation of the Key and ID concatinated
-    pub fn get(&self, key: &str) -> String
+    pub fn get(&self, key: &str) -> Vec<u8>
     {
-        let result: String = self.dict.get(&key).unwrap_or_default();
+        let result: Vec<u8> = self.dict.get(&key).unwrap_or_default();
         result
     }
 
     // value is the json string representation of the 'Stakes' structure
     // key should the string representation of the Key and Vec<u16> concatinated
-    pub fn set(&self, key : &str, value: String ) 
+    pub fn set(&self, key : &str, value: Vec<u8> ) 
     {
         self.dict.set(&key, value);
     }
@@ -396,15 +396,15 @@ impl LiquidityStakes {
     }
 
     // key is the string representation of the Key and ID concatinated
-    pub fn get(&self, key: &str) -> String
+    pub fn get(&self, key: &str) -> Vec<u8>
     {
-        let result: String = self.dict.get(&key).unwrap_or_default();
+        let result: Vec<u8> = self.dict.get(&key).unwrap_or_default();
         result
     }
 
     // value is the json string representation of the 'Stakes' structure
     // key is the string representation of the Key and ID concatinated
-    pub fn set(&self, key : &str, value: String ) 
+    pub fn set(&self, key : &str, value: Vec<u8> ) 
     {
         self.dict.set(&key, value);
     }

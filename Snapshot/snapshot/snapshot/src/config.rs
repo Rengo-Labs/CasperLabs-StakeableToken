@@ -1,14 +1,15 @@
 #[allow(non_snake_case)]
 pub mod Structs {
-    use casper_types::U256;
-    extern crate serde;
-    use serde::{Deserialize, Serialize};
+    use casper_types::{U256, bytesrepr::{FromBytes, ToBytes}};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
+    use alloc::{vec::Vec};
 
     pub const SNAPSHOT: &str = "snapshot";
     pub const RSNAPSHOT: &str = "rsnapshot";
     pub const LSNAPSHOT: &str = "lsnapshot";
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters {
         pub _decimals: u32,
         pub yodas_per_wise: U256,
@@ -28,7 +29,7 @@ pub mod Structs {
         pub daily_bonus_b: U256,   // 5%:13505 = 0.00037023324 per day;
     }
     // regular shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Snapshot {
         pub total_shares: U256,
         pub inflation_amount: U256,
@@ -36,7 +37,7 @@ pub mod Structs {
     }
 
     // referral shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct RSnapshot {
         pub total_shares: U256,
         pub inflation_amount: U256,
@@ -44,7 +45,7 @@ pub mod Structs {
     }
 
     // liquidity shares
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct LSnapShot {
         pub total_shares: U256,
         pub inflation_amount: U256,
