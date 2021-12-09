@@ -8,6 +8,7 @@ use casper_contract::contract_api::storage;
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, ApiError, Key, RuntimeArgs, URef, U128, U256,
+    bytesrepr::{FromBytes, ToBytes}
 };
 use contract_utils::{ContractContext, ContractStorage};
 
@@ -157,7 +158,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
                 "field"=>data::CURRENT_WISE_DAY
             },
         );
-        let mut temp_str: String = runtime::call_contract(
+        let mut temp_vec: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_declaration_constants",
             runtime_args! {},
@@ -168,7 +169,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {},
         );
 
-        let parameters: Structs::ConstantParameters = serde_json::from_str(&temp_str).unwrap();
+        let parameters: Structs::ConstantParameters = Structs::ConstantParameters::from_bytes(&temp_vec).unwrap().0;
         let snapshots = data::SnapshotsDict::instance();
         while day < _update_day.into() {
             // ------------------------------------
@@ -181,7 +182,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             );
 
             let prev_snapshot: Structs::Snapshot =
-                serde_json::from_str(&snapshots.get(&(day - U256::from(1)))).unwrap();
+            Structs::Snapshot::from_bytes(&snapshots.get(&(day - U256::from(1)))).unwrap().0;
 
             temp = runtime::call_contract(
                 Self::_create_hash_from_key(declaration_hash),
@@ -191,7 +192,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             let mut scheduled_to_end_today: U256 = temp - prev_snapshot.scheduled_to_end;
 
             let mut todays_snapshot: Structs::Snapshot =
-                serde_json::from_str(&snapshots.get(&day)).unwrap();
+            Structs::Snapshot::from_bytes(&snapshots.get(&day)).unwrap().0;
             todays_snapshot.scheduled_to_end = scheduled_to_end_today;
 
             todays_snapshot.total_shares = if total_shares > scheduled_to_end_today {
@@ -216,8 +217,8 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
                     inflation_rate_guard,
                 ); //(Self::_inflation_amount(total_staked_today, ));
 
-            temp_str = serde_json::to_string(&todays_snapshot).unwrap();
-            snapshots.set(&day, temp_str);
+            temp_vec = todays_snapshot.clone().into_bytes().unwrap();
+            snapshots.set(&day, temp_vec);
 
             // ------------------------------------
             // prepare snapshot for referrer shares
@@ -230,12 +231,12 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             );
 
             let r_snapshots = data::RSnapshotsDict::instance();
-            temp_str = r_snapshots.get(&(day - U256::from(1)));
-            let mut r_snapshot: Structs::RSnapshot = serde_json::from_str(&temp_str).unwrap();
+            temp_vec = r_snapshots.get(&(day - U256::from(1)));
+            let mut r_snapshot: Structs::RSnapshot = Structs::RSnapshot::from_bytes(&temp_vec).unwrap().0;
             scheduled_to_end_today = temp + r_snapshot.scheduled_to_end;
 
-            temp_str = r_snapshots.get(&(day));
-            r_snapshot = serde_json::from_str(&temp_str).unwrap();
+            temp_vec = r_snapshots.get(&(day));
+            r_snapshot = Structs::RSnapshot::from_bytes(&temp_vec).unwrap().0;
 
             r_snapshot.scheduled_to_end = scheduled_to_end_today;
 
@@ -248,16 +249,16 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             r_snapshot.inflation_amount = (r_snapshot.total_shares * parameters.precision_rate)
                 / Self::_referral_inflation(total_staked_today, total_supply);
 
-            temp_str = serde_json::to_string(&r_snapshot).unwrap();
-            r_snapshots.set(&day, temp_str);
+            temp_vec = r_snapshot.clone().into_bytes().unwrap(); 
+            r_snapshots.set(&day, temp_vec);
 
             // ------------------------------------
             // prepare snapshot for liquidity shares
             // reusing scheduledToEndToday variable
             let l_snapshots = data::LSnapshotsDict::instance();
 
-            temp_str = l_snapshots.get(&day);
-            let mut l_snapshot: Structs::LSnapShot = serde_json::from_str(&temp_str).unwrap();
+            temp_vec = l_snapshots.get(&day);
+            let mut l_snapshot: Structs::LSnapShot =  Structs::LSnapShot::from_bytes(&temp_vec).unwrap().0;
 
             l_snapshot.total_shares = liquidity_shares;
 
@@ -271,8 +272,8 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
             l_snapshot.inflation_amount = (l_snapshot.total_shares * parameters.precision_rate)
                 / Self::_liquidity_inflation(total_staked_today, total_supply, inflation);
-            temp_str = serde_json::to_string(&l_snapshot).unwrap();
-            l_snapshots.set(&day, temp_str);
+            temp_vec = l_snapshot.clone().into_bytes().unwrap(); 
+            l_snapshots.set(&day, temp_vec);
 
             self._adjust_liquidity_rates();
 
@@ -353,13 +354,13 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             runtime_args! {},
         );
 
-        let parameters_string: String = runtime::call_contract(
+        let parameters_string: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_declaration_constants",
             runtime_args! {},
         );
         let parameters_type: Structs::ConstantParameters =
-            serde_json::from_str(&parameters_string).unwrap();
+        Structs::ConstantParameters::from_bytes(&parameters_string).unwrap().0;
         let inflation_rate_max: U256 = parameters_type.inflation_rate_max;
 
         let mut inflation_rate: U256 = runtime::call_contract(
@@ -402,13 +403,13 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
 
     fn _referral_inflation(_total_staked: U256, _total_supply: U256) -> U256 {
         let declaration_hash: Key = data::declaration_hash();
-        let parameters_string: String = runtime::call_contract(
+        let parameters_string: Vec<u8> = runtime::call_contract(
             Self::_create_hash_from_key(declaration_hash),
             "get_declaration_constants",
             runtime_args! {},
         );
         let parameters_type: Structs::ConstantParameters =
-            serde_json::from_str(&parameters_string).unwrap();
+        Structs::ConstantParameters::from_bytes(&parameters_string).unwrap().0;
 
         (_total_staked + _total_supply) * 10000 / parameters_type.referrals_rate
     }
@@ -422,7 +423,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
         (_total_staked + _total_supply) * 10000 / _liquidity_rate
     }
 
-    fn _get_struct_from_key(&self, key: &U256, struct_name: String) -> String {
+    fn _get_struct_from_key(&self, key: &U256, struct_name: String) -> Vec<u8> {
         if struct_name.eq(data::RSNAPSHOTS_DICT) {
             let r_snapshots = data::RSnapshotsDict::instance();
             return r_snapshots.get(&key);
@@ -433,11 +434,12 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> {
             let snapshots = data::SnapshotsDict::instance();
             return snapshots.get(&key);
         } else {
-            String::from("")
+            // String::from("")
+            Vec::new()
         }
     }
 
-    fn _set_struct_from_key(&self, key: &U256, value: String, struct_name: String) {
+    fn _set_struct_from_key(&self, key: &U256, value: Vec<u8>, struct_name: String) {
         if struct_name.eq(data::RSNAPSHOTS_DICT) {
             let r_snapshots = data::RSnapshotsDict::instance();
             return r_snapshots.set(&key, value);

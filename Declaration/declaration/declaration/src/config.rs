@@ -1,11 +1,12 @@
 
 pub mod parameters
 {
-    use casper_types::{U256, Key};
-    extern crate serde;
-    use serde::{Serialize, Deserialize};
+    use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+    extern crate alloc;
+    use alloc::{vec::Vec};
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters
     {
         _decimals : u32,
@@ -66,11 +67,10 @@ pub mod structs
     extern crate alloc;
     use alloc::{vec, vec::Vec};
     use casper_types::{U256, Key, bytesrepr::{ToBytes, FromBytes}, CLTyped, CLType};
-    extern crate serde;
-    use serde::{Serialize, Deserialize};
+    use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct Stake 
     {
         stakes_shares: U256,
@@ -105,7 +105,7 @@ pub mod structs
         is_active: bool
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct CriticalMass 
     {
         total_amount: U256,

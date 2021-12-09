@@ -1,9 +1,9 @@
 extern crate alloc;
-use alloc::{string::String};
+use alloc::{string::String, vec::Vec};
 
 use casper_contract::{ contract_api::{runtime}};
 use casper_types::{
-    contracts::{ContractHash, ContractPackageHash},Key,  U256, runtime_args, RuntimeArgs};
+    contracts::{ContractHash, ContractPackageHash},Key,  U256, runtime_args, RuntimeArgs, bytesrepr::{FromBytes, ToBytes}};
 use contract_utils::{ContractContext, ContractStorage};
 
 use crate::data::{self};
@@ -227,7 +227,7 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
 
     
     // This function is used to get the struct objects stored against key. These struct objects are returned as string.
-    fn get_struct_from_key(&self, key: String, struct_name: String) -> String
+    fn get_struct_from_key(&self, key: String, struct_name: String) -> Vec<u8>
     {
         if struct_name.eq(data::STAKES) {
             let stakes = data::Stakes::instance();
@@ -242,12 +242,12 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
             return critical_mass.get(&key);
         }
         else {
-            String::from("")
+            Vec::new()
         }
     }
 
     // This function is used to set the struct objects stored against key. These struct objects are received as json string.
-    fn set_struct_from_key(&self, key: String, value: String, struct_name: String)
+    fn set_struct_from_key(&self, key: String, value: Vec<u8>, struct_name: String)
     {
         if struct_name.eq(data::STAKES) {
             let stakes = data::Stakes::instance();
@@ -264,11 +264,11 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
     }
 
     // returns the struct of constants (defined in config) as a json string.
-    fn get_declaration_constants(&self)->String
+    fn get_declaration_constants(&self)->Vec<u8>
     {
         let const_struct = parameters::ConstantParameters::instance();
-        let json_string = serde_json::to_string(&const_struct).unwrap();
+        let struct_bytes = const_struct.clone().into_bytes().unwrap();
 
-        json_string
+        struct_bytes
     }
 }

@@ -2,7 +2,7 @@ use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 extern crate alloc;
-use alloc::string::{String, ToString};
+use alloc::{string::{String, ToString}, vec::Vec};
 
 // Keys for global struct
 pub const TOTAL_STAKED: &str = "total_staked";
@@ -42,11 +42,11 @@ impl SnapshotsDict {
         Dict::init(SNAPSHOTS_DICT)
     }
 
-    pub fn get(&self, key: &U256) -> String {
+    pub fn get(&self, key: &U256) -> Vec<u8> {
         self.dict.get(&key.to_string()).unwrap_or_default()
     }
 
-    pub fn set(&self, key: &U256, value: String) {
+    pub fn set(&self, key: &U256, value: Vec<u8>) {
         self.dict.set(&key.to_string(), value);
     }
 }
@@ -66,11 +66,11 @@ impl LSnapshotsDict {
         Dict::init(LSNAPSHOTS_DICT)
     }
 
-    pub fn get(&self, key: &U256) -> String {
+    pub fn get(&self, key: &U256) -> Vec<u8> {
         self.dict.get(&key.to_string()).unwrap_or_default()
     }
 
-    pub fn set(&self, key: &U256, value: String) {
+    pub fn set(&self, key: &U256, value: Vec<u8>) {
         self.dict.set(&key.to_string(), value);
     }
 }
@@ -90,11 +90,11 @@ impl RSnapshotsDict {
         Dict::init(RSNAPSHOTS_DICT)
     }
 
-    pub fn get(&self, key: &U256) -> String {
+    pub fn get(&self, key: &U256) -> Vec<u8> {
         self.dict.get(&key.to_string()).unwrap_or_default()
     }
 
-    pub fn set(&self, key: &U256, value: String) {
+    pub fn set(&self, key: &U256, value: Vec<u8>) {
         self.dict.set(&key.to_string(), value);
     }
 }
