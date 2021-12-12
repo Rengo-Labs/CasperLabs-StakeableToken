@@ -21,7 +21,6 @@ pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
 
     fn forward_funds(&self, _token_address: Key, _forward_amount: U256) -> bool {
         // self._only_transfer_invoker();
-
         let caller: Key = Key::from(self.get_caller());
         let transfer_invoker: Key = data::transfer_invoker();
 
