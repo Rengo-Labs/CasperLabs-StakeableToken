@@ -2,7 +2,7 @@ use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 extern crate alloc;
-use alloc::vec::Vec;
+use alloc::{vec, vec::Vec};
 
 pub const SELF_HASH: &str = "self_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
@@ -94,11 +94,11 @@ pub fn set_router_hash(hash: Key) {
 }
 
 pub fn set_path(key1: Key, key2: Key, key3: Key, key4: Key){
-    let _path = Vec::from([key1, key2, key3, key4]);
+    let _path = vec![key1, key2, key3, key4];
     set_key(PATH, _path);
 }
 
-pub fn get_path()->Vec<u32>{
+pub fn get_path()->Vec<Key>{
     get_key(PATH).unwrap_or_revert()
 }
 

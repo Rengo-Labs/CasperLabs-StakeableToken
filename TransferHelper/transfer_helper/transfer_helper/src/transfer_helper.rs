@@ -33,7 +33,7 @@ pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
             Self::_create_hash_from_key(_token_address),
             "transfer",
             runtime_args! {
-                "to"=>transfer_invoker,
+                "recipient"=>transfer_invoker,
                 "amount"=>_forward_amount
             },
         );

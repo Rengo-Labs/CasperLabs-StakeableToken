@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "liquidity_token",
-    "liquidity_token_tests",
     "test_contract"
 ]
 

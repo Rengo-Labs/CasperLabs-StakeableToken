@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/eldarito/repos/CasperLabs-Wise-WiseToken/Snapshot/snapshot/snapshot/target/rls/wasm32-unknown-unknown/debug/build/typenum-180d3da82fb79ca9/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/eldarito/repos/CasperLabs-Wise-WiseToken/Snapshot/snapshot/snapshot/target/rls/wasm32-unknown-unknown/debug/build/typenum-180d3da82fb79ca9/out/op.rs

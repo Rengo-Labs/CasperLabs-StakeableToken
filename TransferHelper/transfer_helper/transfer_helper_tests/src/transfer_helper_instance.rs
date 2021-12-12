@@ -47,7 +47,7 @@ impl TransferHelperInstance {
     pub fn set_key_by_name(&self, sender: Sender, name: String, key: Key) {
         self.0.call_contract(
             sender,
-            SET_KEY_BY_NAME_ENTRYPOINT_NAME,
+            "set_transfer_helper",
             runtime_args! {
                 NAME_RUNTIME_ARG_NAME=>name,
                 KEY_RUNTIME_ARG_NAME => key

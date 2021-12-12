@@ -314,7 +314,7 @@ fn deploy_referral_token(
 )-> TestContract{
     TestContract::new(
         &env,
-        "referral-token.wasm",
+        "referral-token-main.wasm",
         "referral-token",
         Sender(owner),
         runtime_args!{
@@ -348,7 +348,7 @@ fn deploy_wise_token(env: &TestEnv, owner: AccountHash, declaration: Key, global
         Sender(owner),
         runtime_args! {
             "declaration_contract" => declaration,
-            "globals_address" => globals,
+            "globals_contract" => globals,
             "synthetic_bnb_address" => sbnb,
             "bep20_address" => bep20,
             "router_address" => router,
@@ -410,7 +410,7 @@ fn deploy_busd_equivalent() -> (
     TestEnv,
     AccountHash,
     BUSDEquivalentInstance,
-    TestContract,
+    BUSDEquivalentInstance,
     TestContract,
     TestContract,
     TestContract,
@@ -558,7 +558,8 @@ fn deploy_busd_equivalent() -> (
         Key::Hash(factory.contract_hash())
     );
 
-    let busd_equivalent_key: Key = Key::Hash(busd_equivalent.contract_hash());
+    // let busd_equivalent_key: Key = Key::Hash(busd_equivalent.contract_hash());
+    let busd_equivalent_key: Key = busd_equivalent.query_named_key("self_hash".to_string());
     // deploy proxy
     let proxy: TestContract = BUSDEquivalentInstance::proxy(&env, Sender(owner), busd_equivalent_key);
 
@@ -568,7 +569,7 @@ fn deploy_busd_equivalent() -> (
         env,
         owner,
         BUSDEquivalentInstance::instance(busd_equivalent),
-        proxy,
+        BUSDEquivalentInstance::instance(proxy),
         wise,
         synthetic_bnb,
         wbnb,
@@ -579,22 +580,22 @@ fn deploy_busd_equivalent() -> (
     )
 }
 
-#[test]
-fn test_deploy() {
-    let (
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-    ) = deploy_busd_equivalent();
-}
+// #[test]
+// fn test_deploy() {
+//     let (
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//         _,
+//     ) = deploy_busd_equivalent();
+// }
 
 #[test]
 #[should_panic]
@@ -615,7 +616,7 @@ fn test_get_busd_equivalent(){
 
     // yodas_per_wise is 0, therefore amount_in to router is 0
     // router will then revert
-    proxy.get_busd_equivalent();
+    proxy.get_busd_equivalent(Sender(owner));
 }
 
 // #[test]

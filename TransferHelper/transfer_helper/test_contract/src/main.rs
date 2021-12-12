@@ -28,7 +28,7 @@ use utils::*;
 // ================================== Test Endpoints ================================== //
 #[no_mangle]
 fn forward_funds() {
-    let transfer_helper_hash: ContractHash = get_key(TRANSFER_HELPER_HASH_RUNTIME_ARG_NAME);
+    let transfer_helper_hash: ContractHash = get_key(&TRANSFER_HELPER_HASH_RUNTIME_ARG_NAME);
     let token_address: Key = runtime::get_named_arg(TOKEN_ADDRESS_RUNTIME_ARG_NAME);
     let forward_amount: U256 = runtime::get_named_arg(FORWARD_AMOUNT_RUNTIME_ARG_NAME);
 
@@ -45,16 +45,16 @@ fn forward_funds() {
 }
 
 #[no_mangle]
-fn set_key_by_name() {
+fn set_transfer_helper() {
     let name: String = runtime::get_named_arg("name");
     let key: Key = runtime::get_named_arg("key");
 
-    set_key(&name, key);
+    set_key(&name, ContractHash::from(key.into_hash().unwrap_or_revert()));
 }
 
 #[no_mangle]
 fn get_transfer_invoker_address() {
-    let transfer_helper_hash : ContractHash = get_key(TRANSFER_HELPER_HASH_KEY_NAME);
+    let transfer_helper_hash : ContractHash = get_key(&TRANSFER_HELPER_HASH_KEY_NAME);
     let ret: Key = runtime::call_contract(
         transfer_helper_hash,
         GET_TRANSFER_INVOKER_ADDRESS_ENTRYPOINT_NAME,
@@ -112,7 +112,7 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        SET_KEY_BY_NAME_ENTRYPOINT_NAME,
+        "set_transfer_helper",
         vec![
             Parameter::new(NAME_RUNTIME_ARG_NAME, CLType::String),
             Parameter::new(KEY_RUNTIME_ARG_NAME, CLType::Key),

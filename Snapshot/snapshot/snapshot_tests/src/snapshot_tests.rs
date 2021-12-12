@@ -1,8 +1,11 @@
 use crate::constants::*;
-use crate::snapshot_instance::SnapshotInstance;
+use crate::snapshot_instance::*;
 use casper_engine_test_support::AccountHash;
 use casper_types::{runtime_args, ContractPackageHash, Key, RuntimeArgs, U256, U512};
 use test_env::{Sender, TestContract, TestEnv};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use more_asserts;
 
 fn deploy_declaration(
     env: &TestEnv,
@@ -53,7 +56,7 @@ fn deploy_timing(
         "timing",
         Sender(owner),
         runtime_args! {
-            "declaration_contract_hash"=>declaration_contract_hash
+            "declaration_contract"=>declaration_contract_hash
         },
     )
 }
@@ -100,7 +103,8 @@ fn deploy_bep20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> 
         runtime_args! {
             "initial_supply" => supply,
             "name" => name.to_string(),
-            "symbol" => symbol.to_string()
+            "symbol" => symbol.to_string(),
+            "decimals" => decimals
         },
     )
 }
@@ -172,8 +176,8 @@ fn deploy_pair(
         "pair",
         Sender(owner),
         runtime_args! {
-            "name" => "pair".to_string(),
-            "symbol" => "pair".to_string(),
+            "name" => "pair",
+            "symbol" => "pair",
             "decimals" => decimals,
             "initial_supply" => init_total_supply,
             "factory_hash" => factory_contract,
@@ -197,7 +201,7 @@ fn deploy_uniswap_router(
         runtime_args! {
             "factory" => factory,
             "wcspr" => wcspr,
-            "library_hash" => library
+            "library" => library
         },
     )
 }
@@ -300,6 +304,30 @@ fn deploy_synthetic_bnb(
     )
 }
 
+fn deploy_referral_token(
+    env: &TestEnv,
+    owner: AccountHash,
+    declaration: Key,
+    timing: Key,
+    helper: Key,
+    bep20: Key,
+    snapshot: Key
+)-> TestContract{
+    TestContract::new(
+        &env,
+        "referral-token.wasm",
+        "referral-token",
+        Sender(owner),
+        runtime_args!{
+            "declaration_hash"=>declaration,
+            "timing_hash"=>timing,
+            "helper_hash"=>helper,
+            "bep20_hash"=>bep20,
+            "snapshot_hash"=>snapshot,
+        }
+    )
+}
+
 fn deploy_wbnb(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> TestContract {
     TestContract::new(
         &env,
@@ -310,6 +338,42 @@ fn deploy_wbnb(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> T
             "name" => "wbnb",
             "symbol" => "ERC",
         },
+    )
+}
+
+fn deploy_wise_token(env: &TestEnv, owner: AccountHash, declaration: Key, globals: Key, sbnb: Key, bep20: Key, router: Key, staking_token: Key, timing: Key)->TestContract{
+    TestContract::new(
+        &env,
+        "wisetoken.wasm",
+        "wise",
+        Sender(owner),
+        runtime_args! {
+            "declaration_contract" => declaration,
+            "globals_address" => globals,
+            "synthetic_bnb_address" => sbnb,
+            "bep20_address" => bep20,
+            "router_address" => router,
+            "staking_token_address" => staking_token,
+            "timing_address" => timing
+        }
+    )
+}
+
+fn deploy_staking_token(env: &TestEnv, owner: AccountHash, declaration: Key, timing: Key, helper: Key, globals: Key, bep20: Key, snapshot: Key, referral_token: Key)->TestContract{
+    TestContract::new(
+        &env,
+        "staking-token-main.wasm",
+        "staking-token",
+        Sender(owner),
+        runtime_args! {
+            "declaration_hash"=>declaration,
+            "timing_hash"=>timing,
+            "helper_hash"=>helper,
+            "globals_hash"=>globals,
+            "bep20_hash"=>bep20,
+            "snapshot_hash"=>snapshot,
+            "referral_token_hash"=>referral_token,
+        }
     )
 }
 
@@ -346,7 +410,7 @@ fn deploy_snapshot(
 fn deploy() -> (
     TestEnv,
     AccountHash,
-    SnapshotInstance,
+    TestContract,
     TestContract,
     TestContract,
     TestContract,
@@ -367,6 +431,7 @@ fn deploy() -> (
     let wcspr = deploy_wcspr(&env, owner);
     let dai = deploy_dai(&env, owner);
     let wbnb = deploy_wbnb(&env, owner, "wbnb", "ERC");
+    let busd = deploy_erc20(&env, owner, "BUSD", "ERC");
     // deploying declaration
 
     let (factory, factory_token) = deploy_factory(&env, owner);
@@ -419,17 +484,21 @@ fn deploy() -> (
         Key::Hash(synthetic_bnb.contract_hash()),
         Key::Hash(wbnb.contract_hash()),
     );
-    // deploy helper
-    let timing = deploy_timing(&env, owner, Key::Hash(declaration.contract_hash()));
+
+    let timing = deploy_timing(
+        &env,
+        owner,
+        Key::Hash(declaration.contract_hash())
+    );
+
     let helper = deploy_helper(
         &env,
         owner,
-        Key::Hash(declaration.contract_hash()),
-        Key::Hash(timing.contract_hash()),
-        Key::Hash(globals.contract_hash()),
+        Key::Hash(declaration.contract_hash()), 
+        Key::Hash(timing.contract_hash()), 
+        Key::Hash(globals.contract_hash())
     );
 
-    // deploying snapshot
     let snapshot = deploy_snapshot(
         &env,
         owner,
@@ -443,7 +512,7 @@ fn deploy() -> (
         Key::Hash(liquidity_guard.contract_hash()),
     );
 
-    (env, owner, SnapshotInstance::instance(snapshot), timing, declaration, globals, helper, synthetic_bnb, pair, bep20, liquidity_guard)
+    (env, owner, snapshot, timing, declaration, globals, helper, synthetic_bnb, pair, bep20, liquidity_guard)
 }
 
 #[test]
@@ -451,22 +520,56 @@ fn test_deploy(){
     let (_,_,_,_,_,_,_,_,_,_,_) = deploy();
 }
 
+#[test]
+fn test_manual_daily_snapshot(){
+    let (env, owner, snapshot, timing, declaration, globals, helper, sbnb, pair, bep20, liquidity_guard) = deploy();
 
-// #[test]
-// fn test_manual_daily_snapshot(){
-//     let (env, owner, snapshot, timing, declaration, globals, helper, sbnb, pair, bep20, liquidity_guard) = deploy();
-//     let globals_as_snapshot_instance: SnapshotInstance::instance(globals);
-
-//     let current_wise_day = globals.current_wise_day();
+    // set current wise day
+    let wglobals = SnapshotInstance::instance(globals);
+    wglobals.set_globals(Sender(owner), CURRENT_WISE_DAY, 0.into());
+    let current_wise_day: U256 = wglobals.get_globals(Sender(owner), CURRENT_WISE_DAY);
+    assert_eq!(current_wise_day, U256::from(0));
     
-//     // 
-//     snapshot.manual_daily_snapshot();
+    // check/set liquidity guard status as false
+    let wdeclaration = SnapshotInstance::instance(declaration);
+    wdeclaration.set_liquidity_guard_status(Sender(owner), false);
+    let status: bool = wdeclaration.get_liquidity_guard_status(Sender(owner));
+    assert_eq!(status, false);
 
-//     let new_current_wise_day:  U256 = globals.current_wise_day();
-//     assert_eq!(new_current_wise_day, U256::from(0));
-// }
+    // call test entrypoint
+    let wsnapshot = SnapshotInstance::instance(snapshot);
+    wsnapshot.manual_daily_snapshot(Sender(owner));
+
+    //guard must now be active
+    let status: bool = wdeclaration.get_liquidity_guard_status(Sender(owner));
+    assert_eq!(status, true);
+    let new_current_wise_day: U256 = wglobals.get_globals(Sender(owner), CURRENT_WISE_DAY);
+    more_asserts::assert_gt!(new_current_wise_day, current_wise_day);
+}
+
+#[test]
+fn test_manual_daily_snapshot_point(){
+    let (env, owner, snapshot, timing, declaration, globals, helper, sbnb, pair, bep20, liquidity_guard) = deploy();
+    let globals_as_snapshot_instance =  SnapshotInstance::instance(globals);
+
+    let current_wise_day = globals.current_wise_day();
+    let snapshot_instance = SnapshotInstance::instance(snapshot);
+    let update_day: u128 = match SystemTime::now().duration_since(UNIX_EPOCH) {
+        Ok(n) => n.as_millis() + (1000 * (30 * 60)), // current epoch time in milisecond + 30 minutes
+        Err(_) => 0,
+    };
+    snapshot_instance.manual_daily_snapshot_point(Sender(owner), update_day);
+
+    let new_current_wise_day = globals.current_wise_day();
+    assert_eq!(new_current_wise_day, current_wise_day.checked_add(U256::from(4)));
+}
 
 // #[test]
-// fn test_manual_daily_snapshot_point(){
+// fn test_liquidity_guard_trigger(){
+//     let (env, owner, snapshot, timing, declaration, globals, helper, sbnb, pair, bep20, liquidity_guard) = deploy();
+//     let snapshot_instance = SnapshotInstance::instance(snapshot);
 
+//     snapshot.liquidity_guard_trigger(Sender(owner));
+
+//     let guard_status: bool = 
 // }

@@ -25,7 +25,7 @@ impl BUSDEquivalentInstance {
     ) -> TestContract {
         TestContract::new(
             env,
-            "busd_equivalent",
+            "busd_equivalent.wasm",
             contract_name,
             sender,
             runtime_args! {
@@ -57,7 +57,7 @@ impl BUSDEquivalentInstance {
     pub fn proxy(env: &TestEnv, sender: Sender, busd_equivalent: Key) -> TestContract {
         TestContract::new(
             env,
-            "contract.wasm",
+            "busd_equivalent_test.wasm",
             "proxy_contract",
             sender,
             runtime_args! {

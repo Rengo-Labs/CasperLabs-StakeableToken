@@ -51,20 +51,19 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         );
         let declaration_constants: parameters::ConstantParameters =
         parameters::ConstantParameters::from_bytes(&declaration_constants_bytes).unwrap().0;
-        let path: Vec<u32> = data::get_path();
-        let results: Vec<u32> = runtime::call_contract(
+        let path: Vec<Key> = data::get_path();
+        let results: Vec<U256> = runtime::call_contract(
             Self::_create_hash_from_key(data::router_hash()),
             "get_amounts_out",
             runtime_args! {
                 "amount_in"=>U256::from(declaration_constants.yodas_per_wise),
-                "path"=>Vec::clone(&path)
+                "path"=>path
             },
         );
-
         if results.len() > 0 {
-            U256::from(results[3])
+            return results[3]
         } else {
-            data::latest_busd_equivalent()
+            return data::latest_busd_equivalent()
         }
     }
     // ============== Helper functions ==============================//

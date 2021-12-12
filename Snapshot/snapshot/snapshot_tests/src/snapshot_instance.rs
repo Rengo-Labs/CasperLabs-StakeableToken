@@ -17,6 +17,9 @@ pub const CURRENT_WISE_DAY: &str = "current_wise_day";
 pub const REFERRAL_SHARES: &str = "referral_shares";
 pub const LIQUIDITY_SHARES: &str = "liquidity_shares";
 
+// keys for declaration named keys
+pub const LIQUIDITY_GUARD_STATUS: &str = "liquidity_guard_status";
+
 pub struct SnapshotInstance(TestContract);
 impl SnapshotInstance {
     pub fn new(
@@ -87,7 +90,7 @@ impl SnapshotInstance {
             runtime_args!{}
         );
     }
-
+    
     pub fn current_wise_day(&self)->U256{
         self.0.query_dictionary("globals_struct", CURRENT_WISE_DAY.to_string()).unwrap()
     }
@@ -100,6 +103,41 @@ impl SnapshotInstance {
                 "key"=>key
             }
         );
+    }
+
+    pub fn set_globals(&self, sender: Sender, field: &str, value: U256){
+        self.0.call_contract(
+            sender,
+            "set_globals",
+            runtime_args!{
+                "field"=>field.to_string(),
+                "value"=>value
+            }
+        );
+    }
+
+    pub fn get_globals(&self, sender: Sender, field: &str)-> U256{
+        // self.0.call_contract(
+        //     sender,
+        //     "get_globals",
+        //     runtime_args!{
+        //         "field"=>field.to_string(),
+        //     }
+        // )
+        self.0.query_named_key(field.to_string())
+    }
+
+    pub fn set_liquidity_guard_status(&self, sender: Sender, status: bool){
+        self.0.call_contract(
+            sender,
+            "set_liquidity_guard_status",
+            runtime_args!{
+                "status"=>status
+            }
+        );
+    }
+    pub fn get_liquidity_guard_status(&self, sender: Sender)->bool{
+        self.0.query_named_key(LIQUIDITY_GUARD_STATUS.to_string())
     }
 
     pub fn set_struct_from_key(&self, sender: Sender,  struct_name: &str, key: U256, value: &str){

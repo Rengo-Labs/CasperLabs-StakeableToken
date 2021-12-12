@@ -3,7 +3,7 @@ prepare:
 
 build-contract:
 	cargo build --release -p globals --target wasm32-unknown-unknown
-	wasm-strip globals/target/wasm32-unknown-unknown/release/globals.wasm 2>/dev/null | true
+	wasm-strip target/wasm32-unknown-unknown/release/globals.wasm 2>/dev/null | true
 
 test-only:
 	cargo test -p globals_tests

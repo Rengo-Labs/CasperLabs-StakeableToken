@@ -78,31 +78,15 @@ fn deploy() -> (
 #[test]
 fn test_deploy() {
     let (env, transfer_helper, proxy, owner, transfer_invoker, _) = deploy();
-    let proxy_package_hash: Key = Key::from(proxy.package_hash_result());
-    let erc20: TestContract = deploy_erc20(&env, owner, "erc20", "erc");
-
-    let name: String =erc20.query_named_key(NAME.to_string());
-    let total_supply: U256 =erc20.query_named_key(TOTAL_SUPPLY.to_string());
-
-    assert_eq!(name, "erc20".to_string());
-    assert_eq!(total_supply, U256::from(1000));
-    let werc20 = TransferHelperInstance::instance(erc20);
-    let owner_balance = werc20.balance_of(Key::from(owner));
-    assert_eq!(owner_balance, U256::from(1000));
-
-    let transfer_helper_contract_hash_as_key = Key::from(transfer_helper.self_hash_result());
-    let temp: Key = proxy.get_transfer_helper_address();
-    assert_eq!(transfer_helper_contract_hash_as_key, temp);
 }
 
 #[test]
 fn get_transfer_invoker_address() {
     let (env, transfer_helper, proxy, owner, transfer_invoker, _) = deploy();
 
-    // FIXME Api::LeftOverBytes here when calling the actual entry point
     proxy.get_transfer_invoker_address(Sender(owner));
-    let invoker: Key = proxy.get_transfer_helper_address_result();
-    assert_eq!(invoker, transfer_invoker);
+    let result: Key = proxy.get_transfer_invoker_address_result();
+    assert_eq!(result, transfer_invoker);
 }
 
 #[test]
@@ -114,14 +98,42 @@ fn test_forward_amount_with_transfer_invoker() {
     
     // mint to proxy contract
     werc20.mint(Sender(owner), transfer_helper_package_hash_as_key, U256::from(100));
-    // transfer helper now has 100 balance
+    // transfer helper now has 100 balance and proxy has 0
+    assert_eq!(werc20.balance_of(proxy_package_hash_as_key), U256::from(0));
     assert_eq!(werc20.balance_of(transfer_helper_package_hash_as_key), U256::from(100));
-    // proxy now calls forward_funds, and gains balance 50
+    // proxy, the transfer invoker,  now calls forward_funds, and gains balance 50
     proxy.forward_funds(Sender(owner), werc20.self_contract_hash_result(),U256::from(50));
     // check that proxy has it's balance baxk
     assert_eq!(werc20.balance_of(proxy_package_hash_as_key),  U256::from(50));
 }
 
+#[test]
+#[should_panic]
+fn test_forward_amount_without_transfer_invoker(){
+    let (env, transfer_helper, proxy, owner, transfer_invoker, erc20) = deploy();
+    let transfer_helper_package_hash_as_key: Key = Key::from(transfer_helper.package_hash_result());
+    let werc20 = TransferHelperInstance::instance(erc20);
+    let transfer_helper_contract_hash_as_key = Key::from(transfer_helper.self_hash_result());
+
+    // deploy a new proxy
+    let proxy2 = TransferHelperInstance::proxy(&env, Sender(owner));
+    let proxy2 = TransferHelperInstance::instance(proxy2);
+    proxy2.set_key_by_name(
+        Sender(owner),
+        TRANSFER_HELPER_HASH_KEY_NAME.to_string(),
+        transfer_helper_contract_hash_as_key,
+    );
+    let proxy2_package_hash_as_key: Key = Key::from(proxy2.package_hash_result());
+
+    // mint to transfer helper
+    werc20.mint(Sender(owner), transfer_helper_package_hash_as_key, U256::from(100));
+    // transfer helper now has 100 balance and proxy2 has 0
+    assert_eq!(werc20.balance_of(proxy2_package_hash_as_key), U256::from(0));
+    assert_eq!(werc20.balance_of(transfer_helper_package_hash_as_key), U256::from(100));
+    // proxy2, not the transfer invoker,  now calls forward_funds. contract will revert
+    proxy.forward_funds(Sender(owner), werc20.self_contract_hash_result(),U256::from(50));
+
+}
 // #[test]
 // #[should_panic]
 // fn test_calling_construction() {
