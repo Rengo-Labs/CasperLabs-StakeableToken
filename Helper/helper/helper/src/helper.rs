@@ -171,7 +171,7 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
 
     // Following function will be used for both safe_transfer as well as safe_transfer_from
     // Incase of safe_transfer, 'from' will be the caller.
-    fn transfer_from(&self, token: Key, from: Key, to: Key, value: U256)
+    fn transfer_from(&self, token: Key, from: Key, to: Key, value: U256)->Result<(), u32>
     {
         // Token must be approved for router to spend.
         let args: RuntimeArgs = runtime_args!{
@@ -180,7 +180,8 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
             "amount" => value
         };
 
-        let _:() = runtime::call_contract(ContractHash::from(token.into_hash().unwrap_or_default()), "transfer_from", args);
+        let ret :Result<(), u32> = runtime::call_contract(ContractHash::from(token.into_hash().unwrap_or_default()), "transfer_from", args);
+        ret
     }
 
 
@@ -234,6 +235,16 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         Self::_starting_day(stake)
     }
 
+    fn increase_liquidity_stake_count(&self, staker: Key)
+    {
+        Self::_increase_liquidity_stake_count(staker);
+    }
+
+    fn stake_not_started(&self, stake: Vec<u8>)->bool{
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string
+        Self::_stake_not_started(stake)
+    }
+
     // ************************ HELPER METHODS ***************************
 
     fn _increase_stake_count(&self, _staker: Key)
@@ -254,7 +265,7 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         let _:() = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "set_referral_count", runtime_args!{ "referrer" => _referrer, "value" => referrer_count});
     }
     
-    fn _increase_liquidity_stake_count(&self, _staker: Key)
+    fn _increase_liquidity_stake_count(_staker: Key)
     {
         let declaration_hash: Key = data::declaration_hash();
         let mut stake_count: U256 = runtime::call_contract(ContractHash::from(declaration_hash.into_hash().unwrap_or_default()), "get_liquidity_stake_count", runtime_args!{ "staker" => _staker});

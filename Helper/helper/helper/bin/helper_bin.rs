@@ -50,6 +50,38 @@ fn constructor()
 }
 
 #[no_mangle]
+fn generate_liquidity_stake_id(){
+    let staker: Key = runtime::get_named_arg("staker");
+    let ret: Vec<u32> = HelperStruct::default().generate_liquidity_stake_id(staker);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+
+}
+
+#[no_mangle]
+fn increase_liquidity_stake_count(){
+    let staker: Key = runtime::get_named_arg("staker");
+    HelperStruct::default().increase_liquidity_stake_count(staker);
+}
+
+#[no_mangle]
+fn stake_not_started(){
+    let stake_bytes: Vec<u8> = runtime::get_named_arg("stake");
+    let ret = HelperStruct::default().stake_not_started(stake_bytes);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn transfer_from(){
+    let token: Key = runtime::get_named_arg("token");
+    let recipient: Key = runtime::get_named_arg("recipient");
+    let owner: Key = runtime::get_named_arg("owner");
+    let amount: U256 = runtime::get_named_arg("amount");    
+
+    let ret: Result<(), u32> = HelperStruct::default().transfer_from(token, owner, recipient, amount);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
 fn stake_ended()
 {
     let stake: Vec<u8> = runtime::get_named_arg("stake");
@@ -287,8 +319,49 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
-
-
+    entry_points.add_entry_point(EntryPoint::new(
+        "transfer_from",
+        vec![
+            Parameter::new("token", Key::cl_type()),
+            Parameter::new("owner", Key::cl_type()),
+            Parameter::new("recipient", Key::cl_type()),
+            Parameter::new("amount", U256::cl_type()),
+        ],
+        CLType::Result {
+            ok: Box::new(CLType::Unit),
+            err: Box::new(CLType::U32),
+        },
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "generate_liquidity_stake_id",
+        vec![
+            Parameter::new("staker", Key::cl_type())
+        ],
+        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "increase_liquidity_stake_count",
+        vec![
+            Parameter::new("staker", Key::cl_type())
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "stake_not_started",
+        vec![
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type())))
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    
     entry_points
 }
 
