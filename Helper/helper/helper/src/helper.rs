@@ -184,7 +184,11 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage>
         ret
     }
 
-
+    fn get_lock_days(&self, _stake: Vec<u8>)->U256{
+        let stake: Structs::Stake = Structs::Stake::from_bytes(&_stake).unwrap().0;
+        Self::_get_lock_days(stake)
+    }
+    
     fn stake_ended(&self, stake: Vec<u8>) -> bool           // stake struct
     {
         let stake: Structs::Stake = Structs::Stake::from_bytes(&stake).unwrap().0;  // get struct from json string

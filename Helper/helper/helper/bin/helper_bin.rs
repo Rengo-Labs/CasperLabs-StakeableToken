@@ -50,6 +50,14 @@ fn constructor()
 }
 
 #[no_mangle]
+fn get_lock_days(){
+    let stake: Vec<u8> = runtime::get_named_arg("stake");
+
+    let ret = HelperStruct::default().get_lock_days(stake);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
 fn generate_liquidity_stake_id(){
     let staker: Key = runtime::get_named_arg("staker");
     let ret: Vec<u32> = HelperStruct::default().generate_liquidity_stake_id(staker);
@@ -361,7 +369,15 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
-    
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_lock_days",
+        vec![
+            Parameter::new("stake", CLType::List(Box::new(u8::cl_type())))
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     entry_points
 }
 

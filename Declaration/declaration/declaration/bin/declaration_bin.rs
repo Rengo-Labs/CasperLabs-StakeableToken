@@ -54,6 +54,24 @@ fn constructor()
 }
 
 #[no_mangle]
+fn set_liquidity_stake(){
+    let staker: Key = runtime::get_named_arg("staker");
+    let id: Vec<u32> = runtime::get_named_arg("id");
+    let value: Vec<u8> = runtime::get_named_arg("value");
+
+    DeclarationStruct::default().set_liquidity_stake(staker, id, value);
+}
+
+#[no_mangle]
+fn get_liquidity_stake(){
+    let staker: Key = runtime::get_named_arg("staker");
+    let id: Vec<u32> = runtime::get_named_arg("id");
+
+    let ret: Vec<u8> = DeclarationStruct::default().get_liquidity_stake(staker, id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
 fn launch_time()
 {
     let launch_time: U256 = DeclarationStruct::default().launch_time();
@@ -672,7 +690,27 @@ fn get_entry_points() -> EntryPoints
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
-
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_liquidity_stake",
+        vec![
+            Parameter::new("staker", Key::cl_type()),
+            Parameter::new("id", CLType::List(Box::new(u32::cl_type())))
+        ],
+        CLType::List(Box::new(u8::cl_type())),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "set_liquidity_stake",
+        vec![
+            Parameter::new("staker", Key::cl_type()),
+            Parameter::new("id", CLType::List(Box::new(u32::cl_type()))),
+            Parameter::new("value", CLType::List(Box::new(u8::cl_type())))
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     entry_points
 }
 

@@ -1,5 +1,5 @@
 extern crate alloc;
-use alloc::{string::String, vec::Vec};
+use alloc::{string::String, vec::Vec, string::ToString};
 
 use casper_contract::{ contract_api::{runtime}};
 use casper_types::{
@@ -54,6 +54,18 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         let () = runtime::call_contract(ContractHash::from(factory.into_hash().unwrap_or_default()), "create_pair", args);          // create pair just initializes the pair that is passed in.
 
         data::set_pancake_pair(pair);
+    }
+
+    fn set_liquidity_stake(&self, staker: Key, id: Vec<u32>, value: Vec<u8>){
+        let liquidity_stakes = data::LiquidityStakes::instance();
+        let dictionary_key = Self::_generate_key_for_dictionary(&staker, &id);
+        liquidity_stakes.set(&dictionary_key, value);
+    }
+
+    fn get_liquidity_stake(&self, staker: Key, id: Vec<u32>)->Vec<u8>{
+        let liquidity_stakes = data::LiquidityStakes::instance();
+        let dictionary_key = Self::_generate_key_for_dictionary(&staker, &id);
+        liquidity_stakes.get(&dictionary_key)
     }
 
     fn launch_time(&self) -> U256
@@ -270,5 +282,24 @@ pub trait Declaration<Storage: ContractStorage>: ContractContext<Storage>
         let struct_bytes = const_struct.clone().into_bytes().unwrap();
 
         struct_bytes
+    }
+
+    fn _generate_key_for_dictionary(key: &Key, id: &Vec<u32>) -> String
+    {
+        let mut result: String = String::from("");
+        result.push_str(&key.to_formatted_string());
+        result.push_str("-");
+        result.push_str(&Self::_convert_vec_to_string(id));
+
+        result
+    }
+
+    fn _convert_vec_to_string(data: &Vec<u32>) -> String
+    {
+        let mut result: String = String::from("");
+        for value in data {
+            result.push_str(&value.to_string());
+        }
+        result
     }
 }
