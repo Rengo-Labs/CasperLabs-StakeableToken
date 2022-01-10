@@ -1,0 +1,8 @@
+/target
+/.history
+/transfer_helper/target
+/transfer_helper/.history
+/transfer_helper/Cargo.lock
+/transfer_helper_tests/target
+/transfer_helper_tests/.history
+Cargo.lock

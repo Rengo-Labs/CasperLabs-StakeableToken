@@ -1,155 +1,178 @@
-wise_token_core_directory = ./
+# paths to other repos
+uniswap_core_directory = ../CasperLabs-UniswapV2-core
+uniswap_router_directory = ../Casperlabs-UniswapRouter
+wise_liquidity_transformer_directory = ../CasperLabs-Wise-LiquidityTransformer
+wise_liquidity_transformer_sbnb_directory = ${wise_liquidity_transformer_directory}/sbnb/SBNB
+wise_token_directory = .
+erc20_directory = erc20
 
-busd_equivalent_contract_path = ${wise_token_core_directory}BUSDEquivalent/busd_equivalent/
-declaration_contract_path  = ${wise_token_core_directory}Declaration/declaration/
-globals_contract_path  = ${wise_token_core_directory}Globals/globals/
-helper_contract_path  = ${wise_token_core_directory}Helper/helper/
-liquidity_guard_contract_path = ${wise_token_core_directory}LiquidityGuard/liquidity_guard/
-liquidity_token_contract_path = ${wise_token_core_directory}LiquidityToken/liquidity_token/
-referral_token_contract_path = ${wise_token_core_directory}"Referral Token"/"Referral Token"/
-snapshot_contract_path = ${wise_token_core_directory}Snapshot/snapshot/
-staking_token_contract_path = ${wise_token_core_directory}"Staking Token"/"Staking Token"/
-timing_contract_path = ${wise_token_core_directory}Timing/timing/
-transfer_helper_contract_path = ${wise_token_core_directory}TransferHelper/transfer_helper/
-wise_token_contract_path = ${wise_token_core_directory}WiseToken/wisetoken/
+# path to core contracts
+erc20_contract = ${uniswap_core_directory}/erc20
+factory_contract = ${uniswap_core_directory}/factory
+flash_swapper_contract = ${uniswap_core_directory}/flash-swapper
+pair_contract = ${uniswap_core_directory}/pair
+wcspr_contract = ${uniswap_core_directory}/wcspr
 
-wasm_src_path = target/wasm32-unknown-unknown/release/
+# paths to router contracts
+library_contract = ${uniswap_router_directory}/uniswap-v2-library
+router_contract = ${uniswap_router_directory}/uniswap-v2-router
 
-wasm_dest_busd_equibalent_path = ${busd_equivalent_contract_path}busd_equivalent_tests/wasm/
-wasm_dest_declaration_path = ${declaration_contract_path}declaration_tests/wasm/
-wasm_dest_globals_path = ${globals_contract_path}globals_tests/wasm/
-wasm_dest_helper_path = ${helper_contract_path}helper_tests/wasm/
-wasm_dest_liquidity_guard_path = ${liquidity_guard_contract_path}liquidity_guard_tests/wasm/
-wasm_dest_liquidity_token_path = ${liquidity_token_contract_path}liquidity_token_tests/wasm/
-wasm_dest_referral_token_path = ${referral_token_contract_path}referral-token-tests/wasm/
-wasm_dest_snapshot_path = ${snapshot_contract_path}snapshot_tests/wasm/
-wasm_dest_staking_token_path = ${staking_token_contract_path}staking-token-tests/wasm/
-wasm_dest_timing_path = ${timing_contract_path}timing_tests/wasm/
-wasm_dest_transfer_helper_path = ${transfer_helper_contract_path}transfer_helper_tests/wasm/
-wasm_dest_wise_token_path = ${wise_token_contract_path}wisetoken_tests/wasm/
+# paths to liquidity transformer contracts
+liquidity_transformer_contract = ${wise_liquidity_transformer_directory}/LiquidityTransformer/LiquidityTransformer
+sbnb_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/sbnb
+wbnb_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/wbnb
+bep20_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/bep20
+synthetic_helper_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/SyntheticHelper
+synthetic_token_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/SyntheticToken
+
+# paths to wise contracts
+wise_token_contract = ${wise_token_directory}/wisetoken
+liquidity_guard_contract = ${wise_token_directory}/liquidity_guard
+busd_equivalent_contract = ${wise_token_directory}/busd_equivalent
+transfer_helper_contract = ${wise_token_directory}/transfer_helper
+
+# path to test contract for crates tests
+wise_crates_test_contract = ${wise_token_directory}/test-contract
+
+# wasm source and dest paths for wise token repo
+wasm_src_path = target/wasm32-unknown-unknown/release
+wasm_dest_busd_equivalent = ${busd_equivalent_contract}/busd_equivalent_tests/wasm
+wasm_dest_transfer_helper = ${transfer_helper_contract}/transfer_helper_tests/wasm
+wasm_dest_wise_token = ${wise_token_contract}/wisetoken_tests/wasm
+wasm_dest_liquidity_guard = ${liquidity_guard_contract}/liquidity_guard_tests/wasm
+wasm_dest_wise_crates_test_contract = ${wise_crates_test_contract}/crate-test/wasm
+
+# commands as variables
+contract_build_command = make build-contract
+test_contract_build_command = make build-test-contract
 
 all:
-	# Build BUSDEquivalent
-	cd ${busd_equivalent_contract_path} && make build-contract
+# build erc20
+	cd ${erc20_directory} && ${contract_build_command}
 	
-	# Build Declaration
-	cd ${declaration_contract_path} && make build-contract
+# build core contracts
+	cd ${erc20_contract} && ${contract_build_command}
+	cd ${factory_contract} && ${contract_build_command}
+	cd ${flash_swapper_contract} && ${contract_build_command}
+	cd ${pair_contract} && ${contract_build_command}
+	cd ${wcspr_contract} && ${contract_build_command}
 
-	# Build Globals
-	cd ${globals_contract_path} && make build-contract
+# build router contracts
+	cd ${library_contract} && ${contract_build_command}
+	cd ${router_contract} && ${contract_build_command}
 
-	# Build Helper
-	cd ${helper_contract_path} && make build-contract
+# build transformer contracts
+	cd ${liquidity_transformer_contract} && ${contract_build_command}
+	cd ${wbnb_contract} && ${contract_build_command}
+	cd ${sbnb_contract} && ${contract_build_command}
+	cd ${bep20_contract} && ${contract_build_command}
+	cd ${synthetic_helper_contract} && ${contract_build_command}
+	cd ${synthetic_token_contract} && ${contract_build_command}
 
-	# Build LiquidityGuard
-	cd ${liquidity_guard_contract_path} && make build-contract
+# build wise contracts
+	cd ${liquidity_guard_contract} && ${contract_build_command} && ${test_contract_build_command} 
+	cd ${transfer_helper_contract} && ${contract_build_command} && ${test_contract_build_command}
+	cd ${busd_equivalent_contract} && ${contract_build_command} && ${test_contract_build_command}
+	cd ${wise_token_contract} && ${contract_build_command} && ${test_contract_build_command}
+	cd ${wise_crates_test_contract} && ${contract_build_command}
 
-	# Build LiquidityToken
-	cd ${liquidity_token_contract_path} && make build-contract
-
-	# Build Referral Token
-	cd ${referral_token_contract_path} && make build-contract
-
-	# Build Snapshot
-	cd ${snapshot_contract_path} && make build-contract
-
-	# Build Staking Token
-	cd ${staking_token_contract_path} && make build-contract
-
-	# Build Timing
-	cd ${timing_contract_path} && make build-contract
-
-	# Build TransferHelper
-	cd ${transfer_helper_contract_path} && make build-contract
-
-	# Build WiseToken
-	cd ${wise_token_contract_path} && make build-contract
-
-	# copy wasm files
+# copy wasm files in place
 	make copy-wasm-file
 
-clean:
-	# clean BUSDEquivalent
-	cd ${busd_equivalent_contract_path} && make clean
-	
-	# clean Declaration
-	cd ${declaration_contract_path} && make clean
-
-	# clean Globals
-	cd ${globals_contract_path} && make clean
-
-	# clean Helper
-	cd ${helper_contract_path} && make clean
-
-	# clean LiquidityGuard
-	cd ${liquidity_guard_contract_path} && clean
-
-	# clean LiquidityToken
-	cd ${liquidity_token_contract_path} && clean
-
-	# clean Referral Token
-	cd ${referral_token_contract_path} && clean
-
-	# clean Snapshot
-	cd ${snapshot_contract_path} && make clean
-
-	# clean Staking Token
-	cd ${staking_token_contract_path} && make clean
-
-	# clean Timing
-	cd ${timing_contract_path} && make clean
-
-	# clean TransferHelper
-	cd ${transfer_helper_contract_path} && make clean
-
-	# clean WiseToken
-	cd ${wise_token_contract_path} && make clean
-
-	
-# copy wasm to required directory
 copy-wasm-file:
-
-
-# run all tests sequentially
-test:
-	# make all contracts and test contracts
-	make all
-
-	# copy wasms to required locations
-	make copy-wasm-files
-
-	# test BUSDEquivalent
-	cd ${busd_equivalent_contract_path} && make test
+# copy erc20 wasms
+	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 	
-	# test Declaration
-	cd ${declaration_contract_path} && make test
+# copy router wasms
+	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	
+	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+# copy core wasms
+	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
 
-	# test Globals
-	cd ${globals_contract_path} && make test
+	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test Helper
-	cd ${helper_contract_path} && make test
+	cp ${flash_swapper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${flash_swapper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test LiquidityGuard
-	cd ${liquidity_guard_contract_path} && test
+	cp ${wcspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${wcspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test LiquidityToken
-	cd ${liquidity_token_contract_path} && test
+	cp ${pair_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${pair_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test Referral Token
-	cd ${referral_token_contract_path} && test
+# copy wise liquidity transformer wasms
+	cp ${liquidity_transformer_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${liquidity_transformer_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test Snapshot
-	cd ${snapshot_contract_path} && make clean
+	cp ${sbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${sbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test Staking Token
-	cd ${staking_token_contract_path} && make test
+	cp ${wbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${wbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test Timing
-	cd ${timing_contract_path} && make test
+	cp ${synthetic_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${synthetic_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test TransferHelper
-	cd ${transfer_helper_contract_path} && make test
+	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 
-	# test WiseToken
-	cd ${wise_token_contract_path} && make test
+	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+
+# copy wise token wasms 
+	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+
+	cp ${busd_equivalent_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${busd_equivalent_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+
+	cp ${transfer_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
+	cp ${transfer_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+
+	cp ${wise_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${wise_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+
+	cp ${wise_crates_test_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
+
+clean:
+# clean core contracts
+	cd ${erc20_contract} && make clean
+	cd ${factory_contract} && make clean
+	cd ${flash_swapper_contract} && make clean
+	cd ${pair_contract} && make clean
+	cd ${wcspr_contract} && make clean
+	cd ${erc20_directory} && make clean
+
+# clean router contracts
+	cd ${library_contract} && make clean
+	cd ${router_contract} && make clean
+
+# clean transformer contracts
+	cd ${liquidity_transformer_contract} && make clean
+	cd ${wbnb_contract} && make clean
+	cd ${sbnb_contract} && make clean
+	cd ${bep20_contract} && make clean
+	cd ${synthetic_helper_contract} && make clean
+	cd ${synthetic_token_contract} && make clean
+
+# clean wise contracts
+	cd ${liquidity_guard_contract} && make clean
+	cd ${transfer_helper_contract} && make clean
+	cd ${busd_equivalent_contract} && make clean
+	cd ${wise_token_contract} && make clean
+	cd ${wise_crates_test_contract} && make clean
+
+
+test:
+	make all
+	cd ${liquidity_guard_contract} && make test 
+	cd ${busd_equivalent_contract} && make test
+	cd ${transfer_helper_contract} && make test
+	cd ${wise_crates_test_contract} && make test
+	cd ${wise_token_contract} && make test

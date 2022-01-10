@@ -1,0 +1,10 @@
+/target
+/.history
+/liquidity_guard/target
+/liquidity_guard/.history
+/liquidity_guard/Cargo.lock
+/liquidity_guard_tests/target
+/liquidity_guard_tests/.history
+/test_contract/target
+/test_contract/.history
+Cargo.lock

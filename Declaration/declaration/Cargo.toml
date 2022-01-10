@@ -1,9 +1,0 @@
-[workspace]
-members = [
-    "declaration",
-    "declaration_tests"
-]
-
-[profile.release]
-codegen-units = 1
-lto = true

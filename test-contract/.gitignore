@@ -1,0 +1,8 @@
+target
+.history
+/crate-test/wasm/entry_points.wasm
+/crate-test/target
+/crate-test/.history
+/crate-test/Cargo.lock
+Cargo.lock
+/crate/target

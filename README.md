@@ -1,1 +1,0 @@
-# CasperLabs-Wise-WiseToken

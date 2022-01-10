@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "wisetoken",
+    "wisetoken_tests",
+    "test-contract"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true

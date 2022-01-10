@@ -1,0 +1,24 @@
+[package]
+authors = ["Muhammad Adrees <muhammad.adrees@scytalelabs.com>"]
+edition = "2018"
+name = "referral_token_crate"
+version = "0.1.0"
+
+[dependencies]
+casper-contract = "1.3.2"
+casper-types = "1.3.2"
+contract-utils = { path = "../utils/contract-utils" }
+cryptoxide = "0.3.3"
+hex = { version = "0.4.3", default-features = false }
+renvm-sig = "0.1.1"
+casper_types_derive = "0.1.0"
+wise-token-utils = { path = "../utils/wise-token-utils" }
+globals_crate = { path = "../globals_crate" }
+declaration_crate = { path = "../declaration_crate" }
+timing_crate = { path = "../timing_crate" }
+helper_crate = { path = "../helper_crate" }
+snapshot_crate = { path = "../snapshot_crate" }
+bep20_crate = { path = "../bep20_crate" }
+
+[features]
+default = ["casper-contract/std", "casper-types/std"]

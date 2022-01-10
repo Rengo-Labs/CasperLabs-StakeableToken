@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "bep20",
+    "bep20-tests"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
