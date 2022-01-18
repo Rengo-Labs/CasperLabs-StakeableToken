@@ -563,7 +563,7 @@ fn starting_day() {
 #[no_mangle]
 fn end_liquidity_stake() {
     let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("id");
-    let ret: U256 = LiquidityToken::_end_liquidity_stake(&Test::default(), liquidity_stake_id);
+    let ret: U256 = LiquidityToken::end_liquidity_stake(&Test::default(), liquidity_stake_id);
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -572,14 +572,14 @@ fn check_liquidity_stake_by_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("id");
     let ret: Vec<u8> =
-        LiquidityToken::_check_liquidity_stake_by_id(&Test::default(), staker, liquidity_stake_id);
+        LiquidityToken::check_liquidity_stake_by_id(&Test::default(), staker, liquidity_stake_id);
     mappings::set_key(&mappings::result(), ret);
 }
 
 #[no_mangle]
 fn create_liquidity_stake() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
-    let ret: Vec<u32> = LiquidityToken::_create_liquidity_stake(&Test::default(), liquidity_tokens);
+    let ret: Vec<u32> = LiquidityToken::create_liquidity_stake(&Test::default(), liquidity_tokens);
     mappings::set_key(&mappings::result(), ret);
 }
 

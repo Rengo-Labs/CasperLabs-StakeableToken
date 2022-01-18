@@ -79,7 +79,7 @@ all:
 
 copy-wasm-file:
 # copy erc20 wasms
-#	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 #	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 	
 # copy router wasms

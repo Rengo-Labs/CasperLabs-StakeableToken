@@ -48,7 +48,7 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         result
     }
 
-    fn _create_liquidity_stake(&self, _liquidity_tokens: U256) -> Vec<u32> {
+    fn create_liquidity_stake(&self, _liquidity_tokens: U256) -> Vec<u32> {
         let pair_hash: Key = data::pair_hash();
         // calling hooks
 
@@ -98,11 +98,11 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         liquidity_stake_id
     }
 
-    fn _check_liquidity_stake_by_id(&self, _staker: Key, _liquidity_stake_id: Vec<u32>) -> Vec<u8> {
+    fn check_liquidity_stake_by_id(&self, _staker: Key, _liquidity_stake_id: Vec<u32>) -> Vec<u8> {
         Declaration::get_liquidity_stake(self, _staker, _liquidity_stake_id)
     }
 
-    fn _end_liquidity_stake(&self, _liquidity_stake_id: Vec<u32>) -> U256 {
+    fn end_liquidity_stake(&self, _liquidity_stake_id: Vec<u32>) -> U256 {
         let pair_hash = data::pair_hash();
 
         let mut liquidity_stake_bytes: Vec<u8> =
