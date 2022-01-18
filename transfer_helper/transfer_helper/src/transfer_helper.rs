@@ -27,7 +27,7 @@ pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
         if !caller.eq(&transfer_invoker) {
             runtime::revert(ApiError::NoAccessRights);
         }
-        let ret: bool = runtime::call_contract(
+        let ret: Result<(), u32> = runtime::call_contract(
             Self::_create_hash_from_key(_token_address),
             "transfer",
             runtime_args! {
@@ -36,7 +36,11 @@ pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
             },
         );
 
-        ret
+        if ret.is_ok() {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     fn get_transfer_invoker_address(&self) -> Key {

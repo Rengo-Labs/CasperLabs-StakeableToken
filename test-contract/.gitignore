@@ -4,5 +4,6 @@ target
 /crate-test/target
 /crate-test/.history
 /crate-test/Cargo.lock
+/crate-test/wasm/*.wasm
 Cargo.lock
 /crate/target

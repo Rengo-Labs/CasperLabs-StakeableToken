@@ -5,4 +5,5 @@
 /transfer_helper/Cargo.lock
 /transfer_helper_tests/target
 /transfer_helper_tests/.history
+/transfer_helper_tests/wasm/*
 Cargo.lock

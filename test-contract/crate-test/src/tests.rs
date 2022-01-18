@@ -25,8 +25,8 @@ fn deploy_busd_eq(
     env: &TestEnv,
     owner: AccountHash,
     wise: &TestContract,
-    sbnb: &TestContract,
-    wbnb: &TestContract,
+    scspr: &TestContract,
+    wcspr: &TestContract,
     busd: &TestContract,
     router: &TestContract,
 ) -> TestContract {
@@ -37,8 +37,8 @@ fn deploy_busd_eq(
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
-            "sbnb" => Key::Hash(sbnb.contract_hash()),
-            "wbnb" => Key::Hash(wbnb.contract_hash()),
+            "scspr" => Key::Hash(scspr.contract_hash()),
+            "wcspr" => Key::Hash(wcspr.contract_hash()),
             "busd" => Key::Hash(busd.contract_hash()),
             "router"=>Key::Hash(router.contract_hash()),
         },
@@ -107,7 +107,7 @@ fn deploy_uniswap_pair(
     )
 }
 
-fn deploy_sbnb(
+fn deploy_scspr(
     env: &TestEnv,
     owner: AccountHash,
     bep20: &TestContract,
@@ -117,27 +117,14 @@ fn deploy_sbnb(
 ) -> TestContract {
     TestContract::new(
         &env,
-        "sbnb.wasm",
-        "sbnb",
+        "scspr.wasm",
+        "scspr",
         Sender(owner),
         runtime_args! {
             "bep20" => Key::Hash(bep20.contract_hash()),
             "uniswap_factory" => Key::Hash(uniswap_factory.contract_hash()),
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "synthetic_token" => Key::Hash(synthetic_token.contract_hash())
-        },
-    )
-}
-
-fn deploy_wbnb(env: &TestEnv, owner: AccountHash) -> TestContract {
-    TestContract::new(
-        &env,
-        "wbnb-token.wasm",
-        "wbnb",
-        Sender(owner),
-        runtime_args! {
-            "name" => "Wrapped BNB",
-            "symbol" => "WBNB",
         },
     )
 }
@@ -224,7 +211,7 @@ fn deploy_synthetic_helper(env: &TestEnv, owner: AccountHash) -> TestContract {
 fn deploy_synthetic_token(
     env: &TestEnv,
     owner: AccountHash,
-    wbnb: &TestContract,
+    wcspr: &TestContract,
     synthetic_helper: &TestContract,
     uniswap_pair: &TestContract,
     uniswap_router: &TestContract,
@@ -236,7 +223,7 @@ fn deploy_synthetic_token(
         "synthetic_token",
         Sender(owner),
         runtime_args! {
-            "wbnb" => Key::Hash(wbnb.contract_hash()),
+            "wcspr" => Key::Hash(wcspr.contract_hash()),
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.contract_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.contract_hash()),
@@ -258,33 +245,31 @@ fn deploy() -> (
     TestContract,
     TestContract,
     TestContract,
-    TestContract,
 ) {
     let env = TestEnv::new();
     let owner = env.next_user();
-
+    let wcspr = deploy_wcspr(&env, owner);
     let launch_time: U256 = 0.into();
     let uniswap_factory = deploy_uniswap_factory(&env, owner);
-    let wcspr = deploy_wcspr(&env, owner);
     let flash_swapper = deploy_flash_swapper(&env, owner, &wcspr, &uniswap_factory);
     let uniswap_pair = deploy_uniswap_pair(&env, owner, &flash_swapper, &uniswap_factory);
     let uniswap_library = deploy_uniswap_library(&env, owner);
     let uniswap_router =
         deploy_uniswap_router(&env, owner, &uniswap_factory, &wcspr, &uniswap_library);
     let liquidity_guard = deploy_liquidity_guard(&env, owner);
-    let wbnb = deploy_wbnb(&env, owner);
     let bep20 = deploy_bep20(&env, owner);
-    let synthetic_helper = deploy_synthetic_helper(&env, owner);
+    // let synthetic_helper = deploy_synthetic_helper(&env, owner);
+    let synthetic_helper = deploy_bep20(&env, owner);
     let synthetic_token = deploy_synthetic_token(
         &env,
         owner,
-        &wbnb,
+        &wcspr,
         &synthetic_helper,
         &uniswap_pair,
         &uniswap_router,
         &bep20,
     );
-    let sbnb = deploy_sbnb(
+    let scspr = deploy_scspr(
         &env,
         owner,
         &bep20,
@@ -292,7 +277,6 @@ fn deploy() -> (
         &synthetic_helper,
         &synthetic_token,
     );
-
     let test = TestInstance::new(
         &env,
         "test_contract",
@@ -302,11 +286,10 @@ fn deploy() -> (
         Key::Hash(uniswap_factory.contract_hash()),
         Key::Hash(uniswap_pair.contract_hash()),
         Key::Hash(liquidity_guard.contract_hash()),
-        Key::Hash(sbnb.contract_hash()),
-        Key::Hash(wbnb.contract_hash()),
+        Key::Hash(scspr.contract_hash()),
+        Key::Hash(wcspr.contract_hash()),
         Key::Hash(bep20.contract_hash()),
     );
-
     (
         env,
         owner,
@@ -318,15 +301,14 @@ fn deploy() -> (
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     )
 }
 
-// #[test]
+#[test]
 fn test_deploy() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 }
 
 /////////////////
@@ -337,10 +319,9 @@ fn test_deploy() {
  * as much depends on integration with crates further down the inheritance line
  * Methods are later tests as integrations.
 */
-
 // // #[test]
 // fn test_set_liquidity_stake() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     let mut id: Vec<u32> = Vec::new();
 //     id.push(1);
@@ -366,7 +347,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_liquidity_stake() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     let mut id: Vec<u32> = Vec::new();
 //     id.push(1);
@@ -405,14 +386,14 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_launch_time() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "launch_time", runtime_args! {});
 //     let ret: U256 = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_get_stake_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
@@ -426,7 +407,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_stake_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -441,7 +422,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_referral_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let referrer: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
@@ -455,7 +436,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_referral_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let referrer: Key = Key::Account(owner);
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -470,7 +451,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_liquidity_stake_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
@@ -484,7 +465,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_liquidity_stake_count() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -499,7 +480,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_referral_shares_to_end() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -513,7 +494,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_referral_shares_to_end() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -528,7 +509,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_scheduled_to_end() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -542,7 +523,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_scheduled_to_end() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -557,7 +538,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_total_penalties() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -571,7 +552,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_total_penalties() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: U256 = 1.into();
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -586,7 +567,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_declaration_constants() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "get_declaration_constants", runtime_args! {});
 //     let ret: Bytes = TestInstance::instance(test).result();
 //     let ret: Vec<u8> = Vec::from(ret);
@@ -594,7 +575,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_inflation_rate() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let value: U256 = 100.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -607,21 +588,21 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_inflation_rate() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "get_inflation_rate", runtime_args! {});
 //     let ret: U256 = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_get_liquidity_rate() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "get_liquidity_rate", runtime_args! {});
 //     let ret: U256 = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_set_liquidity_rate() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let value: U256 = 100.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -634,7 +615,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_liquidity_guard_status() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(
 //         Sender(owner),
 //         "get_liquidity_guard_status",
@@ -645,7 +626,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_liquidity_guard_status() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let value: bool = false;
 //     test.call_contract(
 //         Sender(owner),
@@ -657,35 +638,35 @@ fn test_deploy() {
 // }
 
 // // #[test]
-// fn test_get_sbnb() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
-//     test.call_contract(Sender(owner), "get_sbnb", runtime_args! {});
+// fn test_get_scspr() {
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
+//     test.call_contract(Sender(owner), "get_scspr", runtime_args! {});
 //     let ret: Key = TestInstance::instance(test).result();
 // }
 
 // // #[test]
-// fn test_set_sbnb() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
-//     let sbnb: Key = Key::Account(owner);
+// fn test_set_scspr() {
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
+//     let scspr: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_sbnb",
+//         "set_scspr",
 //         runtime_args! {
-//             "sbnb" => sbnb
+//             "scspr" => scspr
 //         },
 //     );
 // }
 
 // // #[test]
-// fn test_get_wbnb() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
-//     test.call_contract(Sender(owner), "get_sbnb", runtime_args! {});
+// fn test_get_wcspr() {
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
+//     test.call_contract(Sender(owner), "get_scspr", runtime_args! {});
 //     let ret: Key = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_get_busd_eq() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let busd_eq: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
@@ -700,7 +681,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_busd_eq() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let busd_eq: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
@@ -713,27 +694,27 @@ fn test_deploy() {
 
 // // #[test]
 // // fn test_create_pair() {
-// //     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+// //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 // //     test.call_contract(Sender(owner), "create_pair", runtime_args! {});
 // // }
 
 // // #[test]
 // // fn test_get_unsiwap_pair() {
-// //     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+// //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 // //     test.call_contract(Sender(owner), "get_unsiwap_pair", runtime_args! {});
 // //     let ret: Key = TestInstance::instance(test).result();
 // // }
 
 // // #[test]
 // fn test_get_lt_balance() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "get_lt_balance", runtime_args! {});
 //     let ret: U256 = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_set_lt_balance() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let value: U256 = 100.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -746,14 +727,14 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_launchtime() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     test.call_contract(Sender(owner), "get_launchtime", runtime_args! {});
 //     let ret: U256 = TestInstance::instance(test).result();
 // }
 
 // // #[test]
 // fn test_set_launchtime() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let value: U256 = 100.into();
 //     test.call_contract(
 //         Sender(owner),
@@ -766,7 +747,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_get_scrapes() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: String = "key".into();
 //     test.call_contract(
 //         Sender(owner),
@@ -780,7 +761,7 @@ fn test_deploy() {
 
 // // #[test]
 // fn test_set_scrapes() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let key: String = "key".into();
 //     let value: U256 = 100.into();
 //     test.call_contract(
@@ -799,7 +780,7 @@ fn test_deploy() {
 
 #[test]
 fn test_increase_globals() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _staked: U256 = 10.into();
     let _shares: U256 = 20.into();
     let _rshares: U256 = 30.into();
@@ -828,7 +809,7 @@ fn test_increase_globals() {
 }
 #[test]
 fn test_decrease_globals() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _staked: U256 = 10.into();
     let _shares: U256 = 20.into();
     let _rshares: U256 = 30.into();
@@ -858,7 +839,7 @@ fn test_decrease_globals() {
 
 #[test]
 fn test_set_globals() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let field: String = GLOBALS_CURRENT_WISE_DAY.into();
     let value: U256 = 100.into();
     test.call_contract(
@@ -877,7 +858,7 @@ fn test_set_globals() {
 
 #[test]
 fn test_get_globals() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let field: String = GLOBALS_SHARE_PRICE.into();
 
     // number is set in deployment of globals
@@ -901,7 +882,7 @@ fn test_get_globals() {
 
 #[test]
 fn test_get_lock_days() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -931,7 +912,7 @@ fn test_get_lock_days() {
 
 #[test]
 fn test_generate_liquidity_stake_id() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let staker: Key = Key::Account(owner);
     test.call_contract(
         Sender(owner),
@@ -947,7 +928,7 @@ fn test_generate_liquidity_stake_id() {
 
 #[test]
 fn test_increase_liquidity_stake_count() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let staker: Key = Key::Account(owner);
 
     test.call_contract(
@@ -981,7 +962,7 @@ fn test_increase_liquidity_stake_count() {
 
 #[test]
 fn test_stake_not_started() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1037,10 +1018,9 @@ fn test_stake_not_started() {
 //     );
 //     let ret: Result<(), u32> = TestInstance::instance(test).result();
 // }
-
 #[test]
 fn test_stake_ended() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1070,7 +1050,7 @@ fn test_stake_ended() {
 
 #[test]
 fn test_days_diff() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let start_date: U256 = 10.into();
     let end_date: U256 = 20.into();
     test.call_contract(
@@ -1087,7 +1067,7 @@ fn test_days_diff() {
 
 #[test]
 fn test_is_mature_stake() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1117,7 +1097,7 @@ fn test_is_mature_stake() {
 
 #[test]
 fn test_days_left() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1148,7 +1128,7 @@ fn test_days_left() {
 
 #[test]
 fn test_not_critical_mass_referrer() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let crtical_mass_struct: CriticalMass = CriticalMass {
         total_amount: U256::from(5),
         activation_day: U256::from(5),
@@ -1178,7 +1158,7 @@ fn test_not_critical_mass_referrer() {
 
 #[test]
 fn test_calculation_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1218,9 +1198,9 @@ fn test_calculation_day() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let day: U256 = 10.into();
 // //     test.call_contract(
@@ -1246,9 +1226,9 @@ fn test_calculation_day() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let day: U256 = 10.into();
 // //     test.call_contract(
@@ -1263,7 +1243,7 @@ fn test_calculation_day() {
 
 // // #[test]
 // fn test_stakes_pagination() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let staker: Key = Key::Account(owner);
 //     let offset: U256 = 10.into();
 //     let length: U256 = 20.into();
@@ -1281,7 +1261,7 @@ fn test_calculation_day() {
 
 // // #[test]
 // fn test_referrals_pagination() {
-//     let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+//     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
 //     let referrer: Key = Key::Account(owner);
 //     let offset: U256 = 10.into();
 //     let length: U256 = 20.into();
@@ -1299,7 +1279,7 @@ fn test_calculation_day() {
 
 #[test]
 fn test_starting_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let _stake: Stake = Stake {
         stakes_shares: U256::from(10),
         staked_amount: U256::from(10),
@@ -1344,9 +1324,8 @@ fn test_create_liquidity_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
@@ -1471,9 +1450,8 @@ fn test_end_liquidity_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
@@ -1656,9 +1634,8 @@ fn test_check_liquidity_stake_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
@@ -1776,7 +1753,7 @@ fn test_check_liquidity_stake_by_id() {
 
 #[test]
 fn test_add_referrer_shares_to_end() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let final_day: U256 = 10.into();
     let shares: U256 = 20.into();
 
@@ -1822,9 +1799,8 @@ fn test_remove_referrer_shares_to_end() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let final_day: U256 = 10.into();
     let shares: U256 = 20.into();
@@ -1911,7 +1887,7 @@ fn test_remove_referrer_shares_to_end() {
 
 #[test]
 fn test_add_critical_mass() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     let referrer: Key = Key::Account(owner);
     let dai_equivalent: U256 = 50.into();
     let total_amount: U256 = 1000.into();
@@ -1975,9 +1951,8 @@ fn test_remove_critical_mass() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let referrer: Key = Key::Account(owner);
     let dai_equivalent: U256 = 50.into();
@@ -2043,9 +2018,9 @@ fn test_remove_critical_mass() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     test.call_contract(Sender(owner), "get_busd_equivalent", runtime_args! {});
 // //     let ret: U256 = TestInstance::instance(test).result();
@@ -2064,9 +2039,8 @@ fn test_referrer_interest() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     // // init referral id
     // let referral_count: U256 = 0.into();
@@ -2203,9 +2177,9 @@ fn test_referrer_interest() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let referral_id: Vec<Vec<u32>> = Vec::new();
 // //     let scrape_days: Vec<U256> = Vec::new();
@@ -2233,9 +2207,9 @@ fn test_referrer_interest() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let referrer: Key = Key::Account(owner);
 // //     let referral_id: Vec<u32> = Vec::new();
@@ -2264,9 +2238,8 @@ fn test_check_referrals_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     // create stake from staker
     let staker = env.next_user();
@@ -2379,7 +2352,7 @@ fn test_check_referrals_by_id() {
 // //////////////
 
 #[test]
-fn test_manual_daily_snapshot_point() {
+fn testmanual_daily_snapshot_point() {
     let (
         env,
         owner,
@@ -2391,9 +2364,8 @@ fn test_manual_daily_snapshot_point() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let update_day: u64 = 3;
     let globals_current_wise_day: U256 = 1.into();
@@ -2482,9 +2454,8 @@ fn test_liquidity_guard_trigger() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     // initialize liquidity guard status
     test.call_contract(
@@ -2530,9 +2501,8 @@ fn test_manual_daily_snapshot() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let update_day: u64 = 3;
     let globals_current_wise_day: U256 = 1.into();
@@ -2615,9 +2585,8 @@ fn test_snapshot_get_struct_from_key() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     // create dummy struct
     let lsnapshot_struct: LSnapShot = LSnapShot {
@@ -2665,9 +2634,8 @@ fn test_snapshot_set_struct_from_key() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     // create dummy struct
     let lsnapshot_struct: LSnapShot = LSnapShot {
@@ -2714,9 +2682,9 @@ fn test_snapshot_set_struct_from_key() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let staked_amount: Vec<U256> = Vec::new();
 // //     let lock_days: Vec<u64> = Vec::new();
@@ -2746,12 +2714,12 @@ fn test_snapshot_set_struct_from_key() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 //     // init busd_eq
-//     let busd_eq = deploy_busd_eq(&env, owner, &wcspr, &sbnb, &wbnb, &bep20, &uniswap_router);
+//     let busd_eq = deploy_busd_eq(&env, owner, &wcspr, &scspr, &wcspr, &bep20, &uniswap_router);
 //     test.call_contract(
 //         Sender(owner),
 //         "set_busd_eq",
@@ -2825,9 +2793,8 @@ fn test_end_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let staker = Key::Account(owner);
     let referrer = env.next_user();
@@ -2918,9 +2885,9 @@ fn test_end_stake() {
 //         uniswap_library,
 //         uniswap_router,
 //         liquidity_guard,
-//         wbnb,
+//         wcspr,
 //         bep20,
-//         sbnb,
+//         scspr,
 //     ) = deploy();
 // //     let staker: Key = Key::Account(owner);
 // //     let stake_id: Vec<u32> = Vec::new();
@@ -2948,9 +2915,8 @@ fn test_check_stake_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        wbnb,
         bep20,
-        sbnb,
+        scspr,
     ) = deploy();
     let staker = Key::Account(owner);
     let referrer = env.next_user();
@@ -3014,7 +2980,7 @@ fn test_check_stake_by_id() {
 
 #[test]
 fn test_current_wise_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     test.call_contract(Sender(owner), "current_wise_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY, ret);
@@ -3022,7 +2988,7 @@ fn test_current_wise_day() {
 
 #[test]
 fn test__current_wise_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     test.call_contract(Sender(owner), "_current_wise_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY, ret);
@@ -3030,7 +2996,7 @@ fn test__current_wise_day() {
 
 #[test]
 fn test__previous_wise_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     test.call_contract(Sender(owner), "_previous_wise_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY - 1, ret);
@@ -3038,7 +3004,7 @@ fn test__previous_wise_day() {
 
 #[test]
 fn test__next_wise_day() {
-    let (env, owner, test, _, _, _, _, _, _, _, _, _, _) = deploy();
+    let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
     test.call_contract(Sender(owner), "_next_wise_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY + 1, ret);

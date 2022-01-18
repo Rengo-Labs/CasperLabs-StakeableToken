@@ -144,8 +144,8 @@ fn deploy_bep20(env: &TestEnv, owner: AccountHash) -> TestContract
 fn deploy_busd_eq(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract 
 {
     let router: Key = wise.query_named_key("router_contract_hash".to_string());
-    let sbnb: Key = wise.query_named_key("sbnb_contract_hash".to_string());
-    let wbnb: Key = wise.query_named_key("wbnb_contract_hash".to_string());
+    let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
+    let wcspr: Key = wise.query_named_key("wcspr_contract_hash".to_string());
     let (_, busd) = erc20_setup();                  // since busd is an ERC20 token, using casper's erc20 as busd
 
  
@@ -157,8 +157,8 @@ fn deploy_busd_eq(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestC
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
-            "sbnb" => sbnb,
-            "wbnb" => wbnb,
+            "scspr" => scspr,
+            "wcspr" => wcspr,
             "busd" => Key::from(busd.erc20_token),
             "router" => router
         },
@@ -204,7 +204,7 @@ fn deploy_synthetic_helper(env: &TestEnv, owner: AccountHash) -> TestContract {
 fn deploy_synthetic_token(
     env: &TestEnv,
     owner: AccountHash,
-    wbnb: &TestContract,
+    wcspr: &TestContract,
     synthetic_helper: &TestContract,
     uniswap_pair: &TestContract,
     uniswap_router: &TestContract,
@@ -216,7 +216,7 @@ fn deploy_synthetic_token(
         "synthetic_token",
         Sender(owner),
         runtime_args! {
-            "wbnb" => Key::Hash(wbnb.contract_hash()),
+            "wcspr" => Key::Hash(wcspr.contract_hash()),
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.contract_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.contract_hash()),
@@ -225,7 +225,7 @@ fn deploy_synthetic_token(
     )
 }
 
-fn deploy_sbnb(
+fn deploy_scspr(
     env: &TestEnv,
     owner: AccountHash,
     bep20: &TestContract,
@@ -235,8 +235,8 @@ fn deploy_sbnb(
 ) -> TestContract {
     TestContract::new(
         &env,
-        "sbnb.wasm",
-        "sbnb",
+        "scspr.wasm",
+        "scspr",
         Sender(owner),
         runtime_args! {
             "bep20" => Key::Hash(bep20.contract_hash()),
@@ -257,7 +257,7 @@ fn deploy_wise() -> (
     TestContract,           // factory
     TestContract,           // Router
     TestContract,           // WCSPR
-    TestContract,           // SBNB
+    TestContract,           // SCSPR
 ) {
     let env = TestEnv::new();
     let owner = env.next_user();
@@ -382,8 +382,8 @@ fn deploy_wise() -> (
         &bep20,
     );
 
-    //Deploy Sbnb
-    let sbnb_contract = deploy_sbnb(
+    //Deploy Scspr
+    let scspr_contract = deploy_scspr(
         &env,
         owner,
         &bep20,
@@ -402,12 +402,12 @@ fn deploy_wise() -> (
         "Wisetoken",
         Sender(owner),
         runtime_args! {
-            "sbnb" => Key::Hash(sbnb_contract.contract_hash()),
+            "scspr" => Key::Hash(scspr_contract.contract_hash()),
             "router" => Key::Hash(router_contract.contract_hash()),
             "factory" => Key::Hash(factory_contract.contract_hash()),
             "pair" => Key::Hash(pair_contract.contract_hash()),
             "liquidity_guard" => Key::Hash(liquidity_guard_contract.contract_hash()),
-            "wbnb" => Key::Hash(wcspr.contract_hash()),
+            "wcspr" => Key::Hash(wcspr.contract_hash()),
             "launch_time" => launch_time
         },
     );
@@ -427,7 +427,7 @@ fn deploy_wise() -> (
     let router_package_hash: ContractPackageHash = router_contract.query_named_key("package_hash".to_string());
     factory_contract.call_contract(Sender(owner), "set_white_list" ,runtime_args! {"white_list" => Key::from(router_package_hash)});  
 
-    (env, owner, wise_contract, test_contract, bep20, flash_swapper, factory_contract, router_contract, wcspr, sbnb_contract)
+    (env, owner, wise_contract, test_contract, bep20, flash_swapper, factory_contract, router_contract, wcspr, scspr_contract)
 }
 
 
@@ -494,17 +494,17 @@ fn mint_supply() {
 
 
 //#[test]
-fn create_stake_with_bnb() {
+fn create_stake_with_cspr() {
 
-    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, sbnb) = deploy_wise();
+    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, scspr) = deploy_wise();
     let user = env.next_user();
 
     // let router_library: ContractHash = router_contract.query_named_key("library_hash".to_string());
     // println!("LIbrary: {}", router_library);
 
-    // let router_sbnb: ContractHash = router_contract.query_named_key("wcspr".to_string());
-    // let wise_sbnb: Key = wise_contract.query_named_key("wbnb_contract_hash".to_string());
-    // assert_eq!(Key::from(router_sbnb), wise_sbnb);
+    // let router_scspr: ContractHash = router_contract.query_named_key("wcspr".to_string());
+    // let wise_scspr: Key = wise_contract.query_named_key("wcspr_contract_hash".to_string());
+    // assert_eq!(Key::from(router_scspr), wise_scspr);
 
     // let router_hash: Key = Key::Hash(wcspr.contract_hash());
     // let router_hash: ContractHash = ContractHash::from(router_hash.into_hash().unwrap_or_default());
@@ -515,17 +515,17 @@ fn create_stake_with_bnb() {
     // assert_eq!(zero, Key::from(router_hash));
 
     
-    // mint sbnb, and wise to test_contract
-    let _:() = sbnb.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
+    // mint scspr, and wise to test_contract
+    let _:() = scspr.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
     let _:() = wise_contract.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});    
         
-    // create pair of wcspr and sbnb
+    // create pair of wcspr and scspr
     let pair: TestContract = deploy_pair_contract(&env, owner, Key::Hash(factory_contract.contract_hash()), Key::Hash(flash_swapper.contract_hash()));
-    add_liquidity_cspr(&test_contract, &owner, &sbnb, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
+    add_liquidity_cspr(&test_contract, &owner, &scspr, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
     
-    // create pair of sbnb and wise contract
+    // create pair of scspr and wise contract
     let pair: TestContract = deploy_pair_contract(&env, owner, Key::Hash(factory_contract.contract_hash()), Key::Hash(flash_swapper.contract_hash()));
-    add_liquidity(&test_contract, &owner, &sbnb, &wise_contract, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
+    add_liquidity(&test_contract, &owner, &scspr, &wise_contract, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
 
     
     let test_hash: Key = test_contract.test_contract_hash();
@@ -534,13 +534,13 @@ fn create_stake_with_bnb() {
     let amount: U256 = 40.into();
     
 
-    test_contract.create_stake_with_bnb(Sender(owner), test_hash, lock_days, referrer, amount);
+    test_contract.create_stake_with_cspr(Sender(owner), test_hash, lock_days, referrer, amount);
 }
 
 #[test]
 fn extend_lt_auction() {
     
-    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, sbnb) = deploy_wise();
+    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, scspr) = deploy_wise();
     let user = env.next_user();
 
     test_contract.set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash());      // make test contract as liquidity_transformer

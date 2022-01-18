@@ -5,13 +5,12 @@ use casper_types::{ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 use wise_token_utils::commons::key_names::*;
 
-
-pub fn sbnb() -> Key {
-    get_key(SBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn scspr() -> Key {
+    get_key(SCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
 
-pub fn set_sbnb(sbnb: Key) {
-    set_key(SBNB_CONTRACT_HASH, sbnb);
+pub fn set_scspr(scspr: Key) {
+    set_key(SCSPR_CONTRACT_HASH, scspr);
 }
 
 pub fn owner() -> Key {

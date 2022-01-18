@@ -2,7 +2,7 @@
 uniswap_core_directory = ../CasperLabs-UniswapV2-core
 uniswap_router_directory = ../Casperlabs-UniswapRouter
 wise_liquidity_transformer_directory = ../CasperLabs-Wise-LiquidityTransformer
-wise_liquidity_transformer_sbnb_directory = ${wise_liquidity_transformer_directory}/sbnb/SBNB
+wise_liquidity_transformer_scspr_directory = ${wise_liquidity_transformer_directory}/scspr/SCSPR
 wise_token_directory = .
 erc20_directory = erc20
 
@@ -19,11 +19,10 @@ router_contract = ${uniswap_router_directory}/uniswap-v2-router
 
 # paths to liquidity transformer contracts
 liquidity_transformer_contract = ${wise_liquidity_transformer_directory}/LiquidityTransformer/LiquidityTransformer
-sbnb_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/sbnb
-wbnb_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/wbnb
-bep20_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/bep20
-synthetic_helper_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/SyntheticHelper
-synthetic_token_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_sbnb_directory}/SyntheticToken
+scspr_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/scspr
+bep20_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/bep20
+synthetic_helper_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/SyntheticHelper
+synthetic_token_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/SyntheticToken
 
 # paths to wise contracts
 wise_token_contract = ${wise_token_directory}/wisetoken
@@ -63,8 +62,7 @@ all:
 
 # build transformer contracts
 	cd ${liquidity_transformer_contract} && ${contract_build_command}
-	cd ${wbnb_contract} && ${contract_build_command}
-	cd ${sbnb_contract} && ${contract_build_command}
+	cd ${scspr_contract} && ${contract_build_command}
 	cd ${bep20_contract} && ${contract_build_command}
 	cd ${synthetic_helper_contract} && ${contract_build_command}
 	cd ${synthetic_token_contract} && ${contract_build_command}
@@ -81,63 +79,80 @@ all:
 
 copy-wasm-file:
 # copy erc20 wasms
-	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+#	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+#	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 	
 # copy router wasms
 	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 	
 	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
+
 # copy core wasms
 	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
+	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${flash_swapper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${flash_swapper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${flash_swapper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${wcspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${wcspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${wcspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${pair_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${pair_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${pair_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 # copy wise liquidity transformer wasms
 	cp ${liquidity_transformer_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${liquidity_transformer_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${liquidity_transformer_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
-	cp ${sbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
-	cp ${sbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
-
-	cp ${wbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
-	cp ${wbnb_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${scspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${scspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${scspr_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${synthetic_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${synthetic_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${synthetic_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 # copy wise token wasms 
+	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_liquidity_guard}
 	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${busd_equivalent_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
 	cp ${busd_equivalent_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${busd_equivalent_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${transfer_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
 	cp ${transfer_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
+	cp ${transfer_helper_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 	cp ${wise_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 	cp ${wise_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
+	cp ${wise_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
+	cp ${wise_crates_test_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 	cp ${wise_crates_test_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 clean:
@@ -155,8 +170,7 @@ clean:
 
 # clean transformer contracts
 	cd ${liquidity_transformer_contract} && make clean
-	cd ${wbnb_contract} && make clean
-	cd ${sbnb_contract} && make clean
+	cd ${scspr_contract} && make clean
 	cd ${bep20_contract} && make clean
 	cd ${synthetic_helper_contract} && make clean
 	cd ${synthetic_token_contract} && make clean

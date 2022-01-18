@@ -71,8 +71,8 @@ impl Test {
         factory: Key,
         pair_hash: Key,
         liquidity_guard: Key,
-        synthetic_bnb: Key,
-        wbnb: Key,
+        synthetic_cspr: Key,
+        wcspr: Key,
         bep20: Key,
     ) {
         BEP20::init(self, "MyBep20".to_string(), "bep20".to_string());
@@ -85,14 +85,14 @@ impl Test {
             factory,
             pair_hash,
             liquidity_guard,
-            synthetic_bnb,
-            wbnb,
+            synthetic_cspr,
+            wcspr,
         );
         Globals::init(self);
         Helper::init(self);
-        LiquidityToken::init(self, synthetic_bnb, pair_hash, liquidity_guard);
+        LiquidityToken::init(self, synthetic_cspr, pair_hash, liquidity_guard);
         ReferralToken::init(self);
-        Snapshot::init(self, synthetic_bnb, pair_hash, liquidity_guard);
+        Snapshot::init(self, synthetic_cspr, pair_hash, liquidity_guard);
         StakingToken::init(self);
         Timing::init(self);
     }
@@ -108,8 +108,8 @@ fn constructor() {
     let factory: Key = runtime::get_named_arg("factory");
     let pair_hash: Key = runtime::get_named_arg("pair_hash");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let synthetic_bnb: Key = runtime::get_named_arg("synthetic_bnb");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let synthetic_cspr: Key = runtime::get_named_arg("synthetic_cspr");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
     let bep20: Key = runtime::get_named_arg("bep20");
 
     Test::default().constructor(
@@ -120,8 +120,8 @@ fn constructor() {
         factory,
         pair_hash,
         liquidity_guard,
-        synthetic_bnb,
-        wbnb,
+        synthetic_cspr,
+        wcspr,
         bep20,
     );
 }
@@ -308,20 +308,20 @@ fn get_liquidity_guard_status() {
 }
 
 #[no_mangle]
-fn set_sbnb() {
-    let value: Key = runtime::get_named_arg("sbnb");
-    Declaration::set_sbnb(&Test::default(), value);
+fn set_scspr() {
+    let value: Key = runtime::get_named_arg("scspr");
+    Declaration::set_scspr(&Test::default(), value);
 }
 
 #[no_mangle]
-fn get_sbnb() {
-    let ret: Key = Declaration::get_sbnb(&Test::default());
+fn get_scspr() {
+    let ret: Key = Declaration::get_scspr(&Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
 #[no_mangle]
-fn get_wbnb() {
-    let ret: Key = Declaration::get_wbnb(&Test::default());
+fn get_wcspr() {
+    let ret: Key = Declaration::get_wcspr(&Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -681,17 +681,17 @@ fn check_referrals_by_id() {
 #[no_mangle]
 fn manual_daily_snapshot_point() {
     let update_day: u64 = runtime::get_named_arg("update_day");
-    Snapshot::_manual_daily_snapshot_point(&mut Test::default(), update_day);
+    Snapshot::manual_daily_snapshot_point(&mut Test::default(), update_day);
 }
 
 #[no_mangle]
 fn liquidity_guard_trigger() {
-    Snapshot::_liquidity_guard_trigger(&mut Test::default());
+    Snapshot::liquidity_guard_trigger(&mut Test::default());
 }
 
 #[no_mangle]
 fn manual_daily_snapshot() {
-    Snapshot::_manual_daily_snapshot(&mut Test::default());
+    Snapshot::manual_daily_snapshot(&mut Test::default());
 }
 
 #[no_mangle]
@@ -1012,21 +1012,21 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "set_sbnb",
-        vec![Parameter::new("sbnb", CLType::Key)],
+        "set_scspr",
+        vec![Parameter::new("scspr", CLType::Key)],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_sbnb",
+        "get_scspr",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_wbnb",
+        "get_wcspr",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -1616,8 +1616,8 @@ pub extern "C" fn call() {
     let factory: Key = runtime::get_named_arg("factory");
     let pair_hash: Key = runtime::get_named_arg("pair_hash");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let synthetic_bnb: Key = runtime::get_named_arg("synthetic_bnb");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let synthetic_cspr: Key = runtime::get_named_arg("synthetic_cspr");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
     let bep20: Key = runtime::get_named_arg("bep20");
 
     let (package_hash, access_token) = storage::create_contract_package_at_hash();
@@ -1633,8 +1633,8 @@ pub extern "C" fn call() {
         "factory" => factory,
         "pair_hash" => pair_hash,
         "liquidity_guard" => liquidity_guard,
-        "synthetic_bnb" => synthetic_bnb,
-        "wbnb" => wbnb,
+        "synthetic_cspr" => synthetic_cspr,
+        "wcspr" => wcspr,
         "bep20" => bep20
     };
 

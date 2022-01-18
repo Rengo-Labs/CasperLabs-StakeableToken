@@ -1,7 +1,6 @@
 use crate::data::{self, Allowances, Balances};
 use alloc::{string::String, vec::Vec};
-use casper_contract::contract_api::runtime;
-use casper_contract::contract_api::storage;
+use casper_contract::contract_api::{runtime, storage};
 use casper_types::ApiError;
 use casper_types::{Key, URef, U256};
 use contract_utils::{ContractContext, ContractStorage};
@@ -12,7 +11,7 @@ use alloc::collections::BTreeMap;
 #[repr(u16)]
 pub enum Error {
     NotOwner = 1,
-    NotSBNB = 2,
+    NotSCSPR = 2,
     ZERO = 3,
 }
 
@@ -64,31 +63,31 @@ pub trait BEP20<Storage: ContractStorage>: ContractContext<Storage> {
         Allowances::init();
     }
 
-    fn set_sbnb(&self, sbnb: Key) {
+    fn set_scspr(&self, scspr: Key) {
         if self.get_caller().to_formatted_string() != data::owner().to_formatted_string() {
             runtime::revert(ApiError::from(Error::NotOwner));
         }
-        data::set_sbnb(sbnb);
+        data::set_scspr(scspr);
     }
 
-    fn is_sbnb(&self) {
-        if self.get_caller().to_formatted_string() != data::sbnb().to_formatted_string() {
-            runtime::revert(ApiError::from(Error::NotSBNB));
+    fn is_scspr(&self) {
+        if self.get_caller().to_formatted_string() != data::scspr().to_formatted_string() {
+            runtime::revert(ApiError::from(Error::NotSCSPR));
         }
     }
 
-    fn sbnb_burn(&self, account: Key, amount: U256) {
-        self.is_sbnb();
+    fn scspr_burn(&self, account: Key, amount: U256) {
+        self.is_scspr();
         self._burn(account, amount);
     }
 
-    fn sbnb_mint(&self, account: Key, amount: U256) {
-        self.is_sbnb();
+    fn scspr_mint(&self, account: Key, amount: U256) {
+        self.is_scspr();
         self._mint(account, amount);
     }
 
-    fn sbnb_approve(&self, owner: Key, spender: Key, amount: U256) {
-        self.is_sbnb();
+    fn scspr_approve(&self, owner: Key, spender: Key, amount: U256) {
+        self.is_scspr();
         self._approve(owner, spender, amount);
     }
 

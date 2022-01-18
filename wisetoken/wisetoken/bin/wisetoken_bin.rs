@@ -54,26 +54,26 @@ impl WiseTokenStruct
         &mut self, 
         contract_hash: ContractHash, 
         package_hash: ContractPackageHash,
-        synthetic_bnb_address: Key, 
+        synthetic_cspr_address: Key, 
         router_address: Key, 
         launch_time: U256,
         factory_address: Key,
         pair_address: Key,
         liquidity_guard: Key,
-        wbnb: Key,
+        wcspr: Key,
     ) 
     {
         WiseToken::init(
             self, 
             Key::from(contract_hash), 
             package_hash, 
-            synthetic_bnb_address,
+            synthetic_cspr_address,
             router_address, 
             launch_time,
             factory_address,
             pair_address,
             liquidity_guard,
-            wbnb
+            wcspr
         );
     }
 }
@@ -85,24 +85,24 @@ fn constructor()
     // TODO: Need to make parameters name more consistent, specially for ContractHashes
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let synthetic_bnb_address: Key = runtime::get_named_arg("synthetic_bnb_address");
+    let synthetic_cspr_address: Key = runtime::get_named_arg("synthetic_cspr_address");
     let router_address: Key = runtime::get_named_arg("router_address");
     let launch_time: U256 = runtime::get_named_arg("launch_time");
     let factory_address: Key = runtime::get_named_arg("factory_address");
     let pair_address: Key = runtime::get_named_arg("pair_address");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
 
     WiseTokenStruct::default().constructor(
         contract_hash, 
         package_hash, 
-        synthetic_bnb_address, 
+        synthetic_cspr_address, 
         router_address, 
         launch_time,
         factory_address,
         pair_address,
         liquidity_guard,
-        wbnb
+        wcspr
     );
 }
 
@@ -145,14 +145,14 @@ fn mint_supply()
 
 
 #[no_mangle]
-fn create_stake_with_bnb()
+fn create_stake_with_cspr()
 {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
     let amount: U256 = runtime::get_named_arg("amount");
     let purse: URef = runtime::get_named_arg("purse");
 
-    let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = WiseTokenStruct::default().create_stake_with_bnb(lock_days, referrer, amount, purse);
+    let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
     runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
 }
 
@@ -206,34 +206,34 @@ fn extend_lt_auction()
 // BEP20 //
 ///////////
 #[no_mangle]
-fn set_sbnb() {
-    let sbnb: Key = runtime::get_named_arg("sbnb");
-    BEP20::set_sbnb(&WiseTokenStruct::default(), sbnb);
+fn set_scspr() {
+    let scspr: Key = runtime::get_named_arg("scspr");
+    BEP20::set_scspr(&WiseTokenStruct::default(), scspr);
 }
 
 #[no_mangle]
-fn sbnb_burn() {
+fn scspr_burn() {
     let account: Key = runtime::get_named_arg("account");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    BEP20::sbnb_burn(&WiseTokenStruct::default(), account, amount);
+    BEP20::scspr_burn(&WiseTokenStruct::default(), account, amount);
 }
 
 #[no_mangle]
-fn sbnb_mint() {
+fn scspr_mint() {
     let account: Key = runtime::get_named_arg("account");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    BEP20::sbnb_mint(&WiseTokenStruct::default(), account, amount);
+    BEP20::scspr_mint(&WiseTokenStruct::default(), account, amount);
 }
 
 #[no_mangle]
-fn sbnb_approve() {
+fn scspr_approve() {
     let owner: Key = runtime::get_named_arg("owner");
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    BEP20::sbnb_approve(&WiseTokenStruct::default(), owner, spender, amount);
+    BEP20::scspr_approve(&WiseTokenStruct::default(), owner, spender, amount);
 }
 
 #[no_mangle]
@@ -321,13 +321,13 @@ fn get_entry_points() -> EntryPoints
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("synthetic_bnb_address", CLType::Key),
+            Parameter::new("synthetic_cspr_address", CLType::Key),
             Parameter::new("router_address", CLType::Key),
             Parameter::new("launch_time", CLType::U256),
             Parameter::new("factory_address", CLType::Key),
             Parameter::new("pair_address", CLType::Key),
             Parameter::new("liquidity_guard", CLType::Key),
-            Parameter::new("wbnb", CLType::Key)
+            Parameter::new("wcspr", CLType::Key)
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -385,7 +385,7 @@ fn get_entry_points() -> EntryPoints
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_with_bnb",
+        "create_stake_with_cspr",
         vec![
             Parameter::new("lock_days", CLType::U64),
             Parameter::new("referrer", CLType::Key),
@@ -455,14 +455,14 @@ fn get_entry_points() -> EntryPoints
     // BEP20 //
     ///////////
     entry_points.add_entry_point(EntryPoint::new(
-        "set_sbnb",
-        vec![Parameter::new("sbnb", Key::cl_type())],
+        "set_scspr",
+        vec![Parameter::new("scspr", Key::cl_type())],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "sbnb_burn",
+        "scspr_burn",
         vec![
             Parameter::new("account", Key::cl_type()),
             Parameter::new("amount", U256::cl_type()),
@@ -472,7 +472,7 @@ fn get_entry_points() -> EntryPoints
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "sbnb_mint",
+        "scspr_mint",
         vec![
             Parameter::new("account", Key::cl_type()),
             Parameter::new("amount", U256::cl_type()),
@@ -482,7 +482,7 @@ fn get_entry_points() -> EntryPoints
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "sbnb_approve",
+        "scspr_approve",
         vec![
             Parameter::new("owner", Key::cl_type()),
             Parameter::new("spender", Key::cl_type()),
@@ -592,25 +592,25 @@ pub extern "C" fn call()
     let (contract_hash, _) : (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let synthetic_bnb_address: Key = runtime::get_named_arg("sbnb");
+    let synthetic_cspr_address: Key = runtime::get_named_arg("scspr");
     let router_address: Key = runtime::get_named_arg("router");
     let factory_address: Key = runtime::get_named_arg("factory");
     let pair_address: Key = runtime::get_named_arg("pair");
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
     let launch_time: U256 = runtime::get_named_arg("launch_time");
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
-        "synthetic_bnb_address" => synthetic_bnb_address,
+        "synthetic_cspr_address" => synthetic_cspr_address,
         "router_address" => router_address,
         "launch_time" => launch_time,
         "factory_address" => factory_address,
         "pair_address" => pair_address,
         "liquidity_guard" => liquidity_guard,
-        "wbnb" => wbnb
+        "wcspr" => wcspr
     };
 
     // Add the constructor group to the package hash with a single URef.

@@ -18,11 +18,11 @@ pub fn set_package_hash(hash: ContractPackageHash) {
     set_key(SELF_PACKAGE_HASH, hash);
 }
 
-pub fn sbnb_hash() -> Key {
-    get_key(SBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn scspr_hash() -> Key {
+    get_key(SCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_sbnb_hash(hash: Key) {
-    set_key(SBNB_CONTRACT_HASH, hash);
+pub fn set_scspr_hash(hash: Key) {
+    set_key(SCSPR_CONTRACT_HASH, hash);
 }
 
 pub fn pair_hash() -> Key {

@@ -5,4 +5,5 @@
 /busd_equivalent/Cargo.lock
 /busd_equivalent_tests/target
 /busd_equivalent_tests/.history
+/busd_equivalent_tests/wasm/*
 Cargo.lock

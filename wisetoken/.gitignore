@@ -6,6 +6,7 @@
 /wisetoken/Cargo.lock
 /wisetoken_tests/target
 /wisetoken_tests/.history
+/wisetoken_tests/wasm/*
 /wisetoken_tests/Cargo.lock
 /test-contract/target
 /test-contract/.history

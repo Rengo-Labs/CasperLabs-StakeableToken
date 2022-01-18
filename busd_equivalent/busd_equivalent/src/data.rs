@@ -26,18 +26,18 @@ pub fn set_busd_hash(hash: Key) {
     set_key(BUSD_CONTRACT_HASH, hash);
 }
 
-pub fn sbnb_hash() -> Key {
-    get_key(SBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn scspr_hash() -> Key {
+    get_key(SCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_sbnb_hash(hash: Key) {
-    set_key(SBNB_CONTRACT_HASH, hash);
+pub fn set_scspr_hash(hash: Key) {
+    set_key(SCSPR_CONTRACT_HASH, hash);
 }
 
-pub fn wbnb_hash() -> Key {
-    get_key(WBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn wcspr_hash() -> Key {
+    get_key(WCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_wbnb_hash(hash: Key) {
-    set_key(WBNB_CONTRACT_HASH, hash);
+pub fn set_wcspr_hash(hash: Key) {
+    set_key(WCSPR_CONTRACT_HASH, hash);
 }
 
 pub fn wise_hash() -> Key {

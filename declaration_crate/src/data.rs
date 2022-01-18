@@ -79,18 +79,18 @@ pub fn set_liquidity_guard_status(status: bool) {
     set_key(DECLARATION_LIQUIDITY_GUARD_STATUS, status);
 }
 
-pub fn wbnb() -> Key {
-    get_key(WBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn wcspr() -> Key {
+    get_key(WCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_wbnb(wbnb: Key) {
-    set_key(WBNB_CONTRACT_HASH, wbnb);
+pub fn set_wcspr(wcspr: Key) {
+    set_key(WCSPR_CONTRACT_HASH, wcspr);
 }
 
-pub fn sbnb() -> Key {
-    get_key(SBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn scspr() -> Key {
+    get_key(SCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_sbnb(sbnb: Key) {
-    set_key(SBNB_CONTRACT_HASH, sbnb);
+pub fn set_scspr(scspr: Key) {
+    set_key(SCSPR_CONTRACT_HASH, scspr);
 }
 
 pub fn busd_eq() -> Key {

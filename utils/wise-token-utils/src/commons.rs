@@ -5,8 +5,8 @@ pub mod key_names {
     pub const FACTORY_CONTRACT_HASH: &str = "factory_contract_hash";
     pub const PAIR_CONTRACT_HASH: &str = "pair_contract_hash";
     pub const LIQUIDITY_GUARD_CONTRACT_HASH: &str = "liquidity_guard_contract_hash";
-    pub const WBNB_CONTRACT_HASH: &str = "wbnb_contract_hash";
-    pub const SBNB_CONTRACT_HASH: &str = "sbnb_contract_hash";
+    pub const WCSPR_CONTRACT_HASH: &str = "wcspr_contract_hash";
+    pub const SCSPR_CONTRACT_HASH: &str = "scspr_contract_hash";
     pub const BUSD_CONTRACT_HASH: &str = "busd_contract_hash";
     pub const BUSD_EQ_CONTRACT_HASH: &str = "busd_eq_contract_hash";
     pub const UNISWAP_PAIR_CONTRACT_HASH: &str = "uniswap_pair_contract_hash";

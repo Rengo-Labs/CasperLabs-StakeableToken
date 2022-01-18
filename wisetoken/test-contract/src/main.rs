@@ -105,7 +105,7 @@ fn mint_supply() {
 
 
 #[no_mangle]
-fn create_stake_with_bnb() {
+fn create_stake_with_cspr() {
 
     let self_hash: Key = runtime::get_named_arg("test_contract_hash");
     let self_hash: ContractHash = ContractHash::from(self_hash.into_hash().unwrap_or_revert());
@@ -122,7 +122,7 @@ fn create_stake_with_bnb() {
         "purse" => caller_purse
     };
 
-    let _: () = runtime::call_contract(self_hash, "create_stake_with_bnb_execute", constructor_args);
+    let _: () = runtime::call_contract(self_hash, "create_stake_with_cspr_execute", constructor_args);
 }
 
 
@@ -130,7 +130,7 @@ fn create_stake_with_bnb() {
     This is the actual function that calls the entrypoint of the wise.
 */
 #[no_mangle]
-fn create_stake_with_bnb_execute() {
+fn create_stake_with_cspr_execute() {
 
     let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
 
@@ -141,7 +141,7 @@ fn create_stake_with_bnb_execute() {
 
     let (stake_id, start_day, referrer_id):(Vec<u32>, U256 ,Vec<u32>) = runtime::call_contract(
         wise_contract, 
-        "create_stake_with_bnb", 
+        "create_stake_with_cspr", 
         runtime_args!{
             "lock_days" => lock_days,
             "referrer" => referrer,
@@ -378,7 +378,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_with_bnb",
+        "create_stake_with_cspr",
         vec![
             Parameter::new("test_contract_hash", CLType::Key),
             Parameter::new("lock_days", CLType::U64),
@@ -391,7 +391,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_with_bnb_execute",
+        "create_stake_with_cspr_execute",
         vec![
             Parameter::new("lock_days", CLType::U64),
             Parameter::new("referrer", CLType::Key),

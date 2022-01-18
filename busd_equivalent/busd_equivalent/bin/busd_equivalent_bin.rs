@@ -32,8 +32,8 @@ impl BUSDEquivalentStruct {
         contract_hash: ContractHash,
         package_hash: ContractPackageHash,
         wise: Key,
-        sbnb: Key,
-        wbnb: Key,
+        scspr: Key,
+        wcspr: Key,
         busd: Key,
         router: Key,
     ) {
@@ -42,8 +42,8 @@ impl BUSDEquivalentStruct {
             Key::from(contract_hash),
             package_hash,
             wise,
-            sbnb,
-            wbnb,
+            scspr,
+            wcspr,
             busd,
             router,
         );
@@ -67,8 +67,8 @@ fn constructor() {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
     let wise: Key = runtime::get_named_arg("wise");
-    let sbnb: Key = runtime::get_named_arg("sbnb");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let scspr: Key = runtime::get_named_arg("scspr");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
     let busd: Key = runtime::get_named_arg("busd");
     let router: Key = runtime::get_named_arg("router");
 
@@ -76,8 +76,8 @@ fn constructor() {
         contract_hash,
         package_hash,
         wise,
-        sbnb,
-        wbnb,
+        scspr,
+        wcspr,
         busd,
         router,
     );
@@ -91,8 +91,8 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
             Parameter::new("wise", Key::cl_type()),
-            Parameter::new("sbnb", Key::cl_type()),
-            Parameter::new("wbnb", Key::cl_type()),
+            Parameter::new("scspr", Key::cl_type()),
+            Parameter::new("wcspr", Key::cl_type()),
             Parameter::new("busd", Key::cl_type()),
             Parameter::new("router", Key::cl_type()),
         ],
@@ -128,8 +128,8 @@ pub extern "C" fn call() {
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
     let wise: Key = runtime::get_named_arg("wise");
-    let sbnb: Key = runtime::get_named_arg("sbnb");
-    let wbnb: Key = runtime::get_named_arg("wbnb");
+    let scspr: Key = runtime::get_named_arg("scspr");
+    let wcspr: Key = runtime::get_named_arg("wcspr");
     let busd: Key = runtime::get_named_arg("busd");
     let router: Key = runtime::get_named_arg("router");
 
@@ -138,8 +138,8 @@ pub extern "C" fn call() {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
         "wise" => wise,
-        "sbnb" => sbnb,
-        "wbnb" => wbnb,
+        "scspr" => scspr,
+        "wcspr" => wcspr,
         "busd" => busd,
         "router"=>router,
     };

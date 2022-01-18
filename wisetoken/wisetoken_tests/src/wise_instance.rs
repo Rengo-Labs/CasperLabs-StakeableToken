@@ -86,11 +86,11 @@ impl WiseTestInstance {
         );
     }
 
-    pub fn create_stake_with_bnb(&self, owner: Sender, test_contract_hash: Key, lock_days: u64, referrer: Key, amount: U256)
+    pub fn create_stake_with_cspr(&self, owner: Sender, test_contract_hash: Key, lock_days: u64, referrer: Key, amount: U256)
     {
         self.0.call_contract(
             owner, 
-            "create_stake_with_bnb",
+            "create_stake_with_cspr",
             runtime_args!{
                 "test_contract_hash" => test_contract_hash,
                 "lock_days" => lock_days,

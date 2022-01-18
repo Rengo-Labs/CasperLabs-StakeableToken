@@ -34,13 +34,13 @@ pub trait WiseToken<Storage: ContractStorage>:
     fn init(&mut self, 
         contract_hash: Key, 
         package_hash: ContractPackageHash, 
-        synthetic_bnb_address: Key, 
+        synthetic_cspr_address: Key, 
         router_address: Key, 
         launch_time: U256,
         factory_address: Key,
         pair_address: Key,
         liquidity_guard: Key,
-        wbnb: Key
+        wcspr: Key
     ) 
     {
         data::set_package_hash(package_hash);
@@ -48,15 +48,15 @@ pub trait WiseToken<Storage: ContractStorage>:
         data::set_router_hash(router_address);
 
         // init all the crates
-        Declaration::init(self, launch_time, router_address, factory_address, pair_address, liquidity_guard, synthetic_bnb_address, wbnb);
+        Declaration::init(self, launch_time, router_address, factory_address, pair_address, liquidity_guard, synthetic_cspr_address, wcspr);
         StakingToken::init(self);
         Globals::init(self);
         Timing::init(self);
         Helper::init(self);
         ReferralToken::init(self);
         BEP20::init(self, "Wise Token".to_string(), "WISB".to_string());
-        LiquidityToken::init(self, synthetic_bnb_address, pair_address, liquidity_guard);
-        Snapshot::init(self, synthetic_bnb_address, pair_address, liquidity_guard);
+        LiquidityToken::init(self, synthetic_cspr_address, pair_address, liquidity_guard);
+        Snapshot::init(self, synthetic_cspr_address, pair_address, liquidity_guard);
 
         data::set_transformer_gate_keeper(self.get_caller());
     }
@@ -117,15 +117,15 @@ pub trait WiseToken<Storage: ContractStorage>:
         }
     }
 
-    fn create_stake_with_bnb(&mut self, lock_days: u64, referrer: Key, amount: U256, caller_purse: URef) -> (Vec<u32>, U256 ,Vec<u32>)
+    fn create_stake_with_cspr(&mut self, lock_days: u64, referrer: Key, amount: U256, caller_purse: URef) -> (Vec<u32>, U256 ,Vec<u32>)
     {
         let router_contract: Key = data::router_hash();
 
-        let wbnb: Key = Declaration::get_wbnb(self);
-        let sbnb: Key = Declaration::get_sbnb(self);
+        let wcspr: Key = Declaration::get_wcspr(self);
+        let scspr: Key = Declaration::get_scspr(self);
         let self_hash: Key = data::contract_hash();
 
-        let path : Vec<Key> = vec![wbnb, sbnb, self_hash];
+        let path : Vec<Key> = vec![wcspr, scspr, self_hash];
 
         // get the consts struct from declaration
         let constant_struct: Vec<u8> = Declaration::get_declaration_constants(self);
@@ -178,9 +178,9 @@ pub trait WiseToken<Storage: ContractStorage>:
         let _:() = runtime::call_contract(ContractHash::from(token_address.into_hash().unwrap_or_revert()), "approve", args);
 
         let router_address: Key = data::router_hash();
-        let wbnb: Key = Declaration::get_wbnb(self);
-        let sbnb: Key = Declaration::get_sbnb(self);
-        let path : Vec<Key> = vec![token_address, wbnb, sbnb, data::contract_hash()];
+        let wcspr: Key = Declaration::get_wcspr(self);
+        let scspr: Key = Declaration::get_scspr(self);
+        let path : Vec<Key> = vec![token_address, wcspr, scspr, data::contract_hash()];
 
         // get the consts struct from declaration
         let constant_struct: Vec<u8> = Declaration::get_declaration_constants(self);
@@ -223,7 +223,7 @@ pub trait WiseToken<Storage: ContractStorage>:
 
     fn get_synthetic_token_address(&self) -> Key
     {
-        Declaration::get_sbnb(self)
+        Declaration::get_scspr(self)
     }
     
     fn extend_lt_auction(&self)

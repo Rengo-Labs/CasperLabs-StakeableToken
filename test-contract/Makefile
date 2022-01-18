@@ -24,4 +24,4 @@ lint: clippy
 
 clean:
 	cargo clean
-	rm -rf crate-tests/wasm/*.wasm
+	rm -rf crate-test/wasm/*.wasm

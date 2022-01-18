@@ -16,15 +16,15 @@ pub const CONTRACT_PACKAGE_HASH: &str = "contract_package_hash";
 pub const DOMAIN_SEPARATOR: &str = "domain_separator";
 pub const PERMIT_TYPE_HASH: &str = "permit_type_hash";
 
-pub const SBNB: &str = "sbnb";
+pub const SCSPR: &str = "scspr";
 pub const OWNER: &str = "owner";
 
-pub fn sbnb() -> Key {
-    get_key(SBNB).unwrap_or_revert()
+pub fn scspr() -> Key {
+    get_key(SCSPR).unwrap_or_revert()
 }
 
-pub fn set_sbnb(sbnb: Key) {
-    set_key(SBNB, sbnb);
+pub fn set_scspr(scspr: Key) {
+    set_key(SCSPR, scspr);
 }
 
 pub fn owner() -> Key {

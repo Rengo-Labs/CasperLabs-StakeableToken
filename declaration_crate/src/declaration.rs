@@ -24,18 +24,18 @@ pub trait Declaration<Storage: ContractStorage>:
         factory: Key,
         pair_hash: Key,
         liquidity_guard: Key,
-        synthetic_bnb: Key,
-        wbnb: Key,
+        synthetic_cspr: Key,
+        wcspr: Key,
     ) {
         data::set_router_hash(uniswap_router);
         data::set_factory_hash(factory);
         data::set_pair_hash(pair_hash);
         data::set_liquidity_guard_hash(liquidity_guard);
-        data::set_sbnb(synthetic_bnb);
+        data::set_scspr(synthetic_cspr);
         data::set_launch_time(launch_time);
         data::set_inflation_rate(U256::from(103000)); // 3.000% (indirect -> checks through LiquidityGuard)
         data::set_liquidity_rate(U256::from(100006)); // 0.006% (indirect -> checks through LiquidityGuard)
-        data::set_wbnb(wbnb);
+        data::set_wcspr(wcspr);
 
         data::StakeCount::init();
         data::ReferralCount::init();
@@ -53,10 +53,10 @@ pub trait Declaration<Storage: ContractStorage>:
     fn create_pair(&self) {
         let factory: Key = data::factory_hash();
         let pair: Key = data::pair_hash();
-        let sbnb: Key = data::sbnb();
+        let scspr: Key = data::scspr();
 
         let args: RuntimeArgs = runtime_args! {
-            "token_a" => sbnb,
+            "token_a" => scspr,
             "token_b" => data::self_hash(),
             "pair_hash" => pair
         };
@@ -179,16 +179,16 @@ pub trait Declaration<Storage: ContractStorage>:
         data::liquidity_guard_status()
     }
 
-    fn set_sbnb(&self, sbnb: Key) {
-        data::set_sbnb(sbnb);
+    fn set_scspr(&self, scspr: Key) {
+        data::set_scspr(scspr);
     }
 
-    fn get_sbnb(&self) -> Key {
-        data::sbnb()
+    fn get_scspr(&self) -> Key {
+        data::scspr()
     }
 
-    fn get_wbnb(&self) -> Key {
-        data::wbnb()
+    fn get_wcspr(&self) -> Key {
+        data::wcspr()
     }
 
     fn set_busd_eq(&self, address: Key) {

@@ -29,8 +29,8 @@ pub trait Snapshot<Storage: ContractStorage>:
     + BEP20<Storage>
 {
     // Will be called by constructor
-    fn init(&mut self, sbnb_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
-        data::set_sbnb_hash(sbnb_contract_hash);
+    fn init(&self, scspr_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
+        data::set_scspr_hash(scspr_contract_hash);
         data::set_pair_hash(pair_contract_hash);
         data::set_guard_hash(guard_contract_hash);
         data::SnapshotsDict::init();
@@ -38,9 +38,9 @@ pub trait Snapshot<Storage: ContractStorage>:
         data::LSnapshotsDict::init();
     }
 
-    fn _liquidity_guard_trigger(&self) {
+    fn liquidity_guard_trigger(&self) {
         let pair_hash = data::pair_hash();
-        let sbnb_hash = data::sbnb_hash();
+        let scspr_hash = data::scspr_hash();
 
         let total_supply: U256 = BEP20::total_supply(self);
 
@@ -65,7 +65,7 @@ pub trait Snapshot<Storage: ContractStorage>:
             runtime_args! {},
         );
 
-        let on_pancake: U256 = if token1.eq(&sbnb_hash) {
+        let on_pancake: U256 = if token1.eq(&scspr_hash) {
             U256::from(reserve_a.as_u128())
         } else {
             U256::from(reserve_b.as_u128())
@@ -84,11 +84,11 @@ pub trait Snapshot<Storage: ContractStorage>:
         };
 
         if ratio < 40.into() && liquidity_guard_status == false {
-            self._enable_liquidity_guard();
+            self.enable_liquidity_guard();
         }
 
         if ratio > 60.into() && liquidity_guard_status == true {
-            self._disable_liquidity_guard();
+            self.disable_liquidity_guard();
         }
 
         emit(&WiseEvents::LiquidityGuardStatus {
@@ -97,7 +97,7 @@ pub trait Snapshot<Storage: ContractStorage>:
     }
 
     fn _daily_snapshot_point(&self, _update_day: u64) {
-        self._liquidity_guard_trigger();
+        self.liquidity_guard_trigger();
 
         let mut scheduled_to_end_today: U256 = 0.into();
         let total_staked_today: U256 = Globals::get_globals(self, GLOBALS_TOTAL_STAKED.to_string());
@@ -255,7 +255,7 @@ pub trait Snapshot<Storage: ContractStorage>:
             lsnapshots.set(&_day.into(), lsnapshot.into_bytes().unwrap());
 
             //wrap up snapshotting
-            Self::_adjust_liquidity_rates(self);
+            Self::adjust_liquidity_rates(self);
 
             // increment globals.current wise day
             let new_current_wise_day = Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.into())
@@ -270,12 +270,12 @@ pub trait Snapshot<Storage: ContractStorage>:
         let current_wise_day: u64 = Timing::_current_wise_day(self);
         self._daily_snapshot_point(current_wise_day);
     }
-    fn _manual_daily_snapshot(&mut self) {
+    fn manual_daily_snapshot(&self) {
         let current_wise_day: u64 = Timing::_current_wise_day(self);
         self._daily_snapshot_point(current_wise_day);
     }
 
-    fn _manual_daily_snapshot_point(&mut self, _update_day: u64) {
+    fn manual_daily_snapshot_point(&self, _update_day: u64) {
         let current_wise_day: u64 = Timing::_current_wise_day(self);
 
         if _update_day > 0 && _update_day < current_wise_day {
@@ -291,15 +291,15 @@ pub trait Snapshot<Storage: ContractStorage>:
         }
     }
 
-    fn _enable_liquidity_guard(&self) {
+    fn enable_liquidity_guard(&self) {
         Declaration::set_liquidity_guard_status(self, true);
     }
 
-    fn _disable_liquidity_guard(&self) {
+    fn disable_liquidity_guard(&self) {
         Declaration::set_liquidity_guard_status(self, false);
     }
 
-    fn _adjust_liquidity_rates(&self) {
+    fn adjust_liquidity_rates(&self) {
         let mut liquidity_rate: U256 = Declaration::get_liquidity_rate(self);
         let parameters_string: Vec<u8> = Declaration::get_declaration_constants(self);
         let parameters_type: declaration::parameters::ConstantParameters =

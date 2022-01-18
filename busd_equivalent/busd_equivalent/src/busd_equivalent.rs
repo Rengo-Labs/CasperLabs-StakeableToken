@@ -13,20 +13,20 @@ pub trait BUSDEquivalent<Storage: ContractStorage>: ContractContext<Storage> {
         contract_hash: Key,
         package_hash: ContractPackageHash,
         wise: Key,
-        sbnb: Key,
-        wbnb: Key,
+        scspr: Key,
+        wcspr: Key,
         busd: Key,
         router: Key,
     ) {
         data::set_busd_hash(busd);
         data::set_self_hash(contract_hash);
         data::set_package_hash(package_hash);
-        data::set_sbnb_hash(sbnb);
-        data::set_wbnb_hash(wbnb);
+        data::set_scspr_hash(scspr);
+        data::set_wcspr_hash(wcspr);
         data::set_wise_hash(wise);
         data::set_router_hash(router);
         data::set_decimals(U256::from(18)); // also sets yodas_per_wise
-        data::set_path(wise, sbnb, wbnb, busd);
+        data::set_path(wise, scspr, wcspr, busd);
         data::set_latest_busd_equivalent(0.into());
     }
 

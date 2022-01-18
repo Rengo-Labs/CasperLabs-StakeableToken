@@ -7,4 +7,5 @@
 /liquidity_guard_tests/.history
 /test_contract/target
 /test_contract/.history
+/liquidity_guard_tests/wasm/*
 Cargo.lock

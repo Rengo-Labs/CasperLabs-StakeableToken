@@ -191,7 +191,7 @@ fn deploy_synthetic_token(
     bep20: Key,
     pair: Key,
     router: Key,
-    wbnb: Key,
+    wcspr: Key,
 ) -> TestContract {
     TestContract::new(
         &env,
@@ -199,7 +199,7 @@ fn deploy_synthetic_token(
         "synthetic_token",
         Sender(owner),
         runtime_args! {
-            "wbnb"=>wbnb,
+            "wcspr"=>wcspr,
             "uniswap_pair"=>pair,
             "uniswap_router"=>router,
             "bep20"=>bep20,
@@ -208,7 +208,7 @@ fn deploy_synthetic_token(
     )
 }
 
-fn deploy_synthetic_bnb(
+fn deploy_synthetic_cspr(
     env: &TestEnv,
     owner: AccountHash,
     factory: Key,
@@ -218,27 +218,14 @@ fn deploy_synthetic_bnb(
 ) -> TestContract {
     TestContract::new(
         &env,
-        "sbnb.wasm",
-        "sbnb",
+        "scspr.wasm",
+        "scspr",
         Sender(owner),
         runtime_args! {
             "bep20" => bep20,
             "uniswap_factory" => factory,
             "synthetic_helper" => synthetic_helper,
             "synthetic_token" => synthetic_token
-        },
-    )
-}
-
-fn deploy_wbnb(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> TestContract {
-    TestContract::new(
-        &env,
-        "wbnb-token.wasm",
-        "wbnb",
-        Sender(owner),
-        runtime_args! {
-            "name" => "wbnb",
-            "symbol" => "ERC",
         },
     )
 }
@@ -265,7 +252,7 @@ fn deploy_busd_equivalent() -> (
     let library = deploy_library(&env, owner);
     let wcspr = deploy_wcspr(&env, owner);
     let dai = deploy_dai(&env, owner);
-    let wbnb = deploy_erc20(&env, owner, "wbnb", "wbnb");
+    let wcspr = deploy_erc20(&env, owner, "wcspr", "wcspr");
     let busd = deploy_erc20(&env, owner, "BUSD", "BUSD");
     // deploying declaration
 
@@ -298,9 +285,9 @@ fn deploy_busd_equivalent() -> (
         Key::Hash(bep20.contract_hash()),
         Key::Hash(pair.contract_hash()),
         Key::Hash(router.contract_hash()),
-        Key::Hash(wbnb.contract_hash()),
+        Key::Hash(wcspr.contract_hash()),
     );
-    // let synthetic_bnb = deploy_synthetic_bnb(
+    // let synthetic_cspr = deploy_synthetic_cspr(
     //     &env,
     //     owner,
     //     Key::Hash(factory.contract_hash()),
@@ -308,15 +295,15 @@ fn deploy_busd_equivalent() -> (
     //     Key::Hash(synthetic_token.contract_hash()),
     //     Key::Hash(bep20.contract_hash()),
     // );
-    let synthetic_bnb = deploy_erc20(&env, owner, "Synthetic BNB", "sbnb");
+    let synthetic_cspr = deploy_erc20(&env, owner, "Synthetic CSPR", "scspr");
     let wise = deploy_erc20(&env, owner, "WISE token", "wise");
     let busd_equivalent = BUSDEquivalentInstance::new(
         &env,
         "busd_equivalent",
         Sender(owner),
         Key::Hash(wise.contract_hash()),
-        Key::Hash(synthetic_bnb.contract_hash()),
-        Key::Hash(wbnb.contract_hash()),
+        Key::Hash(synthetic_cspr.contract_hash()),
+        Key::Hash(wcspr.contract_hash()),
         Key::Hash(busd.contract_hash()),
         Key::Hash(router.contract_hash()),
         Key::Hash(factory.contract_hash()),
@@ -357,8 +344,8 @@ fn deploy_busd_equivalent() -> (
         busd_equivalent,
         BUSDEquivalentInstance::instance(proxy),
         wise,
-        synthetic_bnb,
-        wbnb,
+        synthetic_cspr,
+        wcspr,
         busd,
         router,
         factory,
@@ -379,8 +366,8 @@ fn test_get_busd_equivalent() {
         busd_equivalent,
         proxy,
         wise,
-        sbnb,
-        wbnb,
+        scspr,
+        wcspr,
         busd,
         router,
         factory,
@@ -405,8 +392,8 @@ fn test_get_busd_equivalent() {
 
     let mut pairs: Vec<TestContract> = Vec::new();
     // all 4 are erc20 tokens for simplicity
-    let path = vec![wise, sbnb, wbnb, busd]; // as is set in busd_eq contract
-                                             // each token will mint to proxy contract
+    let path = vec![wise, scspr, wcspr, busd]; // as is set in busd_eq contract
+                                               // each token will mint to proxy contract
     for i in 0..4 {
         path[i].call_contract(
             Sender(owner),
@@ -463,8 +450,8 @@ fn test_update_busd_equivalent() {
         busd_equivalent,
         proxy,
         wise,
-        sbnb,
-        wbnb,
+        scspr,
+        wcspr,
         busd,
         router,
         factory,
@@ -493,8 +480,8 @@ fn test_update_busd_equivalent() {
 
     let mut pairs: Vec<TestContract> = Vec::new();
     // all 4 are erc20 tokens for simplicity
-    let path = vec![wise, sbnb, wbnb, busd]; // as is set in busd_eq contract
-                                             // each token will mint to proxy contract
+    let path = vec![wise, scspr, wcspr, busd]; // as is set in busd_eq contract
+                                               // each token will mint to proxy contract
     for i in 0..4 {
         path[i].call_contract(
             Sender(owner),

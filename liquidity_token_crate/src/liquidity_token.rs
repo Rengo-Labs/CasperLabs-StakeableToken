@@ -32,8 +32,8 @@ pub trait LiquidityToken<Storage: ContractStorage>:
     + BEP20<Storage>
 {
     // Will be called by constructor
-    fn init(&mut self, sbnb_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
-        data::set_sbnb_hash(sbnb_contract_hash);
+    fn init(&mut self, scspr_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
+        data::set_scspr_hash(scspr_contract_hash);
         data::set_pair_hash(pair_contract_hash);
         data::set_guard_hash(guard_contract_hash);
     }

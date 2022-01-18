@@ -12,8 +12,8 @@ impl TestInstance {
         factory: Key,
         pair_hash: Key,
         liquidity_guard: Key,
-        synthetic_bnb: Key,
-        wbnb: Key,
+        synthetic_cspr: Key,
+        wcspr: Key,
         bep20: Key,
     ) -> TestContract {
         TestContract::new(
@@ -27,8 +27,8 @@ impl TestInstance {
                 "factory" => factory,
                 "pair_hash" => pair_hash,
                 "liquidity_guard" => liquidity_guard,
-                "synthetic_bnb" => synthetic_bnb,
-                "wbnb" => wbnb,
+                "synthetic_cspr" => synthetic_cspr,
+                "wcspr" => wcspr,
                 "bep20"=>bep20
             },
         )

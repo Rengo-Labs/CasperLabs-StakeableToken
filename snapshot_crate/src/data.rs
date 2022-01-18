@@ -1,8 +1,5 @@
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
-use casper_types::{
-    bytesrepr::{FromBytes, ToBytes},
-    Key, U256,
-};
+use casper_types::{bytesrepr::ToBytes, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 extern crate alloc;
 use alloc::{string::ToString, vec::Vec};
@@ -97,11 +94,11 @@ pub fn self_hash() -> Key {
     get_key(SELF_CONTRACT_HASH).unwrap_or_revert()
 }
 
-pub fn sbnb_hash() -> Key {
-    get_key(SBNB_CONTRACT_HASH).unwrap_or_revert()
+pub fn scspr_hash() -> Key {
+    get_key(SCSPR_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_sbnb_hash(hash: Key) {
-    set_key(SBNB_CONTRACT_HASH, hash);
+pub fn set_scspr_hash(hash: Key) {
+    set_key(SCSPR_CONTRACT_HASH, hash);
 }
 
 pub fn pair_hash() -> Key {
