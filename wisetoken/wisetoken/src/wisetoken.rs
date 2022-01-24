@@ -17,6 +17,7 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use bep20_crate::BEP20;
 use wise_token_utils::error_codes::ErrorCodes;
+use wise_token_utils::commons::key_names;
 
 pub trait WiseToken<Storage: ContractStorage>: 
     ContractContext<Storage>
@@ -213,7 +214,7 @@ pub trait WiseToken<Storage: ContractStorage>:
 
     fn get_total_staked(&self) -> U256
     {
-        Globals::get_globals(self, String::from("total_staked"))
+        Globals::get_globals(self, String::from(key_names::GLOBALS_TOTAL_STAKED))
     }
     
     fn get_liquidity_transformer(&self) -> Key

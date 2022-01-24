@@ -31,6 +31,18 @@ Implementation of `Transfer Helper`, `BUSD Equivalent`, `Liquidity Guard` and `W
   - [Entry Point methods](#wise-token-entry-point-methods)
     - [```set_liquidity_transfomer```](#wise-token-set-liquidity-transfomer)
     - [```set_busd```](#wise-token-set-busd)
+    - [```renounce_keeper```](#wise-token-renounce-keeper)
+    - [```change_keeper```](#wise-token-change-keeper)
+    - [```mint_supply```](#wise-token-mint-supply)
+    - [```create_stake_with_cspr```](#wise-token-create-stake-with-cspr)
+    - [```create_stake_with_token```](#wise-token-create-stake-with-token)
+    - [```get_pair_address```](#wise-token-get-pair-address)
+    - [```get_total_staked```](#wise-token-get-total-staked)
+    - [```get_liquidity_transformer```](#wise-token-get-liquidity-transformer)
+    - [```get_synthetic_token_address```](#wise-token-get-synthetic-token-address)
+    - [```extend_lt_auction```](#wise-token-extend-lt-auction)
+
+
 ## Interacting with the contract
 You need to have `casper-client` and `jq` installed on your system to run the examples. The instructions have been tested on Ubuntu 20.04.0 LTS.
 
@@ -324,5 +336,95 @@ Sets Transformer Gatekeeper named key to a provided address.
 Parameter Name | Type
 |---|--- |
 | keeper | Key |
+
+This method **returns** nothing.
+
+- ##### mint_supply <a id="wise-token-mint-supply"></a>
+Mints tokens to an address.
+<br>Contract reverts if ```self.get_caller()``` is not the Liquidity Transformer contract.
+
+Parameter Name | Type
+|---|--- |
+| investor_address | Key |
+| amount | U256 |
+
+
+This method **returns** nothing.
+
+- ##### create_stake_with_cspr <a id="wise-token-create-stake-with-cspr"></a>
+Creates a stake by withdrawing a cspr amount from a provided purse.
+<br> TODO extend with description about making pairs and adding liquidity
+Parameter Name | Type
+|---|--- |
+| referrer | Key |
+| amount | U256 |
+| lock_days | u64 |
+| purse | URef |
+
+This method **returns** a tuple of order 3, described below.
+| Tuple Index | Item Name | Type |
+| --- | --- | --- |
+|0|stake_id | Vec\<u32>
+|1|start_day | u64
+|2| referrer_id | Vec\<u32>
+
+- ##### create_stake_with_token <a id="wise-token-create-stake-with-token"></a>
+Creates a stake by withdrawing an amount of tokens from a provided token contract againts `self.get_caller()`.
+<br>`self.get_caller()` must have given Wise Token contract allowance of 'token_amount' atleast before calling this entry point.
+<br> TODO extend with description about making pairs and adding liquidity
+Parameter Name | Type
+|---|--- |
+| referrer | Key |
+| lock_days | u64 |
+| token_amount | U256 |
+| token_address | URef |
+
+This method **returns** a tuple of order 3, described below.
+| Tuple Index | Item Name | Type |
+| --- | --- | --- |
+|0|stake_id | Vec\<u32>
+|1|start_day | u64
+|2| referrer_id | Vec\<u32>
+
+- ##### get_pair_address <a id="wise-token-get-pair-address"></a>
+Returns the address of Uniswap V2 Pair contract on the CasperLabs Blockchain.
+Parameter Name | Type
+|---|--- |
+| --- | --- |
+
+This method **returns** a Key type.
+
+- ##### get_total_staked <a id="wise-token-get-total-staked"></a>
+Returns the total amount of tokens staked for stakes in Wise Token.
+Parameter Name | Type
+|---|--- |
+| --- | --- |
+
+This method **returns** a U256 type.
+
+- ##### get_liquidity_transformer <a id="wise-token-get-liquidity-transformer"></a>
+Returns the `liquidity_transformer` address.
+
+Parameter Name | Type
+|---|--- |
+| --- | --- |
+
+This method **returns** a Key type.
+
+- ##### get_synthetic_token_address <a id="wise-token-get-synthetic-token-address"></a>
+Returns the `synthetic_token` address.
+
+Parameter Name | Type
+|---|--- |
+| --- | --- |
+
+This method **returns** a Key type.
+
+- ##### extend_lt_auction <a id="wise-token-extend-lt-auction"></a>
+Updates the current launch time for Wise Token.
+
+Parameter Name | Type
+|---|--- |
+| --- | --- |
 
 This method **returns** nothing.
