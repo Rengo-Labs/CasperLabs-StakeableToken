@@ -20,7 +20,6 @@ router_contract = ${uniswap_router_directory}/uniswap-v2-router
 # paths to liquidity transformer contracts
 liquidity_transformer_contract = ${wise_liquidity_transformer_directory}/LiquidityTransformer/LiquidityTransformer
 scspr_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/scspr
-bep20_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/bep20
 synthetic_helper_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/SyntheticHelper
 synthetic_token_contract = ${wise_liquidity_transformer_directory}/${wise_liquidity_transformer_scspr_directory}/SyntheticToken
 
@@ -63,7 +62,6 @@ all:
 # build transformer contracts
 	cd ${liquidity_transformer_contract} && ${contract_build_command}
 	cd ${scspr_contract} && ${contract_build_command}
-	cd ${bep20_contract} && ${contract_build_command}
 	cd ${synthetic_helper_contract} && ${contract_build_command}
 	cd ${synthetic_token_contract} && ${contract_build_command}
 
@@ -130,10 +128,6 @@ copy-wasm-file:
 	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 	cp ${synthetic_token_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
-	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
-	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
-	cp ${bep20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
-
 # copy wise token wasms 
 	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_liquidity_guard}
 	cp ${liquidity_guard_contract}/${wasm_src_path}/*.wasm ${wasm_dest_busd_equivalent}
@@ -171,7 +165,6 @@ clean:
 # clean transformer contracts
 	cd ${liquidity_transformer_contract} && make clean
 	cd ${scspr_contract} && make clean
-	cd ${bep20_contract} && make clean
 	cd ${synthetic_helper_contract} && make clean
 	cd ${synthetic_token_contract} && make clean
 

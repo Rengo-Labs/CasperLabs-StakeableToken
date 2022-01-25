@@ -41,7 +41,18 @@ Implementation of `Transfer Helper`, `BUSD Equivalent`, `Liquidity Guard` and `W
     - [```get_liquidity_transformer```](#wise-token-get-liquidity-transformer)
     - [```get_synthetic_token_address```](#wise-token-get-synthetic-token-address)
     - [```extend_lt_auction```](#wise-token-extend-lt-auction)
-
+    - [```transfer```](#erc20-transfer)
+    - [```transfer_from```](#erc20-transfer-from)
+    - [```permit```](#erc20-permit)
+    - [```approve```](#erc20-approve)
+    - [```balance_of```](#erc20-balance_of)
+    - [```nonce```](#erc20-nonce)
+    - [```allowance```](#erc20-allowance)
+    - [```total_supply```](#erc20-total-supply)
+    - [```mint```](#erc20-mint)
+    - [```burn```](#erc20-burn)
+    - [```name```](#erc20-name)
+    - [```symbol```](#erc20-symbol)
 
 ## Interacting with the contract
 You need to have `casper-client` and `jq` installed on your system to run the examples. The instructions have been tested on Ubuntu 20.04.0 LTS.
@@ -428,3 +439,172 @@ Parameter Name | Type
 | --- | --- |
 
 This method **returns** nothing.
+
+- ##### transfer <a id="erc20-transfer"></a>
+Lets ` self.get_caller() ` send pool tokens to a recipient hash.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+recipient | Key
+amount | U256
+
+
+This method **returns** nothing.
+
+- ##### transfer_from <a id="erc20-transfer-from"></a>
+Sends pool tokens from one hash to another.
+<br>User needs to call approve method before calling the ` tranfer_from `.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+owner | Key
+recipient | Key
+amount | U256
+
+
+This method **returns** nothing.
+<br>**Recommendation:** 
+The exploit is mitigated through use of functions that increase/decrease the allowance relative to its current value, such as `increaseAllowance()` and `decreaseAllowance()`,
+Pending community agreement on an ERC standard that would protect against this exploit, we recommend that developers of applications dependent on approve() / transferFrom()
+should keep in mind that they have to set allowance to 0 first and verify if it was used before setting the new value.
+<br>**Note:**  Teams who decide to wait for such a standard should make these
+recommendations to app developers who work with their token contract.
+
+- ##### permit <a id="erc20-permit"></a>
+Sets the allowance for a spender where approval is granted via a signature.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+public | String
+signature | String
+owner | Key
+spender | Key
+value | U256
+deadline | u64
+
+
+This method **returns** nothing.
+
+
+- ##### approve <a id="erc20-approve"></a>
+Lets ` self.get_caller() ` set their allowance for a spender.
+<br>user needs to call this `approve` method before calling the `transfer_from` method.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+spender | Key
+amount | U256
+
+This method **returns** nothing.
+<br>**Recommendation:** 
+The exploit is mitigated through use of functions that increase/decrease the allowance relative to its current value, such as `increaseAllowance()` and `decreaseAllowance()`,
+Pending community agreement on an ERC standard that would protect against this exploit, we recommend that developers of applications dependent on approve() / transferFrom()
+should keep in mind that they have to set allowance to 0 first and verify if it was used before setting the new value.
+<br>**Note:**  Teams who decide to wait for such a standard should make these
+recommendations to app developers who work with their token contract.
+
+- ##### balance_of <a id="erc20-balance-of"></a>
+This method will return the balance of owner in `ERC20 Contract`.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+owner | Key
+
+
+This method **returns** U256.
+
+
+- ##### nonce <a id="erc20-nonce"></a>
+Returns the current `nonce` for an address for use in ` permit `.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+owner | Key
+
+
+This method **returns** U256.
+
+
+- ##### allowance <a id="erc20-allowance"></a>
+Returns the amount of liquidity tokens owned by an hash that a spender is allowed to transfer via ` transfer_from `.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+owner | Key
+spender | Key
+
+
+This method **returns** U256.
+
+
+- ##### total_supply <a id="erc20-total-supply"></a>
+Returns the total amount of pool tokens for a pair.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+
+
+This method **returns** U256.
+
+
+- ##### mint <a id="erc20-mint"></a>
+This method mints the number of tokens provided by user against the hash provided by user.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+to | Key
+amount | U256
+
+This method **returns** nothing.
+
+
+- ##### burn <a id="erc20-burn"></a>
+This method burns the number of tokens provided by user against the hash provided by user.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+from | Key
+amount | U256
+
+This method **returns** nothing.
+<br>**Note:** To `burn` the tokens against the hash provided by user, User needs to `mint` tokens first in `ERC20`.
+
+- ##### name <a id="erc20-name"></a>
+Returns the `name` of tokens for a pair.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+
+This method **returns** String.
+
+- ##### symbol <a id="erc20-symbol"></a>
+Returns the `symbol` of tokens for a pair.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+
+This method **returns** String.

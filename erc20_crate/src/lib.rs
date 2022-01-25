@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-mod bep20;
 pub mod data;
+mod erc20;
 
-pub use bep20::BEP20;
+pub use erc20::ERC20;

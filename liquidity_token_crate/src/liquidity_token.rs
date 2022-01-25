@@ -1,6 +1,7 @@
 use crate::data::{self};
 use alloc::{string::ToString, vec::Vec};
-use bep20_crate::BEP20;
+use erc20_crate::ERC20;
+
 use casper_contract::contract_api::runtime;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{
@@ -29,7 +30,7 @@ pub trait LiquidityToken<Storage: ContractStorage>:
     + Snapshot<Storage>
     + ReferralToken<Storage>
     + StakingToken<Storage>
-    + BEP20<Storage>
+    + ERC20<Storage>
 {
     // Will be called by constructor
     fn init(&mut self, scspr_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
@@ -123,7 +124,7 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         liquidity_stake_struct.reward_amount =
             LiquidityToken::_calculate_reward_amount(self, &liquidity_stake_struct);
 
-        let _: () = BEP20::_mint(
+        let _: () = ERC20::mint(
             self,
             self.get_caller(),
             liquidity_stake_struct.reward_amount,

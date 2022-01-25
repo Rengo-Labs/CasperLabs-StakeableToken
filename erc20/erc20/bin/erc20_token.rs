@@ -2,196 +2,75 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec, vec::Vec};
-
+use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec};
 use casper_contract::{
     contract_api::{runtime, storage},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
-    contracts::{ContractHash, ContractPackageHash},
-    runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
+    runtime_args, CLType, CLTyped, CLValue, ContractHash, ContractPackageHash, EntryPoint,
+    EntryPointAccess, EntryPointType, EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
-use wisetoken::{self, WiseToken};
-
-use declaration_crate::Declaration;
-use erc20_crate::{self, ERC20};
-use globals_crate::Globals;
-use helper_crate::Helper;
-use liquidity_token_crate::LiquidityToken;
-use referral_token_crate::ReferralToken;
-use snapshot_crate::Snapshot;
-use staking_token_crate::StakingToken;
-use timing_crate::Timing;
+use erc20_crate::ERC20;
 
 #[derive(Default)]
-struct WiseTokenStruct(OnChainContractStorage);
+struct Token(OnChainContractStorage);
 
-impl ContractContext<OnChainContractStorage> for WiseTokenStruct {
+impl ContractContext<OnChainContractStorage> for Token {
     fn storage(&self) -> &OnChainContractStorage {
         &self.0
     }
 }
 
-impl WiseToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Declaration<OnChainContractStorage> for WiseTokenStruct {}
-impl Globals<OnChainContractStorage> for WiseTokenStruct {}
-impl Timing<OnChainContractStorage> for WiseTokenStruct {}
-impl StakingToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Helper<OnChainContractStorage> for WiseTokenStruct {}
-impl LiquidityToken<OnChainContractStorage> for WiseTokenStruct {}
-impl ReferralToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Snapshot<OnChainContractStorage> for WiseTokenStruct {}
-impl ERC20<OnChainContractStorage> for WiseTokenStruct {}
+impl ERC20<OnChainContractStorage> for Token {}
 
-impl WiseTokenStruct {
+impl Token {
     fn constructor(
         &mut self,
-        contract_hash: ContractHash,
-        package_hash: ContractPackageHash,
-        synthetic_cspr_address: Key,
-        router_address: Key,
-        launch_time: U256,
-        factory_address: Key,
-        pair_address: Key,
-        liquidity_guard: Key,
-        wcspr: Key,
+        name: String,
+        symbol: String,
+        decimals: u8,
+        initial_supply: U256,
         domain_separator: String,
         permit_type_hash: String,
+        contract_hash: ContractHash,
+        package_hash: ContractPackageHash,
     ) {
-        WiseToken::init(
+        ERC20::init(
             self,
-            Key::from(contract_hash),
-            package_hash,
-            synthetic_cspr_address,
-            router_address,
-            launch_time,
-            factory_address,
-            pair_address,
-            liquidity_guard,
-            wcspr,
+            name,
+            symbol,
+            decimals,
             domain_separator,
             permit_type_hash,
+            Key::from(contract_hash),
+            package_hash,
         );
+        let _ret = ERC20::mint(self, self.get_caller(), initial_supply);
     }
 }
 
 #[no_mangle]
-// Constructor is used for internal inititializations. Calling it from outside is not allowed.
 fn constructor() {
-    // TODO: Need to make parameters name more consistent, specially for ContractHashes
-    let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
-    let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let synthetic_cspr_address: Key = runtime::get_named_arg("synthetic_cspr_address");
-    let router_address: Key = runtime::get_named_arg("router_address");
-    let launch_time: U256 = runtime::get_named_arg("launch_time");
-    let factory_address: Key = runtime::get_named_arg("factory_address");
-    let pair_address: Key = runtime::get_named_arg("pair_address");
-    let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let wcspr: Key = runtime::get_named_arg("wcspr");
+    let name: String = runtime::get_named_arg("name");
+    let symbol: String = runtime::get_named_arg("symbol");
+    let decimals: u8 = runtime::get_named_arg("decimals");
+    let initial_supply: U256 = runtime::get_named_arg("initial_supply");
     let domain_separator: String = runtime::get_named_arg("domain_separator");
     let permit_type_hash: String = runtime::get_named_arg("permit_type_hash");
-
-    WiseTokenStruct::default().constructor(
-        contract_hash,
-        package_hash,
-        synthetic_cspr_address,
-        router_address,
-        launch_time,
-        factory_address,
-        pair_address,
-        liquidity_guard,
-        wcspr,
+    let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
+    let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
+    Token::default().constructor(
+        name,
+        symbol,
+        decimals,
+        initial_supply,
         domain_separator,
         permit_type_hash,
+        contract_hash,
+        package_hash,
     );
-}
-
-#[no_mangle]
-fn set_liquidity_transfomer() {
-    let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
-    let transformer_purse: URef = runtime::get_named_arg("transformer_purse"); // purse of immutable_transformer account
-
-    WiseTokenStruct::default().set_liquidity_transfomer(immutable_transformer, transformer_purse);
-}
-
-#[no_mangle]
-fn set_busd() {
-    let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
-    WiseTokenStruct::default().set_busd(equalizer_address);
-}
-
-#[no_mangle]
-fn renounce_keeper() {
-    WiseTokenStruct::default().renounce_keeper();
-}
-
-#[no_mangle]
-fn change_keeper() {
-    let keeper: Key = runtime::get_named_arg("keeper");
-    WiseTokenStruct::default().change_keeper(keeper);
-}
-
-#[no_mangle]
-fn mint_supply() {
-    let investor_address: Key = runtime::get_named_arg("investor_address");
-    let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().mint_supply(investor_address, amount);
-}
-
-#[no_mangle]
-fn create_stake_with_cspr() {
-    let lock_days: u64 = runtime::get_named_arg("lock_days");
-    let referrer: Key = runtime::get_named_arg("referrer");
-    let amount: U256 = runtime::get_named_arg("amount");
-    let purse: URef = runtime::get_named_arg("purse");
-
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
-    runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn create_stake_with_token() {
-    let token_address: Key = runtime::get_named_arg("token_address");
-    let token_amount: U256 = runtime::get_named_arg("token_amount");
-    let lock_days: u64 = runtime::get_named_arg("lock_days");
-    let referrer: Key = runtime::get_named_arg("referrer");
-
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = WiseTokenStruct::default()
-        .create_stake_with_token(token_address, token_amount, lock_days, referrer);
-    runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn get_pair_address() {
-    let ret: Key = WiseTokenStruct::default().get_pair_address();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn get_total_staked() {
-    let ret: U256 = WiseTokenStruct::default().get_total_staked();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn get_liquidity_transformer() {
-    let ret: Key = WiseTokenStruct::default().get_liquidity_transformer();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn get_synthetic_token_address() {
-    let ret: Key = WiseTokenStruct::default().get_synthetic_token_address();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
-fn extend_lt_auction() {
-    WiseTokenStruct::default().extend_lt_auction();
 }
 
 /// This function is to transfer tokens against the address that user provided
@@ -207,7 +86,7 @@ fn extend_lt_auction() {
 fn transfer() {
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
+    let ret = Token::default().transfer(recipient, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -238,7 +117,7 @@ fn transfer_from() {
     let owner: Key = runtime::get_named_arg("owner");
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
+    let ret = Token::default().transfer_from(owner, recipient, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -268,7 +147,7 @@ fn permit() {
     let spender: Key = runtime::get_named_arg("spender");
     let value: U256 = runtime::get_named_arg("value");
     let deadline: u64 = runtime::get_named_arg("deadline");
-    WiseTokenStruct::default().permit(public_key, signature, owner, spender, value, deadline);
+    Token::default().permit(public_key, signature, owner, spender, value, deadline);
 }
 
 /// This function is to approve tokens against the address that user provided
@@ -295,7 +174,7 @@ fn permit() {
 fn approve() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().approve(spender, amount);
+    Token::default().approve(spender, amount);
 }
 
 /// This function is to mint token against the address that user provided
@@ -311,7 +190,7 @@ fn approve() {
 fn mint() {
     let to: Key = runtime::get_named_arg("to");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().mint(to, amount);
+    Token::default().mint(to, amount);
 }
 
 /// This function is to burn token against the address that user provided
@@ -327,7 +206,7 @@ fn mint() {
 fn burn() {
     let from: Key = runtime::get_named_arg("from");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().burn(from, amount);
+    Token::default().burn(from, amount);
 }
 
 /// This function is to return the Balance  of owner against the address that user provided
@@ -340,7 +219,7 @@ fn burn() {
 #[no_mangle]
 fn balance_of() {
     let owner: Key = runtime::get_named_arg("owner");
-    let ret: U256 = WiseTokenStruct::default().balance_of(owner);
+    let ret: U256 = Token::default().balance_of(owner);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -354,7 +233,7 @@ fn balance_of() {
 #[no_mangle]
 fn nonce() {
     let owner: Key = runtime::get_named_arg("owner");
-    let ret: U256 = WiseTokenStruct::default().nonce(owner);
+    let ret: U256 = Token::default().nonce(owner);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -363,7 +242,7 @@ fn nonce() {
 
 #[no_mangle]
 fn name() {
-    let ret: String = WiseTokenStruct::default().name();
+    let ret: String = Token::default().name();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -372,7 +251,7 @@ fn name() {
 
 #[no_mangle]
 fn symbol() {
-    let ret: String = WiseTokenStruct::default().symbol();
+    let ret: String = Token::default().symbol();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -389,7 +268,7 @@ fn symbol() {
 fn allowance() {
     let owner: Key = runtime::get_named_arg("owner");
     let spender: Key = runtime::get_named_arg("spender");
-    let ret: U256 = WiseTokenStruct::default().allowance(owner, spender);
+    let ret: U256 = Token::default().allowance(owner, spender);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -398,7 +277,7 @@ fn allowance() {
 
 #[no_mangle]
 fn total_supply() {
-    let ret: U256 = WiseTokenStruct::default().total_supply();
+    let ret: U256 = Token::default().total_supply();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -415,7 +294,7 @@ fn increase_allowance() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    let ret: Result<(), u32> = WiseTokenStruct::default().increase_allowance(spender, amount);
+    let ret: Result<(), u32> = Token::default().increase_allowance(spender, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -432,7 +311,7 @@ fn decrease_allowance() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    let ret: Result<(), u32> = WiseTokenStruct::default().decrease_allowance(spender, amount);
+    let ret: Result<(), u32> = Token::default().decrease_allowance(spender, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -441,151 +320,28 @@ fn decrease_allowance() {
 
 #[no_mangle]
 fn package_hash() {
-    let ret: ContractPackageHash = WiseTokenStruct::default().get_package_hash();
+    let ret: ContractPackageHash = Token::default().get_package_hash();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
-
     entry_points.add_entry_point(EntryPoint::new(
         "constructor",
         vec![
+            Parameter::new("name", String::cl_type()),
+            Parameter::new("symbol", String::cl_type()),
+            Parameter::new("decimals", u8::cl_type()),
+            Parameter::new("initial_supply", U256::cl_type()),
+            Parameter::new("domain_separator", String::cl_type()),
+            Parameter::new("permit_type_hash", String::cl_type()),
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("synthetic_cspr_address", CLType::Key),
-            Parameter::new("router_address", CLType::Key),
-            Parameter::new("launch_time", CLType::U256),
-            Parameter::new("factory_address", CLType::Key),
-            Parameter::new("pair_address", CLType::Key),
-            Parameter::new("liquidity_guard", CLType::Key),
-            Parameter::new("wcspr", CLType::Key),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
         EntryPointType::Contract,
     ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "set_liquidity_transfomer",
-        vec![
-            Parameter::new("immutable_transformer", CLType::Key),
-            Parameter::new("transformer_purse", CLType::URef),
-        ],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "set_busd",
-        vec![Parameter::new("equalizer_address", CLType::Key)],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "renounce_keeper",
-        vec![],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "change_keeper",
-        vec![Parameter::new("keeper", CLType::Key)],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "mint_supply",
-        vec![
-            Parameter::new("investor_address", CLType::Key),
-            Parameter::new("amount", CLType::U256),
-        ],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_with_cspr",
-        vec![
-            Parameter::new("lock_days", CLType::U64),
-            Parameter::new("referrer", CLType::Key),
-            Parameter::new("amount", CLType::U256),
-            Parameter::new("purse", CLType::URef),
-        ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
-            Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
-        ]),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "create_stake_with_token",
-        vec![
-            Parameter::new("token_address", CLType::Key),
-            Parameter::new("token_amount", CLType::U256),
-            Parameter::new("lock_days", CLType::U64),
-            Parameter::new("referrer", CLType::Key),
-        ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
-            Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
-        ]),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_pair_address",
-        vec![],
-        CLType::Key,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_total_staked",
-        vec![],
-        CLType::U256,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_liquidity_transformer",
-        vec![],
-        CLType::Key,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_synthetic_token_address",
-        vec![],
-        CLType::Key,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
-    entry_points.add_entry_point(EntryPoint::new(
-        "extend_lt_auction",
-        vec![],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-
     entry_points.add_entry_point(EntryPoint::new(
         "transfer",
         vec![
@@ -740,37 +496,32 @@ fn get_entry_points() -> EntryPoints {
     entry_points
 }
 
-// All session code must have a `call` entrypoint.
 #[no_mangle]
-pub extern "C" fn call() {
+fn call() {
+    // Build new package with initial a first version of the contract.
     let (package_hash, access_token) = storage::create_contract_package_at_hash();
-    let (contract_hash, _): (ContractHash, _) =
+    let (contract_hash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let (domain_separator, permit_type_hash) = WiseTokenStruct::default()
-        .get_permit_type_and_domain_separator("Wise Token", contract_hash);
+    let name: String = runtime::get_named_arg("name");
+    let symbol: String = runtime::get_named_arg("symbol");
+    let decimals: u8 = runtime::get_named_arg("decimals");
+    let initial_supply: U256 = runtime::get_named_arg("initial_supply");
 
-    let synthetic_cspr_address: Key = runtime::get_named_arg("scspr");
-    let router_address: Key = runtime::get_named_arg("router");
-    let factory_address: Key = runtime::get_named_arg("factory");
-    let pair_address: Key = runtime::get_named_arg("pair");
-    let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let wcspr: Key = runtime::get_named_arg("wcspr");
-    let launch_time: U256 = runtime::get_named_arg("launch_time");
+    let (domain_separator, permit_type_hash) =
+        Token::default().get_permit_type_and_domain_separator(&name, contract_hash);
 
     // Prepare constructor args
     let constructor_args = runtime_args! {
-        "contract_hash" => contract_hash,
-        "package_hash" => package_hash,
-        "synthetic_cspr_address" => synthetic_cspr_address,
-        "router_address" => router_address,
-        "launch_time" => launch_time,
-        "factory_address" => factory_address,
-        "pair_address" => pair_address,
-        "liquidity_guard" => liquidity_guard,
-        "wcspr" => wcspr,
+        "name" => name,
+        "symbol" => symbol,
+        "decimals" => decimals,
+        "initial_supply" => initial_supply,
         "domain_separator" => domain_separator,
         "permit_type_hash" => permit_type_hash,
+        "contract_hash" => contract_hash,
+        "package_hash"=> package_hash
+
     };
 
     // Add the constructor group to the package hash with a single URef.
@@ -789,6 +540,7 @@ pub extern "C" fn call() {
     urefs.insert(constructor_access);
     storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
         .unwrap_or_revert();
+
     // Store contract in the account's named keys.
     let contract_name: alloc::string::String = runtime::get_named_arg("contract_name");
     runtime::put_key(

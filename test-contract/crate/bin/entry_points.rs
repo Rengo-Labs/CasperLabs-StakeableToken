@@ -29,7 +29,8 @@ use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
 // use liquidity_guard::LiquidityGuard;
-use bep20_crate::BEP20;
+use erc20_crate::ERC20;
+
 use liquidity_token_crate::LiquidityToken;
 use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
@@ -49,7 +50,7 @@ impl ContractContext<OnChainContractStorage> for Test {
 }
 
 // impl BUSDEquivalent<OnChainContractStorage> for Test {}
-impl BEP20<OnChainContractStorage> for Test {}
+impl ERC20<OnChainContractStorage> for Test {}
 impl Declaration<OnChainContractStorage> for Test {}
 impl Globals<OnChainContractStorage> for Test {}
 impl Helper<OnChainContractStorage> for Test {}
@@ -73,9 +74,8 @@ impl Test {
         liquidity_guard: Key,
         synthetic_cspr: Key,
         wcspr: Key,
-        bep20: Key,
     ) {
-        BEP20::init(self, "MyBep20".to_string(), "bep20".to_string());
+        ERC20::init(self, "Wise as erc20".to_string(), "wiseerc20".to_string());
         set_key(SELF_PACKAGE_HASH, package_hash);
         set_key(SELF_CONTRACT_HASH, contract_hash);
         Declaration::init(
@@ -110,7 +110,7 @@ fn constructor() {
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
     let synthetic_cspr: Key = runtime::get_named_arg("synthetic_cspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
-    let bep20: Key = runtime::get_named_arg("bep20");
+    let erc20: Key = runtime::get_named_arg("erc20");
 
     Test::default().constructor(
         contract_hash,
@@ -122,21 +122,21 @@ fn constructor() {
         liquidity_guard,
         synthetic_cspr,
         wcspr,
-        bep20,
+        erc20,
     );
 }
 
 /////////////////
-/// /// BEP20 // //
+/// /// ERC20 // //
 /// /// /// ///
 ///
 ///  
 #[no_mangle]
-fn bep20_mint() {
+fn erc20_mint() {
     let amount: U256 = runtime::get_named_arg("amount");
-    let account: Key = runtime::get_named_arg("account");
+    let account: Key = runtime::get_named_arg("to");
 
-    BEP20::_mint(&Test::default(), account, amount);
+    ERC20::mint(&Test::default(), account, amount);
 }
 /////////////////
 // DECLARATION //
@@ -787,7 +787,7 @@ fn _next_wise_day() {
 }
 
 ///////////
-// BEP20 //
+// ERC20 //
 ///////////
 
 #[no_mangle]
@@ -795,7 +795,7 @@ fn approve() {
     let token: Key = runtime::get_named_arg("token");
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret: bool = runtime::call_contract(
+    let () = runtime::call_contract(
         token.into_hash().unwrap_or_revert().into(),
         "approve",
         runtime_args! {
@@ -818,11 +818,11 @@ fn get_entry_points() -> EntryPoints {
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
         EntryPointType::Contract,
     ));
-    // BEP20
+    // ERC20
     entry_points.add_entry_point(EntryPoint::new(
-        "bep20_mint",
+        "erc20_mint",
         vec![
-            Parameter::new("account", CLType::Key),
+            Parameter::new("to", CLType::Key),
             Parameter::new("amount", CLType::U256),
         ],
         <()>::cl_type(),
@@ -1592,7 +1592,7 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     ///////////
-    // BEP20 //
+    // ERC20 //
     ///////////
     entry_points.add_entry_point(EntryPoint::new(
         "approve",
@@ -1618,7 +1618,7 @@ pub extern "C" fn call() {
     let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
     let synthetic_cspr: Key = runtime::get_named_arg("synthetic_cspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
-    let bep20: Key = runtime::get_named_arg("bep20");
+    let erc20: Key = runtime::get_named_arg("erc20");
 
     let (package_hash, access_token) = storage::create_contract_package_at_hash();
     let (contract_hash, _): (ContractHash, _) =
@@ -1635,7 +1635,7 @@ pub extern "C" fn call() {
         "liquidity_guard" => liquidity_guard,
         "synthetic_cspr" => synthetic_cspr,
         "wcspr" => wcspr,
-        "bep20" => bep20
+        "erc20" => erc20
     };
 
     // Add the constructor group to the package hash with a single URef.

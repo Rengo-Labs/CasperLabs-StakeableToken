@@ -3,37 +3,7 @@ use alloc::string::String;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
-
-pub const BALANCES_DICT: &str = "balances";
-pub const NONCES_DICT: &str = "nonces";
-pub const ALLOWANCES_DICT: &str = "allowances";
-pub const NAME: &str = "name";
-pub const SYMBOL: &str = "symbol";
-pub const DECIMALS: &str = "decimals";
-pub const TOTAL_SUPPLY: &str = "total_supply";
-pub const SELF_CONTRACT_HASH: &str = "self_contract_hash";
-pub const CONTRACT_PACKAGE_HASH: &str = "contract_package_hash";
-pub const DOMAIN_SEPARATOR: &str = "domain_separator";
-pub const PERMIT_TYPE_HASH: &str = "permit_type_hash";
-
-pub const SCSPR: &str = "scspr";
-pub const OWNER: &str = "owner";
-
-pub fn scspr() -> Key {
-    get_key(SCSPR).unwrap_or_revert()
-}
-
-pub fn set_scspr(scspr: Key) {
-    set_key(SCSPR, scspr);
-}
-
-pub fn owner() -> Key {
-    get_key(OWNER).unwrap_or_revert()
-}
-
-pub fn set_owner(owner: Key) {
-    set_key(OWNER, owner);
-}
+use wise_token_utils::commons::key_names::*;
 
 pub struct Balances {
     dict: Dict,
@@ -147,14 +117,6 @@ pub fn get_hash() -> Key {
     get_key(SELF_CONTRACT_HASH).unwrap_or_revert()
 }
 
-pub fn set_package_hash(package_hash: ContractPackageHash) {
-    set_key(CONTRACT_PACKAGE_HASH, package_hash);
-}
-
-pub fn get_contract_package_hash() -> ContractPackageHash {
-    get_key(CONTRACT_PACKAGE_HASH).unwrap_or_revert()
-}
-
 pub fn set_domain_separator(domain_separator: String) {
     set_key(DOMAIN_SEPARATOR, domain_separator);
 }
@@ -169,4 +131,11 @@ pub fn set_permit_type_hash(permit_type_hash: String) {
 
 pub fn get_permit_type_hash() -> String {
     get_key(PERMIT_TYPE_HASH).unwrap_or_revert()
+}
+pub fn set_package_hash(package_hash: ContractPackageHash) {
+    set_key(SELF_PACKAGE_HASH, package_hash);
+}
+
+pub fn get_package_hash() -> ContractPackageHash {
+    get_key(SELF_PACKAGE_HASH).unwrap_or_revert()
 }

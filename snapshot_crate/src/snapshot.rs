@@ -14,7 +14,8 @@ use wise_token_utils::{
     commons::key_names::*, declaration, error_codes::ErrorCodes, events::*, snapshot,
 };
 
-use bep20_crate::BEP20;
+use erc20_crate::ERC20;
+
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
@@ -26,7 +27,7 @@ pub trait Snapshot<Storage: ContractStorage>:
     + Globals<Storage>
     + Timing<Storage>
     + Helper<Storage>
-    + BEP20<Storage>
+    + ERC20<Storage>
 {
     // Will be called by constructor
     fn init(&self, scspr_contract_hash: Key, pair_contract_hash: Key, guard_contract_hash: Key) {
@@ -42,7 +43,7 @@ pub trait Snapshot<Storage: ContractStorage>:
         let pair_hash = data::pair_hash();
         let scspr_hash = data::scspr_hash();
 
-        let total_supply: U256 = BEP20::total_supply(self);
+        let total_supply: U256 = ERC20::total_supply(self);
 
         let liquidity_guard_status: bool = Declaration::get_liquidity_guard_status(self);
         // third return value is block_timestamp_last
@@ -162,7 +163,7 @@ pub trait Snapshot<Storage: ContractStorage>:
                 .unwrap_or_revert()
                 .checked_div(Self::_inflation_amount(
                     total_staked_today,
-                    BEP20::total_supply(self),
+                    ERC20::total_supply(self),
                     Declaration::get_total_penalties(self, _day.into()),
                     liquidity_guard_inflation_amount,
                 ))
@@ -213,7 +214,7 @@ pub trait Snapshot<Storage: ContractStorage>:
                 .checked_div(Self::_referral_inflation(
                     self,
                     total_staked_today,
-                    BEP20::total_supply(self),
+                    ERC20::total_supply(self),
                 ))
                 .ok_or(ApiError::User(ErrorCodes::DivisionByZero as u16))
                 .unwrap_or_revert();
@@ -245,7 +246,7 @@ pub trait Snapshot<Storage: ContractStorage>:
                 .unwrap_or_revert()
                 .checked_div(Self::_liquidity_inflation(
                     total_staked_today,
-                    BEP20::total_supply(self),
+                    ERC20::total_supply(self),
                     liquidity_guard_inflation_amount,
                 ))
                 .ok_or(ApiError::User(ErrorCodes::DivisionByZero as u16))

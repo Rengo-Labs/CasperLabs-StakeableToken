@@ -2,7 +2,8 @@ use alloc::string::ToString;
 use alloc::{string::String, vec::Vec};
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 
-use bep20_crate::BEP20;
+use erc20_crate::ERC20;
+
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
@@ -24,7 +25,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
     + Timing<Storage>
     + Helper<Storage>
     + Snapshot<Storage>
-    + BEP20<Storage>
+    + ERC20<Storage>
 {
     fn init(&mut self) {}
 
@@ -250,7 +251,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
                 DECLARATION_REFERRER_LINK_DICT.to_string(),
             );
 
-            let _: () = BEP20::_mint(self, _referrer, referral_interest);
+            let _: () = ERC20::mint(self, _referrer, referral_interest);
 
             emit(&WiseEvents::ReferralCollected {
                 staker: referral_link.staker,

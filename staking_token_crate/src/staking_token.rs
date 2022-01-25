@@ -1,7 +1,8 @@
 use alloc::string::ToString;
 use alloc::{string::String, vec::Vec};
 
-use bep20_crate::BEP20;
+use erc20_crate::ERC20;
+
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
@@ -134,7 +135,7 @@ pub trait StakingToken<Storage: ContractStorage>:
                 .unwrap()
                 .0;
 
-        let _: () = BEP20::_burn(self, staker, staked_amount);
+        let _: () = ERC20::burn(self, staker, staked_amount);
         let _start_day: u64 = Timing::_next_wise_day(self);
         let stake_id: Vec<u32> = Helper::generate_stake_id(self, staker);
 
@@ -296,7 +297,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         let penalty: U256 = self._calculate_penalty_amount(&stake);
         stake.is_active = false;
 
-        let _: () = BEP20::_mint(
+        let _: () = ERC20::mint(
             self,
             _staker,
             if stake.staked_amount > penalty {
@@ -311,7 +312,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             },
         );
 
-        let _: () = BEP20::_mint(self, _staker, stake.reward_amount);
+        let _: () = ERC20::mint(self, _staker, stake.reward_amount);
         let stake_string: Vec<u8> = stake.clone().into_bytes().unwrap();
         // set ended stake to dictionary
         Declaration::set_struct_from_key(
@@ -444,7 +445,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             String::from(DECLARATION_STAKES_DICT),
         );
 
-        let _: () = BEP20::_mint(self, self.get_caller(), scrape_amount);
+        let _: () = ERC20::mint(self, self.get_caller(), scrape_amount);
 
         emit(&WiseEvents::InterestScraped {
             stake_id: _stake_id,

@@ -14,4 +14,4 @@ globals_crate = { path = "../globals_crate" }
 declaration_crate = { path = "../declaration_crate" }
 timing_crate = { path = "../timing_crate" }
 helper_crate = { path = "../helper_crate" }
-bep20_crate = { path = "../bep20_crate" }
+erc20_crate = { path = "../erc20_crate" }

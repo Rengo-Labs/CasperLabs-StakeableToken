@@ -23,7 +23,7 @@ timing_crate = { path = "../timing_crate" }
 helper_crate = { path = "../helper_crate" }
 snapshot_crate = { path = "../snapshot_crate" }
 referral_token_crate = { path = "../referral_token_crate" }
-bep20_crate = { path = "../bep20_crate" }
+erc20_crate = { path = "../erc20_crate" }
 
 [features]
 default = ["casper-contract/std", "casper-types/std"]

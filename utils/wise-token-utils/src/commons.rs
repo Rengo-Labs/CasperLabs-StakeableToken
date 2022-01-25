@@ -14,7 +14,6 @@ pub mod key_names {
     pub const SELF_CONTRACT_HASH: &str = "self_hash";
     pub const GUARD_CONTRACT_HASH: &str = "guard_contract_hash";
     pub const WISE_TOKEN_CONTRACT_HASH: &str = "wise_token_contract_hash";
-    //pub const BEP20_CONTRACT_HASH: &str = "bep20_contract_hash";
 
     // key names from globals crate
     pub const GLOBALS_GLOBALS_STRUCT: &str = "globals_globals_struct";
@@ -76,18 +75,17 @@ pub mod key_names {
         "wise_token_liquidity_transformer_purse";
     pub const WISE_TOKEN_TRANSFORMER_GATE_KEEPER: &str = "wise_token_transformer_gate_keeper";
 
-    // bep20 key names
-    pub const BEP20_DOMAIN_SEPARATOR: &str = "bep20_domain_separator";
-    pub const BEP20_PERMIT_TYPE_HASH: &str = "bep20_permit_type_hash";
+    // erc20 key names
 
-    // erc20/bep20 key names
     pub const BALANCES_DICT: &str = "balances";
     pub const NONCES_DICT: &str = "nonces";
     pub const ALLOWANCES_DICT: &str = "allowances";
     pub const NAME: &str = "name";
     pub const SYMBOL: &str = "symbol";
-    pub const TOTAL_SUPPLY: &str = "total_supply";
     pub const DECIMALS: &str = "decimals";
+    pub const TOTAL_SUPPLY: &str = "total_supply";
+    pub const DOMAIN_SEPARATOR: &str = "domain_separator";
+    pub const PERMIT_TYPE_HASH: &str = "permit_type_hash";
 
     //  misc
     pub const PATH: &str = "path";

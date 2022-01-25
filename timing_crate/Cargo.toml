@@ -13,7 +13,7 @@ contract-utils = { path = "../utils/contract-utils" }
 wise-token-utils = { path = "../utils/wise-token-utils" }
 globals_crate = { path = "../globals_crate" }
 declaration_crate = { path = "../declaration_crate" }
-bep20_crate = { path = "../bep20_crate" }
+erc20_crate = { path = "../erc20_crate" }
 
 [features]
 default = [
