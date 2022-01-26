@@ -26,7 +26,7 @@ fn constructor() {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
     let wise_address: Key = runtime::get_named_arg("wise_address");
-    let bep20_address: Key = runtime::get_named_arg("bep20_address");
+    let erc20_address: Key = runtime::get_named_arg("erc20_address");
 
 
     mappings::set_key(&mappings::self_hash_key(), contract_hash);
@@ -36,8 +36,8 @@ fn constructor() {
         ContractHash::from(wise_address.into_hash().unwrap_or_default()),
     );
     mappings::set_key(
-        &mappings::bep20(),
-        ContractHash::from(bep20_address.into_hash().unwrap_or_default()),
+        &mappings::erc20(),
+        ContractHash::from(erc20_address.into_hash().unwrap_or_default()),
     );
 }
 
@@ -331,7 +331,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
             Parameter::new("wise_address", Key::cl_type()),
-            Parameter::new("bep20_address", Key::cl_type())
+            Parameter::new("erc20_address", Key::cl_type())
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
@@ -492,7 +492,7 @@ pub extern "C" fn call() {
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
     let wise_address: Key = runtime::get_named_arg("wise_address");
-    let bep20_address: Key = runtime::get_named_arg("bep20_address");
+    let erc20_address: Key = runtime::get_named_arg("erc20_address");
 
     // Get parameters and pass it to the constructors
     // Prepare constructor args
@@ -500,7 +500,7 @@ pub extern "C" fn call() {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
         "wise_address" => wise_address,
-        "bep20_address" => bep20_address
+        "erc20_address" => erc20_address
     };
 
     // Add the constructor group to the package hash with a single URef.

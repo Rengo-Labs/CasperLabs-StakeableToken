@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "stable_usd",
+    "stable_usd_tests",
+    "test_contract"
+]
+
+[profile.release]
+codegen-units = 1
+lto = true

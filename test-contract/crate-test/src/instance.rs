@@ -14,7 +14,7 @@ impl TestInstance {
         liquidity_guard: Key,
         synthetic_cspr: Key,
         wcspr: Key,
-        bep20: Key,
+        erc20: Key,
     ) -> TestContract {
         TestContract::new(
             env,
@@ -29,7 +29,7 @@ impl TestInstance {
                 "liquidity_guard" => liquidity_guard,
                 "synthetic_cspr" => synthetic_cspr,
                 "wcspr" => wcspr,
-                "bep20"=>bep20
+                "erc20"=>erc20
             },
         )
     }

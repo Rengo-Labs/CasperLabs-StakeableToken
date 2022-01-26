@@ -110,7 +110,7 @@ fn deploy_uniswap_pair(
 fn deploy_scspr(
     env: &TestEnv,
     owner: AccountHash,
-    bep20: &TestContract,
+    erc20: &TestContract,
     uniswap_factory: &TestContract,
     synthetic_helper: &TestContract,
     synthetic_token: &TestContract,
@@ -121,7 +121,7 @@ fn deploy_scspr(
         "scspr",
         Sender(owner),
         runtime_args! {
-            "bep20" => Key::Hash(bep20.contract_hash()),
+            "erc20" => Key::Hash(erc20.contract_hash()),
             "uniswap_factory" => Key::Hash(uniswap_factory.contract_hash()),
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "synthetic_token" => Key::Hash(synthetic_token.contract_hash())
@@ -183,21 +183,6 @@ fn deploy_liquidity_guard(env: &TestEnv, owner: AccountHash) -> TestContract {
     )
 }
 
-fn deploy_bep20(env: &TestEnv, owner: AccountHash) -> TestContract {
-    TestContract::new(
-        &env,
-        "bep20-token.wasm",
-        "bep20",
-        Sender(owner),
-        runtime_args! {
-            "name" => "BEP20",
-            "symbol" => "BEP",
-            "initial_supply" => U256::from(404000000000000000 as u128)
-            // "initial_supply" => U256::from(0 as u128)
-        },
-    )
-}
-
 fn deploy_synthetic_helper(env: &TestEnv, owner: AccountHash) -> TestContract {
     TestContract::new(
         &env,
@@ -215,7 +200,7 @@ fn deploy_synthetic_token(
     synthetic_helper: &TestContract,
     uniswap_pair: &TestContract,
     uniswap_router: &TestContract,
-    bep20: &TestContract,
+    erc20: &TestContract,
 ) -> TestContract {
     TestContract::new(
         &env,
@@ -227,7 +212,26 @@ fn deploy_synthetic_token(
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.contract_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.contract_hash()),
-            "bep20" => Key::Hash(bep20.contract_hash()),
+            "erc20" => Key::Hash(erc20.contract_hash()),
+        },
+    )
+}
+
+fn deploy_erc20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> TestContract {
+    let decimals: u8 = 18;
+    let init_total_supply: U256 = 1000.into();
+
+    TestContract::new(
+        &env,
+        "erc20-token.wasm",
+        // "erc20",
+        symbol,
+        Sender(owner),
+        runtime_args! {
+            "initial_supply" => init_total_supply,
+            "name" => name.to_string(),
+            "symbol" => symbol.to_string(),
+            "decimals" => decimals
         },
     )
 }
@@ -257,9 +261,9 @@ fn deploy() -> (
     let uniswap_router =
         deploy_uniswap_router(&env, owner, &uniswap_factory, &wcspr, &uniswap_library);
     let liquidity_guard = deploy_liquidity_guard(&env, owner);
-    let bep20 = deploy_bep20(&env, owner);
+    let erc20 = deploy_erc20(&env, owner, "erc20 token", "erc20");
     // let synthetic_helper = deploy_synthetic_helper(&env, owner);
-    let synthetic_helper = deploy_bep20(&env, owner);
+    let synthetic_helper = deploy_erc20(&env, owner, "erc20 token", "erc20");
     let synthetic_token = deploy_synthetic_token(
         &env,
         owner,
@@ -267,12 +271,12 @@ fn deploy() -> (
         &synthetic_helper,
         &uniswap_pair,
         &uniswap_router,
-        &bep20,
+        &erc20,
     );
     let scspr = deploy_scspr(
         &env,
         owner,
-        &bep20,
+        &erc20,
         &uniswap_factory,
         &synthetic_helper,
         &synthetic_token,
@@ -288,7 +292,7 @@ fn deploy() -> (
         Key::Hash(liquidity_guard.contract_hash()),
         Key::Hash(scspr.contract_hash()),
         Key::Hash(wcspr.contract_hash()),
-        Key::Hash(bep20.contract_hash()),
+        Key::Hash(erc20.contract_hash()),
     );
     (
         env,
@@ -301,7 +305,7 @@ fn deploy() -> (
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     )
 }
@@ -990,10 +994,10 @@ fn test_stake_not_started() {
     assert_eq!(ret, false);
 }
 
-#[test]
+// #[test]
 // fn test_transfer_from() {
 //     let (env, _owner, test) = deploy();
-//     let token: Key = Key::Hash(deploy_bep20(&env, _owner).contract_hash());
+//     let token: Key = Key::Hash(deploy_erc20(&env, _owner).contract_hash());
 //     let recipient: Key = Key::Account(env.next_user());
 //     let owner: Key = Key::Account(_owner);
 //     let amount: U256 = 10.into();
@@ -1199,7 +1203,7 @@ fn test_calculation_day() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let day: U256 = 10.into();
@@ -1227,7 +1231,7 @@ fn test_calculation_day() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let day: U256 = 10.into();
@@ -1324,7 +1328,7 @@ fn test_create_liquidity_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
@@ -1450,7 +1454,7 @@ fn test_end_liquidity_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
@@ -1562,8 +1566,8 @@ fn test_end_liquidity_stake() {
     assert_eq!(liquidity_stake_struct.staked_amount, liquidity_tokens);
     assert_eq!(liquidity_stake_struct.is_active, true);
 
-    // query balance of staker from bep20,
-    // let staker_balance: U256 = bep20
+    // query balance of staker from erc20,
+    // let staker_balance: U256 = erc20
     //     .query_dictionary(BALANCES_DICT, Key::from(owner).to_string())
     //     .unwrap();
     // assert_eq!(staker_balance, 0.into());
@@ -1634,7 +1638,7 @@ fn test_check_liquidity_stake_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
@@ -1799,7 +1803,7 @@ fn test_remove_referrer_shares_to_end() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let final_day: U256 = 10.into();
@@ -1951,7 +1955,7 @@ fn test_remove_critical_mass() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let referrer: Key = Key::Account(owner);
@@ -2019,7 +2023,7 @@ fn test_remove_critical_mass() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     test.call_contract(Sender(owner), "get_stable_usd", runtime_args! {});
@@ -2039,7 +2043,7 @@ fn test_referrer_interest() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     // // init referral id
@@ -2178,7 +2182,7 @@ fn test_referrer_interest() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let referral_id: Vec<Vec<u32>> = Vec::new();
@@ -2208,7 +2212,7 @@ fn test_referrer_interest() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let referrer: Key = Key::Account(owner);
@@ -2238,7 +2242,7 @@ fn test_check_referrals_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     // create stake from staker
@@ -2364,7 +2368,7 @@ fn testmanual_daily_snapshot_point() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let update_day: u64 = 3;
@@ -2454,7 +2458,7 @@ fn test_liquidity_guard_trigger() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     // initialize liquidity guard status
@@ -2501,7 +2505,7 @@ fn test_manual_daily_snapshot() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let update_day: u64 = 3;
@@ -2585,7 +2589,7 @@ fn test_snapshot_get_struct_from_key() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     // create dummy struct
@@ -2634,7 +2638,7 @@ fn test_snapshot_set_struct_from_key() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     // create dummy struct
@@ -2683,7 +2687,7 @@ fn test_snapshot_set_struct_from_key() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let staked_amount: Vec<U256> = Vec::new();
@@ -2715,11 +2719,11 @@ fn test_snapshot_set_struct_from_key() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 //     // init stable_usd
-//     let stable_usd = deploy_stable_usd(&env, owner, &wcspr, &scspr, &wcspr, &bep20, &uniswap_router);
+//     let stable_usd = deploy_stable_usd(&env, owner, &wcspr, &scspr, &wcspr, &erc20, &uniswap_router);
 //     test.call_contract(
 //         Sender(owner),
 //         "set_stable_usd",
@@ -2756,7 +2760,7 @@ fn test_snapshot_set_struct_from_key() {
 //     // mint staked_amount to staker
 //     test.call_contract(
 //         Sender(owner),
-//         "bep20_mint",
+//         "erc20_mint",
 //         runtime_args! {
 //             "account"=> staker,
 //             "amount"=> staked_amount
@@ -2793,7 +2797,7 @@ fn test_end_stake() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let staker = Key::Account(owner);
@@ -2886,7 +2890,7 @@ fn test_end_stake() {
 //         uniswap_router,
 //         liquidity_guard,
 //         wcspr,
-//         bep20,
+//         erc20,
 //         scspr,
 //     ) = deploy();
 // //     let staker: Key = Key::Account(owner);
@@ -2915,7 +2919,7 @@ fn test_check_stake_by_id() {
         uniswap_library,
         uniswap_router,
         liquidity_guard,
-        bep20,
+        erc20,
         scspr,
     ) = deploy();
     let staker = Key::Account(owner);

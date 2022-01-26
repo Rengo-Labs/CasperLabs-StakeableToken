@@ -1,5 +1,5 @@
 # CasperLabs-Wise-WiseToken
-Implementation of `Transfer Helper`, `BUSD Equivalent`, `Liquidity Guard` and `Wise Token` contracts for CasperLabs Blockchain.
+Implementation of `Transfer Helper`, `Stable USD`, `Liquidity Guard` and `Wise Token` contracts for CasperLabs Blockchain.
 
 ## Table of contents
 - [Interacting with the contract](#interacting-with-the-contract)
@@ -21,11 +21,11 @@ Implementation of `Transfer Helper`, `BUSD Equivalent`, `Liquidity Guard` and `W
   - [Entry Point methods](#liquidity-guard-entry-point-methods)
     - [```get_inflation```](#liquidity-guard-get-inflation)
     - [```assign_inflation```](#liquidity-guard-assign-inflation)
-- [BUSD Equivalent](#busd-equivalent)
-  - [Deployment](#deploying-busd-equivalent-contract-manually)
-  - [Entry Point methods](#busd-equivalent-entry-point-methods)
-    - [```get_stable_usd```](#busd-equivalent-get-busd-equivalent)
-    - [```update_stable_usd```](#busd-equivalent-update-busd-equivalent)
+- [Stable USD](#stable-usd)
+  - [Deployment](#deploying-stable-usd-contract-manually)
+  - [Entry Point methods](#stable-usd-entry-point-methods)
+    - [```get_stable_usd```](#stable-usd-get-stable-usd)
+    - [```update_stable_usd```](#stable-usd-update-stable-usd)
 - [Wise Token](#wise-token)
   - [Deployment](#deploying-wise-token-contract-manually)
   - [Entry Point methods](#wise-token-entry-point-methods)
@@ -242,10 +242,10 @@ Parameter Name | Type
 
 This method **returns** nothing.
 
-### BUSD Eqiavalent <a id="busd-equivalent"></a>
+### Stable USD <a id="stable-usd"></a>
 
-#### Deployment <a id="deploying-busd-equivalent-contract-manually"></a>
-If you need to deploy the `BUSD Equivalent` manually you need to pass the some parameters. Following is the command to deploy the `BUSD Equivalent`.
+#### Deployment <a id="deploying-stable-usd-contract-manually"></a>
+If you need to deploy the `Stable USD` manually you need to pass the some parameters. Following is the command to deploy the `Stable USD`.
 
 ```bash
 sudo casper-client put-deploy \
@@ -263,20 +263,20 @@ sudo casper-client put-deploy \
     --session-arg="router:string='router_contract_hash'"
 ```
 
-#### Entry Point methods <a id="busd-equivalent-entry-point-methods"></a>
+#### Entry Point methods <a id="stable-usd-entry-point-methods"></a>
 
-Following are the BUSD Equivalent's entry point methods.
+Following are the Stable USD's entry point methods.
 
-- ##### get_stable_usd <a id="busd-equivalent-get-busd-equivalent"></a>
-Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest busd equivalent value.
+- ##### get_stable_usd <a id="stable-usd-get-stable-usd"></a>
+Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest Stable USD value.
 Parameter Name | Type
 |---|--- |
 | --- | --- |
 
 This method **returns** U256.
 
-- ##### update_stable_usd <a id="busd-equivalent-update-busd-equivalent"></a>
-Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest busd equivalent value and sets in to contract global state as named key.
+- ##### update_stable_usd <a id="stable-usd-update-stable-usd"></a>
+Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest Stable USD value and sets in to contract global state as named key.
 <br> Contract reverts if inflation is assigned already.
 Parameter Name | Type
 |---|--- |
@@ -323,7 +323,7 @@ Parameter Name | Type
 This method **returns** U256.
 
 - ##### set_busd <a id="wise-token-update-set-busd"></a>
-Sets BUSD Equivalent's contract hash to Wise token contract's global state.
+Sets Stable USD's contract hash to Wise token contract's global state.
 Parameter Name | Type
 |---|--- |
 | equalizer_address | Key |
@@ -364,7 +364,6 @@ This method **returns** nothing.
 
 - ##### create_stake_with_cspr <a id="wise-token-create-stake-with-cspr"></a>
 Creates a stake by withdrawing a cspr amount from a provided purse.
-<br> TODO extend with description about making pairs and adding liquidity
 Parameter Name | Type
 |---|--- |
 | referrer | Key |
@@ -381,8 +380,7 @@ This method **returns** a tuple of order 3, described below.
 
 - ##### create_stake_with_token <a id="wise-token-create-stake-with-token"></a>
 Creates a stake by withdrawing an amount of tokens from a provided token contract againts `self.get_caller()`.
-<br>`self.get_caller()` must have given Wise Token contract allowance of 'token_amount' atleast before calling this entry point.
-<br> TODO extend with description about making pairs and adding liquidity
+<br> `self.get_caller()` must have given Wise Token contract allowance of 'token_amount' atleast before calling this entry point.
 Parameter Name | Type
 |---|--- |
 | referrer | Key |

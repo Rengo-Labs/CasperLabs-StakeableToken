@@ -4,7 +4,7 @@ use test_env::{Sender, TestContract, TestEnv};
 pub struct WiseTestInstance(pub TestContract);
 
 impl WiseTestInstance {
-    pub fn new(env: &TestEnv, wise_address: Key, bep20: Key, sender: Sender) -> WiseTestInstance {
+    pub fn new(env: &TestEnv, wise_address: Key, erc20: Key, sender: Sender) -> WiseTestInstance {
         WiseTestInstance(TestContract::new(
             env,
             "contract.wasm",
@@ -12,7 +12,7 @@ impl WiseTestInstance {
             sender,
             runtime_args! {
                 "wise_address" => wise_address,
-                "bep20_address" => bep20
+                "erc20_address" => erc20
                 // contract_name is passed seperately, so we don't need to pass it here.
             },
         ))
@@ -79,7 +79,7 @@ impl WiseTestInstance {
     {
         self.0.call_contract(
             owner, 
-            "get_bep20_balance",
+            "get_erc20_balance",
             runtime_args!{
                 "owner" => account_owner,
             }

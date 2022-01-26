@@ -75,7 +75,16 @@ impl Test {
         synthetic_cspr: Key,
         wcspr: Key,
     ) {
-        ERC20::init(self, "Wise as erc20".to_string(), "wiseerc20".to_string());
+        ERC20::init(
+            self,
+            "Wise as erc20".to_string(),
+            "wiseerc20".to_string(),
+            9.into(),
+            "".to_string(),
+            "".to_string(),
+            Key::from(contract_hash),
+            package_hash,
+        );
         set_key(SELF_PACKAGE_HASH, package_hash);
         set_key(SELF_CONTRACT_HASH, contract_hash);
         Declaration::init(
@@ -122,7 +131,6 @@ fn constructor() {
         liquidity_guard,
         synthetic_cspr,
         wcspr,
-        erc20,
     );
 }
 
@@ -131,13 +139,13 @@ fn constructor() {
 /// /// /// ///
 ///
 ///  
-#[no_mangle]
-fn erc20_mint() {
-    let amount: U256 = runtime::get_named_arg("amount");
-    let account: Key = runtime::get_named_arg("to");
+// #[no_mangle]
+// fn erc20_mint() {
+//     let amount: U256 = runtime::get_named_arg("amount");
+//     let account: Key = runtime::get_named_arg("to");
 
-    ERC20::mint(&Test::default(), account, amount);
-}
+//     ERC20::mint(&Test::default(), account, amount);
+// }
 /////////////////
 // DECLARATION //
 /////////////////
@@ -748,9 +756,9 @@ fn check_mature_stake() {
     let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
     let ret: bool = StakingToken::check_mature_stake(&mut Test::default(), staker, stake_id);
     mappings::set_key(&mappings::result(), ret);
-}   
+}
 
-#[no_mangle]    
+#[no_mangle]
 fn check_stake_by_id() {
     let staker = runtime::get_named_arg("staker");
     let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
@@ -803,7 +811,6 @@ fn approve() {
             "amount" => amount
         },
     );
-    mappings::set_key(&mappings::result(), ret);
 }
 
 fn get_entry_points() -> EntryPoints {
@@ -819,16 +826,16 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     // ERC20
-    entry_points.add_entry_point(EntryPoint::new(
-        "erc20_mint",
-        vec![
-            Parameter::new("to", CLType::Key),
-            Parameter::new("amount", CLType::U256),
-        ],
-        <()>::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
+    // entry_points.add_entry_point(EntryPoint::new(
+    //     "erc20_mint",
+    //     vec![
+    //         Parameter::new("to", CLType::Key),
+    //         Parameter::new("amount", CLType::U256),
+    //     ],
+    //     <()>::cl_type(),
+    //     EntryPointAccess::Public,
+    //     EntryPointType::Contract,
+    // ));
     /////////////////
     // DECLARATION //
     /////////////////

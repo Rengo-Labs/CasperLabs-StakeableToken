@@ -13,142 +13,35 @@ use casper_types::{
     ContractHash, ContractPackageHash, Key, PublicKey, RuntimeArgs, SecretKey, U256,
 };
 
-use test_env::{Sender, TestContract, TestEnv};
 use crate::wise_instance::WiseTestInstance;
 use std::time::{SystemTime, UNIX_EPOCH};
+use test_env::{Sender, TestContract, TestEnv};
 
-const EXAMPLE_ERC20_TOKEN: &str = "erc20_token.wasm";
-const CONTRACT_ERC20_TEST: &str = "erc20_test.wasm";
-const CONTRACT_ERC20_TEST_CALL: &str = "erc20_test_call.wasm";
-const ERC20_TOKEN_CONTRACT_KEY: &str = "erc20_token_contract";
+fn deploy_erc20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> TestContract {
+    let decimals: u8 = 18;
+    let init_total_supply: U256 = 1000.into();
 
-const ARG_NAME: &str = "name";
-const ARG_SYMBOL: &str = "symbol";
-const ARG_DECIMALS: &str = "decimals";
-const ARG_TOTAL_SUPPLY: &str = "total_supply";
-
-const TEST_CONTRACT_KEY: &str = "test_contract";
-
-const _ERROR_INVALID_CONTEXT: u16 = u16::MAX;
-
-const TOKEN_NAME: &str = "CasperTest";
-const TOKEN_SYMBOL: &str = "CSPRT";
-const TOKEN_DECIMALS: u8 = 100;
-const TOKEN_TOTAL_SUPPLY: u64 = 1_000_000_000;
-const ERC20_TEST_CALL_KEY: &str = "erc20_test_call";
-
-static ACCOUNT_1_SECRET_KEY: Lazy<SecretKey> =
-    Lazy::new(|| SecretKey::secp256k1_from_bytes(&[221u8; 32]).unwrap());
-static ACCOUNT_1_PUBLIC_KEY: Lazy<PublicKey> =
-    Lazy::new(|| PublicKey::from(&*ACCOUNT_1_SECRET_KEY));
-static ACCOUNT_1_ADDR: Lazy<AccountHash> = Lazy::new(|| ACCOUNT_1_PUBLIC_KEY.to_account_hash());
-
-static ACCOUNT_2_SECRET_KEY: Lazy<SecretKey> =
-    Lazy::new(|| SecretKey::secp256k1_from_bytes(&[212u8; 32]).unwrap());
-static ACCOUNT_2_PUBLIC_KEY: Lazy<PublicKey> =
-    Lazy::new(|| PublicKey::from(&*ACCOUNT_2_SECRET_KEY));
-static ACCOUNT_2_ADDR: Lazy<AccountHash> = Lazy::new(|| ACCOUNT_2_PUBLIC_KEY.to_account_hash());
-
-#[derive(Copy, Clone)]
-struct TestContext {
-    erc20_token: ContractHash
-}
-
-fn erc20_setup() -> (InMemoryWasmTestBuilder, TestContext) {
-    let mut builder = InMemoryWasmTestBuilder::default();
-    builder.run_genesis(&*DEFAULT_RUN_GENESIS_REQUEST);
-
-    let id: Option<u64> = None;
-    let transfer_1_args = runtime_args! {
-        mint::ARG_TARGET => *ACCOUNT_1_ADDR,
-        mint::ARG_AMOUNT => MINIMUM_ACCOUNT_CREATION_BALANCE,
-        mint::ARG_ID => id,
-    };
-    let transfer_2_args = runtime_args! {
-        mint::ARG_TARGET => *ACCOUNT_2_ADDR,
-        mint::ARG_AMOUNT => MINIMUM_ACCOUNT_CREATION_BALANCE,
-        mint::ARG_ID => id,
-    };
-
-    let transfer_request_1 =
-        ExecuteRequestBuilder::transfer(*DEFAULT_ACCOUNT_ADDR, transfer_1_args).build();
-    let transfer_request_2 =
-        ExecuteRequestBuilder::transfer(*DEFAULT_ACCOUNT_ADDR, transfer_2_args).build();
-
-    let install_request_1 = ExecuteRequestBuilder::standard(
-        *DEFAULT_ACCOUNT_ADDR,
-        EXAMPLE_ERC20_TOKEN,
-        runtime_args! {
-            ARG_NAME => TOKEN_NAME,
-            ARG_SYMBOL => TOKEN_SYMBOL,
-            ARG_DECIMALS => TOKEN_DECIMALS,
-            ARG_TOTAL_SUPPLY => U256::from(TOKEN_TOTAL_SUPPLY),
-        },
-    )
-    .build();
-    let install_request_2 = ExecuteRequestBuilder::standard(
-        *DEFAULT_ACCOUNT_ADDR,
-        CONTRACT_ERC20_TEST,
-        RuntimeArgs::default(),
-    )
-    .build();
-    let install_request_3 = ExecuteRequestBuilder::standard(
-        *DEFAULT_ACCOUNT_ADDR,
-        CONTRACT_ERC20_TEST_CALL,
-        RuntimeArgs::default(),
-    )
-    .build();
-
-    builder.exec(transfer_request_1).expect_success().commit();
-    builder.exec(transfer_request_2).expect_success().commit();
-    builder.exec(install_request_1).expect_success().commit();
-    builder.exec(install_request_2).expect_success().commit();
-    builder.exec(install_request_3).expect_success().commit();
-
-    let account = builder
-        .get_account(*DEFAULT_ACCOUNT_ADDR)
-        .expect("should have account");
-
-    let erc20_token = account
-        .named_keys()
-        .get(ERC20_TOKEN_CONTRACT_KEY)
-        .and_then(|key| key.into_hash())
-        .map(ContractHash::new)
-        .expect("should have contract hash");
-
-    let test_context = TestContext {
-        erc20_token
-    };
-
-    (builder, test_context)
-}
-
-fn deploy_bep20(env: &TestEnv, owner: AccountHash) -> TestContract 
-{
-    let initial_supply: U256 = 1000.into();
-    // deploy wcspr contract
-    let bep20 = TestContract::new(
+    TestContract::new(
         &env,
-        "bep20-token.wasm",
-        "bep20",
+        "erc20-token.wasm",
+        // "erc20",
+        symbol,
         Sender(owner),
         runtime_args! {
-            "name" => "Wise Token",
-            "symbol" => "WISB",
-            "initial_supply" => initial_supply
+            "initial_supply" => init_total_supply,
+            "name" => name.to_string(),
+            "symbol" => symbol.to_string(),
+            "decimals" => decimals
         },
-    );
-
-    bep20
+    )
 }
-fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract 
-{
+
+fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract {
     let router: Key = wise.query_named_key("router_contract_hash".to_string());
     let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
     let wcspr: Key = wise.query_named_key("wcspr_contract_hash".to_string());
-    let (_, busd) = erc20_setup();                  // since busd is an ERC20 token, using casper's erc20 as busd
-
- 
+    // since busd is an ERC20 token, using casper's erc20 as busd
+    let busd: TestContract = deploy_erc20(&env, owner, "busd stable coin", "busd");
     // deploy stable_usd eq. contract
     let stable_usd = TestContract::new(
         &env,
@@ -159,7 +52,7 @@ fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> Te
             "wise" => Key::Hash(wise.contract_hash()),
             "scspr" => scspr,
             "wcspr" => wcspr,
-            "busd" => Key::from(busd.erc20_token),
+            "busd" => Key::Hash(busd.contract_hash()),
             "router" => router
         },
     );
@@ -167,8 +60,12 @@ fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> Te
     stable_usd
 }
 
-fn deploy_pair_contract( env: &TestEnv, owner: AccountHash, factory_contract: Key, flash_swapper: Key) -> TestContract
-{
+fn deploy_pair_contract(
+    env: &TestEnv,
+    owner: AccountHash,
+    factory_contract: Key,
+    flash_swapper: Key,
+) -> TestContract {
     let decimals: u8 = 18;
     let init_total_supply: U256 = 0.into();
 
@@ -190,7 +87,6 @@ fn deploy_pair_contract( env: &TestEnv, owner: AccountHash, factory_contract: Ke
     pair_contract
 }
 
-
 fn deploy_synthetic_helper(env: &TestEnv, owner: AccountHash) -> TestContract {
     TestContract::new(
         &env,
@@ -208,7 +104,7 @@ fn deploy_synthetic_token(
     synthetic_helper: &TestContract,
     uniswap_pair: &TestContract,
     uniswap_router: &TestContract,
-    bep20: &TestContract,
+    erc20: &TestContract,
 ) -> TestContract {
     TestContract::new(
         &env,
@@ -220,7 +116,7 @@ fn deploy_synthetic_token(
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.contract_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.contract_hash()),
-            "bep20" => Key::Hash(bep20.contract_hash()),
+            "erc20" => Key::Hash(erc20.contract_hash()),
         },
     )
 }
@@ -228,7 +124,7 @@ fn deploy_synthetic_token(
 fn deploy_scspr(
     env: &TestEnv,
     owner: AccountHash,
-    bep20: &TestContract,
+    erc20: &TestContract,
     uniswap_factory: &TestContract,
     synthetic_helper: &TestContract,
     synthetic_token: &TestContract,
@@ -239,7 +135,7 @@ fn deploy_scspr(
         "scspr",
         Sender(owner),
         runtime_args! {
-            "bep20" => Key::Hash(bep20.contract_hash()),
+            "erc20" => Key::Hash(erc20.contract_hash()),
             "uniswap_factory" => Key::Hash(uniswap_factory.contract_hash()),
             "synthetic_helper" => Key::Hash(synthetic_helper.contract_hash()),
             "synthetic_token" => Key::Hash(synthetic_token.contract_hash())
@@ -248,22 +144,21 @@ fn deploy_scspr(
 }
 
 fn deploy_wise() -> (
-    TestEnv,                // env
-    AccountHash,            // owner
-    TestContract,           // wise contract
-    WiseTestInstance,       // WiseTestInstance
-    TestContract,           // bep20
-    TestContract,           // flash_swapper
-    TestContract,           // factory
-    TestContract,           // Router
-    TestContract,           // WCSPR
-    TestContract,           // SCSPR
+    TestEnv,          // env
+    AccountHash,      // owner
+    TestContract,     // wise contract
+    WiseTestInstance, // WiseTestInstance
+    TestContract,     // erc20
+    TestContract,     // flash_swapper
+    TestContract,     // factory
+    TestContract,     // Router
+    TestContract,     // WCSPR
+    TestContract,     // SCSPR
 ) {
     let env = TestEnv::new();
     let owner = env.next_user();
 
-    let (_, erc20_token) = erc20_setup();
-
+    let erc20_token = deploy_erc20(&env, owner, "erc20 token", "erc20");
 
     // deploy factory contract
     let factory_contract = TestContract::new(
@@ -272,7 +167,7 @@ fn deploy_wise() -> (
         "factory",
         Sender(owner),
         runtime_args! {
-            "fee_to_setter" => Key::from(erc20_token.erc20_token)
+            "fee_to_setter" => Key::Hash(erc20_token.contract_hash())
             // contract_name is passed seperately, so we don't need to pass it here.
         },
     );
@@ -364,29 +259,27 @@ fn deploy_wise() -> (
         runtime_args! {},
     );
 
-    
     // Deploy Synthetic helper
     let synthetic_helper = deploy_synthetic_helper(&env, owner);
-    
-    // deploy bep20
-    let bep20: TestContract = deploy_bep20(&env, owner);
+    // deploy erc20
+    let erc20: TestContract = deploy_erc20(&env, owner, "erc token", "erc20");
 
     // Deploy synthetic token
-    let synthetic_token =  deploy_synthetic_token(
+    let synthetic_token = deploy_synthetic_token(
         &env,
         owner,
         &wcspr,
         &synthetic_helper,
         &pair_contract,
         &router_contract,
-        &bep20,
+        &erc20,
     );
 
     //Deploy Scspr
     let scspr_contract = deploy_scspr(
         &env,
         owner,
-        &bep20,
+        &erc20,
         &factory_contract,
         &synthetic_helper,
         &synthetic_token,
@@ -394,7 +287,6 @@ fn deploy_wise() -> (
 
     // Deploy Wise Contract
     let launch_time: U256 = 10.into();
-
 
     let wise_contract = TestContract::new(
         &env,
@@ -416,34 +308,58 @@ fn deploy_wise() -> (
     let test_contract = WiseTestInstance::new(
         &env,
         Key::Hash(wise_contract.contract_hash()),
-        Key::Hash(bep20.contract_hash()),
+        Key::Hash(erc20.contract_hash()),
         Sender(owner),
     );
 
     // change keeper to test contract
-    wise_contract.call_contract(Sender(owner), "change_keeper", runtime_args!{"keeper" => test_contract.test_contract_package_hash()});
+    wise_contract.call_contract(
+        Sender(owner),
+        "change_keeper",
+        runtime_args! {"keeper" => test_contract.test_contract_package_hash()},
+    );
 
     // insert router to the factory's white-list
-    let router_package_hash: ContractPackageHash = router_contract.query_named_key("package_hash".to_string());
-    factory_contract.call_contract(Sender(owner), "set_white_list" ,runtime_args! {"white_list" => Key::from(router_package_hash)});  
+    let router_package_hash: ContractPackageHash =
+        router_contract.query_named_key("package_hash".to_string());
+    factory_contract.call_contract(
+        Sender(owner),
+        "set_white_list",
+        runtime_args! {"white_list" => Key::from(router_package_hash)},
+    );
 
-    (env, owner, wise_contract, test_contract, bep20, flash_swapper, factory_contract, router_contract, wcspr, scspr_contract)
+    (
+        env,
+        owner,
+        wise_contract,
+        test_contract,
+        erc20,
+        flash_swapper,
+        factory_contract,
+        router_contract,
+        wcspr,
+        scspr_contract,
+    )
 }
-
 
 #[test]
 fn test_erc20_deploy() {
-
-    let (_, test_context) = erc20_setup();
-    assert_ne!(Key::from(test_context.erc20_token), Key::Hash([0u8;32]));
+    let env = TestEnv::new();
+    let owner = env.next_user();
+    let test_context = deploy_erc20(&env, owner, "erc20 token", "erc20");
+    assert_ne!(
+        Key::Hash(test_context.contract_hash()),
+        Key::Hash([0u8; 32])
+    );
 }
-
 
 #[test]
 fn test_wise_deploy() {
-
     let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
-    assert_ne!(Key::from(test_contract.test_contract_hash()), Key::Hash([0u8;32]));
+    assert_ne!(
+        Key::from(test_contract.test_contract_hash()),
+        Key::Hash([0u8; 32])
+    );
 }
 
 #[test]
@@ -451,12 +367,14 @@ fn test_stable_usd_deploy() {
     let (env, owner, wise_contract, _, _, _, _, _, _, _) = deploy_wise();
     let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
 
-    assert_ne!(Key::Hash(stable_usd_contract.contract_hash()), Key::Hash([0u8;32]));
+    assert_ne!(
+        Key::Hash(stable_usd_contract.contract_hash()),
+        Key::Hash([0u8; 32])
+    );
 }
 
 #[test]
 fn set_liquidity_transfomer() {
-
     let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_wise();
     test_contract.set_liquidity_transfomer(Sender(owner), Key::from(owner));
 }
@@ -466,37 +384,46 @@ fn set_stable_usd() {
     let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
     let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
 
-
-    test_contract.set_stable_usd(Sender(owner), Key::Hash(stable_usd_contract.contract_hash()));
+    test_contract.set_stable_usd(
+        Sender(owner),
+        Key::Hash(stable_usd_contract.contract_hash()),
+    );
 }
 
 #[test]
 fn renounce_keeper() {
-
     let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_wise();
     test_contract.renounce_keeper(Sender(owner));
 }
 
-
 #[test]
 fn mint_supply() {
-
     let (env, owner, wise, test_contract, _, _, _, _, _, _) = deploy_wise();
     let user: AccountHash = env.next_user();
 
-    test_contract.set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash());      // make test contract as liquidity_transformer
+    test_contract
+        .set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash()); // make test contract as liquidity_transformer
 
     test_contract.mint_supply(Sender(owner), Key::from(user), 50.into());
     let amount: U256 = test_contract.balance_of(&wise, Key::from(user));
-    
-    assert_eq!(amount, 50.into())             // 1000 + 50 = 1050
-}
 
+    assert_eq!(amount, 50.into()) // 1000 + 50 = 1050
+}
 
 //#[test]
 fn create_stake_with_cspr() {
-
-    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, scspr) = deploy_wise();
+    let (
+        env,
+        owner,
+        wise_contract,
+        test_contract,
+        _,
+        flash_swapper,
+        factory_contract,
+        router_contract,
+        wcspr,
+        scspr,
+    ) = deploy_wise();
     let user = env.next_user();
 
     // let router_library: ContractHash = router_contract.query_named_key("library_hash".to_string());
@@ -514,42 +441,78 @@ fn create_stake_with_cspr() {
     // let zero: Key = Key::Hash([0u8;32]);
     // assert_eq!(zero, Key::from(router_hash));
 
-    
     // mint scspr, and wise to test_contract
     let _:() = scspr.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
-    let _:() = wise_contract.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});    
-        
+    let _:() = wise_contract.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
     // create pair of wcspr and scspr
-    let pair: TestContract = deploy_pair_contract(&env, owner, Key::Hash(factory_contract.contract_hash()), Key::Hash(flash_swapper.contract_hash()));
-    add_liquidity_cspr(&test_contract, &owner, &scspr, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
-    
+    let pair: TestContract = deploy_pair_contract(
+        &env,
+        owner,
+        Key::Hash(factory_contract.contract_hash()),
+        Key::Hash(flash_swapper.contract_hash()),
+    );
+    add_liquidity_cspr(
+        &test_contract,
+        &owner,
+        &scspr,
+        &Key::from(user),
+        &Key::Hash(router_contract.contract_hash()),
+        &Key::Hash(pair.contract_hash()),
+    );
     // create pair of scspr and wise contract
-    let pair: TestContract = deploy_pair_contract(&env, owner, Key::Hash(factory_contract.contract_hash()), Key::Hash(flash_swapper.contract_hash()));
-    add_liquidity(&test_contract, &owner, &scspr, &wise_contract, &Key::from(user), &Key::Hash(router_contract.contract_hash()),  &Key::Hash(pair.contract_hash()));
+    let pair: TestContract = deploy_pair_contract(
+        &env,
+        owner,
+        Key::Hash(factory_contract.contract_hash()),
+        Key::Hash(flash_swapper.contract_hash()),
+    );
+    add_liquidity(
+        &test_contract,
+        &owner,
+        &scspr,
+        &wise_contract,
+        &Key::from(user),
+        &Key::Hash(router_contract.contract_hash()),
+        &Key::Hash(pair.contract_hash()),
+    );
 
-    
     let test_hash: Key = test_contract.test_contract_hash();
     let lock_days: u64 = 15;
     let referrer: Key = Key::from(owner);
     let amount: U256 = 40.into();
-    
 
     test_contract.create_stake_with_cspr(Sender(owner), test_hash, lock_days, referrer, amount);
 }
 
 #[test]
 fn extend_lt_auction() {
-    
-    let (env, owner, wise_contract, test_contract, _, flash_swapper, factory_contract, router_contract, wcspr, scspr) = deploy_wise();
+    let (
+        env,
+        owner,
+        wise_contract,
+        test_contract,
+        _,
+        flash_swapper,
+        factory_contract,
+        router_contract,
+        wcspr,
+        scspr,
+    ) = deploy_wise();
     let user = env.next_user();
 
-    test_contract.set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash());      // make test contract as liquidity_transformer
+    test_contract
+        .set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash()); // make test contract as liquidity_transformer
     test_contract.extend_lt_auction(Sender(owner));
 }
 
-
-fn add_liquidity_cspr(test_contract: &WiseTestInstance, owner: &AccountHash, token: &TestContract, to: &Key, router_hash: &Key, pair: &Key) {
-
+fn add_liquidity_cspr(
+    test_contract: &WiseTestInstance,
+    owner: &AccountHash,
+    token: &TestContract,
+    to: &Key,
+    router_hash: &Key,
+    pair: &Key,
+) {
     let amount_token_desired: U256 = U256::from("300000000000000000000");
     let amount_cspr_desired: U256 = U256::from("500");
     let amount_token_min: U256 = U256::from("200000000000000000");
@@ -559,12 +522,12 @@ fn add_liquidity_cspr(test_contract: &WiseTestInstance, owner: &AccountHash, tok
     let deadline: u128 = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_millis() + (1000 * (30 * 60)), // current epoch time in milisecond + 30 minutes
         Err(_) => 0,
-   };
+    };
 
     test_contract.add_liquidity_cspr_to_router(
-        Sender(*owner), 
-        *router_hash, 
-        *&Key::Hash(token.contract_hash()), 
+        Sender(*owner),
+        *router_hash,
+        *&Key::Hash(token.contract_hash()),
         amount_token_desired,
         amount_cspr_desired,
         amount_token_min,
@@ -572,19 +535,19 @@ fn add_liquidity_cspr(test_contract: &WiseTestInstance, owner: &AccountHash, tok
         *to,
         U256::from(deadline),
         Some(*pair),
-        self_hash
+        self_hash,
     )
 }
 
 fn add_liquidity(
-    test_contract: &WiseTestInstance, 
-    owner: &AccountHash, 
-    token_a: &TestContract, 
+    test_contract: &WiseTestInstance,
+    owner: &AccountHash,
+    token_a: &TestContract,
     token_b: &TestContract,
-    to: &Key, 
-    router_hash: &Key, 
-    pair: &Key) {
-
+    to: &Key,
+    router_hash: &Key,
+    pair: &Key,
+) {
     let amount_a_desired: U256 = U256::from("300000000000000000000");
     let amount_b_desired: U256 = U256::from("300000000000000000000");
     let amount_a_min: U256 = U256::from("200000000000000000");
@@ -593,11 +556,11 @@ fn add_liquidity(
     let deadline: u128 = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_millis() + (1000 * (30 * 60)), // current epoch time in milisecond + 30 minutes
         Err(_) => 0,
-   };
+    };
 
     test_contract.add_liquidity_to_router(
-        Sender(*owner), 
-        *router_hash, 
+        Sender(*owner),
+        *router_hash,
         *&Key::Hash(token_a.contract_hash()),
         *&Key::Hash(token_b.contract_hash()),
         amount_a_desired,
@@ -606,6 +569,6 @@ fn add_liquidity(
         amount_b_min,
         *to,
         U256::from(deadline),
-        Some(*pair)
+        Some(*pair),
     )
 }

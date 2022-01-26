@@ -1,0 +1,23 @@
+[package]
+name = "test"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+casper-contract = "=1.3.2"
+casper-types = "=1.3.2"
+
+[[bin]]
+name = "stable_usd_test"
+path = "src/main.rs"
+bench = false
+doctest = false
+test = false
+
+[features]
+default = ["casper-contract/std", "casper-types/std", "casper-contract/test-support"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+

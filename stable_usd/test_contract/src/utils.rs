@@ -1,10 +1,4 @@
-
 use core::convert::TryInto;
-
-use alloc::{
-    format,
-    string::String,
-};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -12,10 +6,9 @@ use casper_contract::{
 };
 
 use casper_types::{
-    bytesrepr::{ToBytes, FromBytes},
-    CLTyped
+    bytesrepr::{FromBytes, ToBytes},
+    CLTyped,
 };
-
 
 pub fn get_key<T: FromBytes + CLTyped + Default>(name: &str) -> T {
     match runtime::get_key(name) {
@@ -38,24 +31,4 @@ pub fn set_key<T: ToBytes + CLTyped>(name: &str, value: T) {
             runtime::put_key(name, key);
         }
     }
-}
-
-pub fn balance() -> String {
-    format!("balances")
-}
-
-pub fn self_hash_key() -> String {
-    format!("self_hash")
-}
-
-pub fn self_package_key() -> String {
-    format!("package_hash")
-}
-
-pub fn wise_key() -> String {
-    format!("wise_hash")
-}
-
-pub fn erc20() -> String {
-    format!("erc20")
 }

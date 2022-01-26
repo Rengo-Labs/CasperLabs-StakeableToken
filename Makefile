@@ -7,7 +7,7 @@ wise_token_directory = .
 erc20_directory = erc20
 
 # path to core contracts
-erc20_contract = ${uniswap_core_directory}/erc20
+#erc20_contract = ${uniswap_core_directory}/erc20
 factory_contract = ${uniswap_core_directory}/factory
 flash_swapper_contract = ${uniswap_core_directory}/flash-swapper
 pair_contract = ${uniswap_core_directory}/pair
@@ -49,7 +49,7 @@ all:
 	cd ${erc20_directory} && ${contract_build_command}
 	
 # build core contracts
-	cd ${erc20_contract} && ${contract_build_command}
+#	cd ${erc20_contract} && ${contract_build_command}
 	cd ${factory_contract} && ${contract_build_command}
 	cd ${flash_swapper_contract} && ${contract_build_command}
 	cd ${pair_contract} && ${contract_build_command}
@@ -78,7 +78,9 @@ all:
 copy-wasm-file:
 # copy erc20 wasms
 	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
-#	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
+	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_stable_usd}
+	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
+	cp ${erc20_directory}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 	
 # copy router wasms
 	cp ${router_contract}/${wasm_src_path}/*.wasm ${wasm_dest_stable_usd}
@@ -90,11 +92,6 @@ copy-wasm-file:
 	cp ${library_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
 
 # copy core wasms
-	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_stable_usd}
-	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
-	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_transfer_helper}
-	cp ${erc20_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
-
 	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_stable_usd}
 	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_token}
 	cp ${factory_contract}/${wasm_src_path}/*.wasm ${wasm_dest_wise_crates_test_contract}
