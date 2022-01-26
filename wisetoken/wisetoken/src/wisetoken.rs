@@ -98,13 +98,13 @@ pub trait WiseToken<Storage: ContractStorage>:
         data::set_liquidity_transformer_purse(transformer_purse); // This purse will be used in extend_lt_auction method
     }
 
-    fn set_busd(&self, equalizer_address: Key) {
+    fn set_stable_usd(&self, equalizer_address: Key) {
         if !self.only_keeper(Key::from(self.get_caller())) {
             runtime::revert(ApiError::User(ErrorCodes::NotKeeper as u16));
         }
 
-        // set busd_eq in the declaration contract
-        Declaration::set_busd_eq(self, equalizer_address);
+        // set stable_usd in the declaration contract
+        Declaration::set_stable_usd(self, equalizer_address);
     }
 
     fn renounce_keeper(&self) {

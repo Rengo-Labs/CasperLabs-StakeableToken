@@ -44,11 +44,11 @@ impl WiseTestInstance {
             });
     }
 
-    pub fn set_busd(&self, owner: Sender, equalizer_address: Key)
+    pub fn set_stable_usd(&self, owner: Sender, equalizer_address: Key)
     {
         self.0.call_contract(
             owner, 
-            "set_busd",
+            "set_stable_usd",
             runtime_args!{
                 "equalizer_address" => equalizer_address
             });

@@ -24,7 +24,7 @@ use contract_utils::{set_key, ContractContext, OnChainContractStorage};
 
 pub mod mappings;
 
-// use busd_equivalent::BUSDEquivalent;
+// use stable_usd::StableUSD;
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
@@ -49,7 +49,7 @@ impl ContractContext<OnChainContractStorage> for Test {
     }
 }
 
-// impl BUSDEquivalent<OnChainContractStorage> for Test {}
+// impl StableUSD<OnChainContractStorage> for Test {}
 impl ERC20<OnChainContractStorage> for Test {}
 impl Declaration<OnChainContractStorage> for Test {}
 impl Globals<OnChainContractStorage> for Test {}
@@ -326,14 +326,14 @@ fn get_wcspr() {
 }
 
 #[no_mangle]
-fn set_busd_eq() {
-    let value: Key = runtime::get_named_arg("busd_eq");
-    Declaration::set_busd_eq(&Test::default(), value);
+fn set_stable_usd() {
+    let value: Key = runtime::get_named_arg("stable_usd");
+    Declaration::set_stable_usd(&Test::default(), value);
 }
 
 #[no_mangle]
-fn get_busd_eq() {
-    let ret: Key = Declaration::get_busd_eq(&Test::default());
+fn get_stable_usd() {
+    let ret: Key = Declaration::get_stable_usd(&Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -614,8 +614,8 @@ fn remove_critical_mass() {
 }
 
 #[no_mangle]
-fn referral_token_get_busd_equivalent() {
-    let ret: U256 = ReferralToken::get_busd_equivalent(&mut Test::default());
+fn referral_token_get_stable_usd() {
+    let ret: U256 = ReferralToken::get_stable_usd(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -1033,14 +1033,14 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "set_busd_eq",
-        vec![Parameter::new("busd_eq", CLType::Key)],
+        "set_stable_usd",
+        vec![Parameter::new("stable_usd", CLType::Key)],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_busd_eq",
+        "get_stable_usd",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -1403,7 +1403,7 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "referral_token_get_busd_equivalent",
+        "referral_token_get_stable_usd",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,

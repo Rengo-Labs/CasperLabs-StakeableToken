@@ -24,8 +24,8 @@ Implementation of `Transfer Helper`, `BUSD Equivalent`, `Liquidity Guard` and `W
 - [BUSD Equivalent](#busd-equivalent)
   - [Deployment](#deploying-busd-equivalent-contract-manually)
   - [Entry Point methods](#busd-equivalent-entry-point-methods)
-    - [```get_busd_equivalent```](#busd-equivalent-get-busd-equivalent)
-    - [```update_busd_equivalent```](#busd-equivalent-update-busd-equivalent)
+    - [```get_stable_usd```](#busd-equivalent-get-busd-equivalent)
+    - [```update_stable_usd```](#busd-equivalent-update-busd-equivalent)
 - [Wise Token](#wise-token)
   - [Deployment](#deploying-wise-token-contract-manually)
   - [Entry Point methods](#wise-token-entry-point-methods)
@@ -267,7 +267,7 @@ sudo casper-client put-deploy \
 
 Following are the BUSD Equivalent's entry point methods.
 
-- ##### get_busd_equivalent <a id="busd-equivalent-get-busd-equivalent"></a>
+- ##### get_stable_usd <a id="busd-equivalent-get-busd-equivalent"></a>
 Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest busd equivalent value.
 Parameter Name | Type
 |---|--- |
@@ -275,7 +275,7 @@ Parameter Name | Type
 
 This method **returns** U256.
 
-- ##### update_busd_equivalent <a id="busd-equivalent-update-busd-equivalent"></a>
+- ##### update_stable_usd <a id="busd-equivalent-update-busd-equivalent"></a>
 Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest busd equivalent value and sets in to contract global state as named key.
 <br> Contract reverts if inflation is assigned already.
 Parameter Name | Type

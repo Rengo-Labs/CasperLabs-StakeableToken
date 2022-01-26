@@ -1,9 +1,0 @@
-/target
-/.history
-/busd_equivalent/target
-/busd_equivalent/.history
-/busd_equivalent/Cargo.lock
-/busd_equivalent_tests/target
-/busd_equivalent_tests/.history
-/busd_equivalent_tests/wasm/*
-Cargo.lock

@@ -118,9 +118,9 @@ fn set_liquidity_transfomer() {
 }
 
 #[no_mangle]
-fn set_busd() {
+fn set_stable_usd() {
     let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
-    WiseTokenStruct::default().set_busd(equalizer_address);
+    WiseToken::set_stable_usd(&WiseTokenStruct::default(), equalizer_address);
 }
 
 #[no_mangle]
@@ -478,7 +478,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "set_busd",
+        "set_stable_usd",
         vec![Parameter::new("equalizer_address", CLType::Key)],
         <()>::cl_type(),
         EntryPointAccess::Public,

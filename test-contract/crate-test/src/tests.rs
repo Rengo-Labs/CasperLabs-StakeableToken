@@ -21,7 +21,7 @@ use alloc::{
 
 pub const CURRENT_WISE_DAY: u64 = 5; // as is set by test-env
 
-fn deploy_busd_eq(
+fn deploy_stable_usd(
     env: &TestEnv,
     owner: AccountHash,
     wise: &TestContract,
@@ -32,8 +32,8 @@ fn deploy_busd_eq(
 ) -> TestContract {
     TestContract::new(
         &env,
-        "busd_equivalent.wasm",
-        "busd_eq",
+        "stable_usd.wasm",
+        "stable_usd",
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
@@ -665,29 +665,29 @@ fn test_deploy() {
 // }
 
 // // #[test]
-// fn test_get_busd_eq() {
+// fn test_get_stable_usd() {
 //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-//     let busd_eq: Key = Key::Account(owner);
+//     let stable_usd: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_busd_eq",
+//         "set_stable_usd",
 //         runtime_args! {
-//             "busd_eq" => busd_eq
+//             "stable_usd" => stable_usd
 //         },
 //     );
-//     test.call_contract(Sender(owner), "get_busd_eq", runtime_args! {});
+//     test.call_contract(Sender(owner), "get_stable_usd", runtime_args! {});
 //     let ret: Key = TestInstance::instance(test).result();
 // }
 
 // // #[test]
-// fn test_set_busd_eq() {
+// fn test_set_stable_usd() {
 //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-//     let busd_eq: Key = Key::Account(owner);
+//     let stable_usd: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_busd_eq",
+//         "set_stable_usd",
 //         runtime_args! {
-//             "busd_eq" => busd_eq
+//             "stable_usd" => stable_usd
 //         },
 //     );
 // }
@@ -2004,9 +2004,9 @@ fn test_remove_critical_mass() {
     assert_eq!(ret.activation_day, critical_mass.activation_day);
 }
 
-// Cannot test till BUSDEquivalent contract is tested
+// Cannot test till StableUSD contract is tested
 // // #[test]
-// // fn test_referral_token_get_busd_equivalent() {
+// // fn test_referral_token_get_stable_usd() {
 // //     let (
 //         env,
 //         owner,
@@ -2022,7 +2022,7 @@ fn test_remove_critical_mass() {
 //         bep20,
 //         scspr,
 //     ) = deploy();
-// //     test.call_contract(Sender(owner), "get_busd_equivalent", runtime_args! {});
+// //     test.call_contract(Sender(owner), "get_stable_usd", runtime_args! {});
 // //     let ret: U256 = TestInstance::instance(test).result();
 // // }
 
@@ -2700,7 +2700,7 @@ fn test_snapshot_set_struct_from_key() {
 // //     );
 // // }
 
-// // NOTE Requires hardcoding busd_equivalent in create_stake as busd_equivalent is not setup to execute
+// // NOTE Requires hardcoding stable_usd in create_stake as stable_usd is not setup to execute
 // // #[test]
 // fn test_create_stake() {
 //     let (
@@ -2718,13 +2718,13 @@ fn test_snapshot_set_struct_from_key() {
 //         bep20,
 //         scspr,
 //     ) = deploy();
-//     // init busd_eq
-//     let busd_eq = deploy_busd_eq(&env, owner, &wcspr, &scspr, &wcspr, &bep20, &uniswap_router);
+//     // init stable_usd
+//     let stable_usd = deploy_stable_usd(&env, owner, &wcspr, &scspr, &wcspr, &bep20, &uniswap_router);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_busd_eq",
+//         "set_stable_usd",
 //         runtime_args! {
-//             "busd_eq" => Key::Hash(busd_eq.contract_hash())
+//             "stable_usd" => Key::Hash(stable_usd.contract_hash())
 //         },
 //     );
 //     // need to create pair and add liquidity for this test

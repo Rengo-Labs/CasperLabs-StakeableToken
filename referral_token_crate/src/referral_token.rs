@@ -27,7 +27,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
     + Snapshot<Storage>
     + ERC20<Storage>
 {
-    fn init(&mut self) {}
+    fn init(&self) {}
 
     fn _add_referrer_shares_to_end(&self, _final_day: U256, _shares: U256) {
         let shares: U256 = Declaration::get_referral_shares_to_end(self, _final_day);
@@ -93,7 +93,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
             return false;
         }
     }
-    fn _add_critical_mass(&mut self, _referrer: Key, _dai_equivalent: U256) {
+    fn _add_critical_mass(&self, _referrer: Key, _dai_equivalent: U256) {
         let struct_key: String = _referrer.to_formatted_string();
         let critical_mass: Vec<u8> = Declaration::get_struct_from_key(
             self,
@@ -168,18 +168,18 @@ pub trait ReferralToken<Storage: ContractStorage>:
             return U256::from(_current_wise_day);
         }
     }
-    fn get_busd_equivalent(&self) -> U256 {
-        Self::_get_busd_equivalent(self)
+    fn get_stable_usd(&self) -> U256 {
+        Self::_get_stable_usd(self)
     }
-    fn _get_busd_equivalent(&self) -> U256 {
-        let busd_eq = Declaration::get_busd_eq(self);
+    fn _get_stable_usd(&self) -> U256 {
+        let stable_usd = Declaration::get_stable_usd(self);
 
-        let busd_equivalent: U256 = runtime::call_contract(
-            Self::convert_to_contract_hash(busd_eq),
-            "get_busd_equivalent",
+        let stable_usd: U256 = runtime::call_contract(
+            Self::convert_to_contract_hash(stable_usd),
+            "get_stable_usd",
             runtime_args! {},
         );
-        busd_equivalent
+        stable_usd
     }
     fn referrer_interest(&self, _referral_id: Vec<u32>, _scrape_days: U256) {
         Self::_referrer_interest(self, self.get_caller(), _referral_id, _scrape_days);

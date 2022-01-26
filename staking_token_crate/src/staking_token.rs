@@ -29,21 +29,16 @@ pub trait StakingToken<Storage: ContractStorage>:
     + Snapshot<Storage>
     + ReferralToken<Storage>
 {
-    fn init(&mut self) {}
+    fn init(&self) {}
 
-    fn create_stake_bulk(
-        &mut self,
-        staked_amount: Vec<U256>,
-        lock_days: Vec<u64>,
-        referrer: Vec<Key>,
-    ) {
+    fn create_stake_bulk(&self, staked_amount: Vec<U256>, lock_days: Vec<u64>, referrer: Vec<Key>) {
         for i in 0..staked_amount.len() {
             let _ = self.create_stake(staked_amount[i], lock_days[i], referrer[i]);
         }
     }
 
     fn create_stake(
-        &mut self,
+        &self,
         staked_amount: U256,
         lock_days: u64,
         referrer: Key,
@@ -122,7 +117,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn _create_stake(
-        &mut self,
+        &self,
         staker: Key,
         staked_amount: U256,
         lock_days: u64,
@@ -162,10 +157,10 @@ pub trait StakingToken<Storage: ContractStorage>:
             is_active: false,
         };
 
-        // NOTE: for unit testing, hard code busd_equivalent with non zero value
-        let busd_equivalent: U256 = self.get_busd_equivalent();
+        // NOTE: for unit testing, hard code stable_usd with non zero value
+        let stable_usd: U256 = ReferralToken::get_stable_usd(self);
 
-        new_stake.dai_equivalent = (busd_equivalent
+        new_stake.dai_equivalent = (stable_usd
             .checked_mul(new_stake.staked_amount)
             .unwrap_or_revert())
         .checked_div(constants.yodas_per_wise)
@@ -193,7 +188,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         return (new_stake, stake_id, _start_day);
     }
 
-    fn end_stake(&mut self, _stake_id: Vec<u32>) -> U256 {
+    fn end_stake(&self, _stake_id: Vec<u32>) -> U256 {
         let (ended_stake, penalty_amount): (declaration::structs::Stake, U256) =
             Self::_end_stake(self, self.get_caller(), _stake_id.clone());
 
@@ -269,11 +264,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         return ended_stake.reward_amount;
     }
 
-    fn _end_stake(
-        &mut self,
-        _staker: Key,
-        _stake_id: Vec<u32>,
-    ) -> (declaration::structs::Stake, U256) {
+    fn _end_stake(&self, _staker: Key, _stake_id: Vec<u32>) -> (declaration::structs::Stake, U256) {
         let key: String = Declaration::_generate_key_for_dictionary(self, &_staker, &_stake_id);
         let stake_string: Vec<u8> = Declaration::get_struct_from_key(
             self,
@@ -325,7 +316,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn scrape_interest(
-        &mut self,
+        &self,
         _stake_id: Vec<u32>,
         _scrape_days: u64,
     ) -> (U256, U256, U256, U256, U256) {
@@ -526,7 +517,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn _share_price_update(
-        &mut self,
+        &self,
         _staked_amount: U256,
         _reward_amount: U256,
         _referrer: Key,
@@ -601,7 +592,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn _get_new_share_price(
-        &mut self,
+        &self,
         _staked_amount: U256,
         _reward_amount: U256,
         _stake_shares: U256,
@@ -662,7 +653,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             .unwrap_or_revert()
     }
 
-    fn check_mature_stake(&mut self, _staker: Key, _stake_id: Vec<u32>) -> bool {
+    fn check_mature_stake(&self, _staker: Key, _stake_id: Vec<u32>) -> bool {
         let key: String = Declaration::_generate_key_for_dictionary(self, &_staker, &_stake_id);
         let stake: Vec<u8> =
             Declaration::get_struct_from_key(self, key, DECLARATION_STAKES_DICT.to_string());
@@ -672,7 +663,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         is_mature
     }
 
-    fn check_stake_by_id(&mut self, _staker: Key, _stake_id: Vec<u32>) -> (Vec<u8>, U256, bool) {
+    fn check_stake_by_id(&self, _staker: Key, _stake_id: Vec<u32>) -> (Vec<u8>, U256, bool) {
         let key: String = Declaration::_generate_key_for_dictionary(self, &_staker, &_stake_id);
         let mut stake: Vec<u8> =
             Declaration::get_struct_from_key(self, key, DECLARATION_STAKES_DICT.to_string());
@@ -687,7 +678,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn _stakes_shares(
-        &mut self,
+        &self,
         _staked_amount: U256,
         _lock_days: U256,
         _referrer: Key,
@@ -719,7 +710,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     fn _shares_amount(
-        &mut self,
+        &self,
         _staked_amount: U256,
         _lock_days: U256,
         _share_price: U256,
@@ -744,7 +735,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             .unwrap_or_revert()
     }
 
-    fn _get_bonus(&mut self, _lock_days: U256, _extra_bonus: U256) -> U256 {
+    fn _get_bonus(&self, _lock_days: U256, _extra_bonus: U256) -> U256 {
         let constants_struct: Vec<u8> = Declaration::get_declaration_constants(self);
         let constants_struct: declaration::parameters::ConstantParameters =
             declaration::parameters::ConstantParameters::from_bytes(&constants_struct)
@@ -788,7 +779,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             .unwrap_or_revert()
     }
 
-    fn _base_amount(&mut self, _staked_amount: U256, _share_price: U256) -> U256 {
+    fn _base_amount(&self, _staked_amount: U256, _share_price: U256) -> U256 {
         let constants_struct: Vec<u8> = Declaration::get_declaration_constants(self);
         let constants_struct: declaration::parameters::ConstantParameters =
             declaration::parameters::ConstantParameters::from_bytes(&constants_struct)
@@ -802,7 +793,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             .unwrap()
     }
 
-    fn _referrer_shares(&mut self, _staked_amount: U256, _lock_days: U256, _referrer: Key) -> U256 {
+    fn _referrer_shares(&self, _staked_amount: U256, _lock_days: U256, _referrer: Key) -> U256 {
         let constants_struct: Vec<u8> = Declaration::get_declaration_constants(self);
         let constants_struct: declaration::parameters::ConstantParameters =
             declaration::parameters::ConstantParameters::from_bytes(&constants_struct)
@@ -839,7 +830,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         }
     }
 
-    fn _store_penalty(&mut self, _store_day: u64, _penalty: U256) {
+    fn _store_penalty(&self, _store_day: u64, _penalty: U256) {
         if _penalty > 0.into() {
             let mut total_penalty: U256 =
                 Declaration::get_total_penalties(self, U256::from(_store_day));
@@ -852,7 +843,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         }
     }
 
-    fn _calculate_penalty_amount(&mut self, _stake: &declaration::structs::Stake) -> U256 {
+    fn _calculate_penalty_amount(&self, _stake: &declaration::structs::Stake) -> U256 {
         let stake_string: Vec<u8> = _stake.clone().into_bytes().unwrap();
         let stake_status: bool = Helper::stake_not_started(self, stake_string.clone());
         let stake_maturity: bool = Helper::is_mature_stake(self, stake_string.clone());
@@ -864,7 +855,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         }
     }
 
-    fn _get_penalties(&mut self, _stake: &declaration::structs::Stake) -> U256 {
+    fn _get_penalties(&self, _stake: &declaration::structs::Stake) -> U256 {
         let stake_string: Vec<u8> = _stake.clone().into_bytes().unwrap();
 
         let days_left: U256 = Helper::days_left(self, stake_string.clone());

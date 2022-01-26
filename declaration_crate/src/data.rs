@@ -1,7 +1,4 @@
-use crate::alloc::{
-    string::{ToString},
-    vec::Vec,
-};
+use crate::alloc::{string::ToString, vec::Vec};
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
@@ -93,11 +90,11 @@ pub fn set_scspr(scspr: Key) {
     set_key(SCSPR_CONTRACT_HASH, scspr);
 }
 
-pub fn busd_eq() -> Key {
-    get_key(BUSD_EQ_CONTRACT_HASH).unwrap_or_revert()
+pub fn stable_usd() -> Key {
+    get_key(STABLE_USD_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_busd_eq(busd: Key) {
-    set_key(BUSD_EQ_CONTRACT_HASH, busd);
+pub fn set_stable_usd(stable_usd: Key) {
+    set_key(STABLE_USD_CONTRACT_HASH, stable_usd);
 }
 
 pub fn uniswap_pair() -> Key {

@@ -191,12 +191,12 @@ pub trait Declaration<Storage: ContractStorage>:
         data::wcspr()
     }
 
-    fn set_busd_eq(&self, address: Key) {
-        data::set_busd_eq(address);
+    fn set_stable_usd(&self, address: Key) {
+        data::set_stable_usd(address);
     }
 
-    fn get_busd_eq(&self) -> Key {
-        data::busd_eq()
+    fn get_stable_usd(&self) -> Key {
+        data::stable_usd()
     }
 
     fn get_uniswap_pair(&self) -> Key {

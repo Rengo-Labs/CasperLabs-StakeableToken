@@ -141,7 +141,7 @@ fn deploy_bep20(env: &TestEnv, owner: AccountHash) -> TestContract
 
     bep20
 }
-fn deploy_busd_eq(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract 
+fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract 
 {
     let router: Key = wise.query_named_key("router_contract_hash".to_string());
     let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
@@ -149,11 +149,11 @@ fn deploy_busd_eq(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestC
     let (_, busd) = erc20_setup();                  // since busd is an ERC20 token, using casper's erc20 as busd
 
  
-    // deploy busd eq. contract
-    let busd_contract = TestContract::new(
+    // deploy stable_usd eq. contract
+    let stable_usd = TestContract::new(
         &env,
-        "busd_equivalent.wasm",
-        "Busd_Eq",
+        "stable_usd.wasm",
+        "stable_usd",
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
@@ -164,7 +164,7 @@ fn deploy_busd_eq(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestC
         },
     );
 
-    busd_contract
+    stable_usd
 }
 
 fn deploy_pair_contract( env: &TestEnv, owner: AccountHash, factory_contract: Key, flash_swapper: Key) -> TestContract
@@ -447,11 +447,11 @@ fn test_wise_deploy() {
 }
 
 #[test]
-fn test_busd_deploy() {
+fn test_stable_usd_deploy() {
     let (env, owner, wise_contract, _, _, _, _, _, _, _) = deploy_wise();
-    let busd_contract = deploy_busd_eq(env, owner, wise_contract);
+    let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
 
-    assert_ne!(Key::Hash(busd_contract.contract_hash()), Key::Hash([0u8;32]));
+    assert_ne!(Key::Hash(stable_usd_contract.contract_hash()), Key::Hash([0u8;32]));
 }
 
 #[test]
@@ -462,12 +462,12 @@ fn set_liquidity_transfomer() {
 }
 
 #[test]
-fn set_busd() {
+fn set_stable_usd() {
     let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
-    let busd_contract = deploy_busd_eq(env, owner, wise_contract);
+    let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
 
 
-    test_contract.set_busd(Sender(owner), Key::Hash(busd_contract.contract_hash()));
+    test_contract.set_stable_usd(Sender(owner), Key::Hash(stable_usd_contract.contract_hash()));
 }
 
 #[test]

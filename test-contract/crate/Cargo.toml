@@ -11,7 +11,7 @@ contract-utils = { path = "../../utils/contract-utils" }
 wise-token-utils = { path = "../../utils/wise-token-utils" }
 globals_crate = { path = "../../globals_crate" }
 declaration_crate = { path = "../../declaration_crate" }
-# busd_equivalent = { path = "../../busd_equivalent/busd_equivalent" }
+# stable_usd = { path = "../../stable_usd/stable_usd" }
 helper_crate = { path = "../../helper_crate" }
 # liquidity_guard = { path = "../../liquidity_guard/liquidity_guard" }
 liquidity_token_crate = { path = "../../liquidity_token_crate" }
