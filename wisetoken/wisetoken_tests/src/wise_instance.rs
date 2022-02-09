@@ -34,77 +34,77 @@ impl WiseTestInstance {
         Key::from(contract_hash)
     }
 
-    pub fn set_liquidity_transfomer(&self, owner: Sender, immutable_transformer: Key)
-    {
+    pub fn set_liquidity_transfomer(&self, owner: Sender, immutable_transformer: Key) {
         self.0.call_contract(
-            owner, 
+            owner,
             "set_liquidity_transfomer",
-            runtime_args!{
+            runtime_args! {
                 "immutable_transformer" => immutable_transformer,
-            });
-    }
-
-    pub fn set_stable_usd(&self, owner: Sender, equalizer_address: Key)
-    {
-        self.0.call_contract(
-            owner, 
-            "set_stable_usd",
-            runtime_args!{
-                "equalizer_address" => equalizer_address
-            });
-    }
-
-    pub fn renounce_keeper(&self, owner: Sender) 
-    {
-        self.0.call_contract(
-            owner, 
-            "renounce_keeper",
-            runtime_args!{}
+            },
         );
     }
 
-    pub fn mint_supply(&self, owner: Sender, investor_address: Key, amount: U256)
-    {
+    pub fn set_stable_usd(&self, owner: Sender, equalizer_address: Key) {
         self.0.call_contract(
-            owner, 
+            owner,
+            "set_stable_usd",
+            runtime_args! {
+                "equalizer_address" => equalizer_address
+            },
+        );
+    }
+
+    pub fn renounce_keeper(&self, owner: Sender) {
+        self.0
+            .call_contract(owner, "renounce_keeper", runtime_args! {});
+    }
+
+    pub fn mint_supply(&self, owner: Sender, investor_address: Key, amount: U256) {
+        self.0.call_contract(
+            owner,
             "mint_supply",
-            runtime_args!{
+            runtime_args! {
                 "investor_address" => investor_address,
                 "amount" => amount
-            }
+            },
         );
     }
 
-    pub fn set_balances(&self, owner: Sender, account_owner: Key)
-    {
+    pub fn set_balances(&self, owner: Sender, account_owner: Key) {
         self.0.call_contract(
-            owner, 
+            owner,
             "get_erc20_balance",
-            runtime_args!{
+            runtime_args! {
                 "owner" => account_owner,
-            }
+            },
         );
     }
 
-    pub fn create_stake_with_cspr(&self, owner: Sender, test_contract_hash: Key, lock_days: u64, referrer: Key, amount: U256)
-    {
+    pub fn create_stake_with_cspr(
+        &self,
+        owner: Sender,
+        test_contract_hash: Key,
+        lock_days: u64,
+        referrer: Key,
+        amount: U256,
+    ) {
         self.0.call_contract(
-            owner, 
+            owner,
             "create_stake_with_cspr",
-            runtime_args!{
+            runtime_args! {
                 "test_contract_hash" => test_contract_hash,
                 "lock_days" => lock_days,
                 "referrer" => referrer,
                 "amount" => amount,
-            }
+            },
         );
     }
 
     pub fn add_liquidity_cspr_to_router(
-        &self, 
-        owner: Sender, 
-        router_address: Key, 
-        token: Key, 
+        &self,
+        owner: Sender,
+        router_address: Key,
+        token: Key,
         amount_token_desired: U256,
         amount_cspr_desired: U256,
         amount_token_min: U256,
@@ -112,13 +112,12 @@ impl WiseTestInstance {
         to: Key,
         deadline: U256,
         pair: Option<Key>,
-        self_hash: Key
-    )
-    {
+        self_hash: Key,
+    ) {
         self.0.call_contract(
-            owner, 
+            owner,
             "add_liquidity_cspr_to_router",
-            runtime_args!{
+            runtime_args! {
                 "router_address" => router_address,
                 "token" => token,
                 "amount_token_desired" => amount_token_desired,
@@ -129,18 +128,19 @@ impl WiseTestInstance {
                 "deadline" => deadline,
                 "pair" => pair,
                 "self_hash" => self_hash
-            }
+            },
         );
     }
 
     pub fn extend_lt_auction(&self, owner: Sender) {
-        self.0.call_contract(owner, "extend_lt_auction", runtime_args!{});
+        self.0
+            .call_contract(owner, "extend_lt_auction", runtime_args! {});
     }
 
     pub fn add_liquidity_to_router(
-        &self, 
-        owner: Sender, 
-        router_address: Key, 
+        &self,
+        owner: Sender,
+        router_address: Key,
         token_a: Key,
         token_b: Key,
         amount_a_desired: U256,
@@ -149,13 +149,12 @@ impl WiseTestInstance {
         amount_b_min: U256,
         to: Key,
         deadline: U256,
-        pair: Option<Key>
-    )
-    {
+        pair: Option<Key>,
+    ) {
         self.0.call_contract(
-            owner, 
+            owner,
             "router_add_liquidity",
-            runtime_args!{
+            runtime_args! {
                 "router_address" => router_address,
                 "token_a" => token_a,
                 "token_b" => token_b,
@@ -166,10 +165,9 @@ impl WiseTestInstance {
                 "to" => to,
                 "deadline" => deadline,
                 "pair" => pair
-            }
+            },
         );
     }
-
 }
 
 pub fn key_to_str(key: &Key) -> String {

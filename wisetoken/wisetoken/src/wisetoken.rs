@@ -148,8 +148,8 @@ pub trait WiseToken<Storage: ContractStorage>:
         let self_hash: Key = data::contract_hash();
 
         let _path: Vec<Key> = vec![wcspr, scspr, self_hash];
-        let mut path : Vec<String> = Vec::new();
-        for i in _path{
+        let mut path: Vec<String> = Vec::new();
+        for i in _path {
             path.push(i.to_formatted_string());
         }
         // get the consts struct from declaration
@@ -217,7 +217,7 @@ pub trait WiseToken<Storage: ContractStorage>:
             "package_hash",
             runtime_args![],
         ); // need to create this method in router. It currently doesnot exist
-        // Now approve the router packageHash
+           // Now approve the router packageHash
         let args: RuntimeArgs = runtime_args! {
             "spender"=> router_package_hash,
             "amount"=> token_amount
@@ -232,8 +232,8 @@ pub trait WiseToken<Storage: ContractStorage>:
         let wcspr: Key = Declaration::get_wcspr(self);
         let scspr: Key = Declaration::get_scspr(self);
         let _path: Vec<Key> = vec![token_address, wcspr, scspr, data::contract_hash()];
-        let mut path : Vec<String> = Vec::new();
-        for i in _path{
+        let mut path: Vec<String> = Vec::new();
+        for i in _path {
             path.push(i.to_formatted_string());
         }
         // get the consts struct from declaration

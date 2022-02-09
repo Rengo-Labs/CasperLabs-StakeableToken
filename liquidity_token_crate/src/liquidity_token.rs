@@ -100,7 +100,11 @@ pub trait LiquidityToken<Storage: ContractStorage>:
     }
 
     fn check_liquidity_stake_by_id(&self, _staker: Key, _liquidity_stake_id: Vec<u32>) -> Vec<u8> {
-        Declaration::get_liquidity_stake(self, _staker, _liquidity_stake_id)
+        let bytes = Declaration::get_liquidity_stake(self, _staker, _liquidity_stake_id);
+        let mut liquidity_stake_struct = LiquidityStake::from_bytes(&bytes).unwrap().0;
+        let reward_amount = LiquidityToken::_calculate_reward_amount(self, &liquidity_stake_struct);
+        liquidity_stake_struct.reward_amount = reward_amount;
+        liquidity_stake_struct.clone().into_bytes().unwrap()
     }
 
     fn end_liquidity_stake(&self, _liquidity_stake_id: Vec<u32>) -> U256 {

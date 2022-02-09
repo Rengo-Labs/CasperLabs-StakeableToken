@@ -1,10 +1,6 @@
-
 use core::convert::TryInto;
 
-use alloc::{
-    format,
-    string::String,
-};
+use alloc::{format, string::String};
 
 use casper_contract::{
     contract_api::{runtime, storage},
@@ -12,10 +8,9 @@ use casper_contract::{
 };
 
 use casper_types::{
-    bytesrepr::{ToBytes, FromBytes},
-    CLTyped
+    bytesrepr::{FromBytes, ToBytes},
+    CLTyped,
 };
-
 
 pub fn get_key<T: FromBytes + CLTyped + Default>(name: &str) -> T {
     match runtime::get_key(name) {

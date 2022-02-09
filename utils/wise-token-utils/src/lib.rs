@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod referral_token;
 pub mod declaration;
 pub mod timing;
 pub mod snapshot;

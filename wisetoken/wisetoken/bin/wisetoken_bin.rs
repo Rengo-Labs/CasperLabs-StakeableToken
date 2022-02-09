@@ -9,13 +9,12 @@ use casper_contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
+    bytesrepr::ToBytes,
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
     EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
-use wisetoken::{self, WiseToken};
-
 use declaration_crate::Declaration;
 use erc20_crate::{self, ERC20};
 use globals_crate::Globals;
@@ -25,6 +24,8 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
+use wise_token_utils::referral_token;
+use wisetoken::{self, WiseToken};
 
 #[derive(Default)]
 struct WiseTokenStruct(OnChainContractStorage);
@@ -445,6 +446,167 @@ fn package_hash() {
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn current_wise_day() {
+    let ret: u64 = WiseTokenStruct::default().current_wise_day();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn liquidity_guard_trigger() {
+    WiseTokenStruct::default().liquidity_guard_trigger();
+}
+
+#[no_mangle]
+fn manual_daily_snapshot() {
+    WiseTokenStruct::default().manual_daily_snapshot();
+}
+
+#[no_mangle]
+fn manual_daily_snapshot_point() {
+    let update_day: u64 = runtime::get_named_arg("update_day");
+    WiseTokenStruct::default().manual_daily_snapshot_point(update_day);
+}
+
+#[no_mangle]
+fn get_stable_usd() {
+    let ret: U256 = <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd(
+        &WiseTokenStruct::default(),
+    );
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn referrer_interest() {
+    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let scrape_days: U256 = runtime::get_named_arg("scrape_days");
+    WiseTokenStruct::default().referrer_interest(referral_id, scrape_days);
+}
+
+#[no_mangle]
+fn referrer_interest_bulk() {
+    let referral_ids: Vec<Vec<u32>> = runtime::get_named_arg("referral_ids");
+    let scrape_days: Vec<U256> = runtime::get_named_arg("scrape_days");
+    WiseTokenStruct::default().referrer_interest_bulk(referral_ids, scrape_days);
+}
+
+#[no_mangle]
+fn check_referrals_by_id() {
+    let _referrer: Key = runtime::get_named_arg("referrer");
+    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let (
+        staker,
+        stake_id,
+        referrer_shares,
+        referral_interest,
+        is_active_referral,
+        is_active_stake,
+        is_mature_stake,
+        is_ended_stake,
+    ): (Key, Vec<u32>, U256, U256, bool, bool, bool, bool) =
+        WiseTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
+    let stake_struct = referral_token::structs::StakeInfo {
+        staker,
+        stake_id,
+        referrer_shares,
+        referral_interest,
+        is_active_referral,
+        is_active_stake,
+        is_mature_stake,
+        is_ended_stake,
+    };
+    let ret = stake_struct.clone().into_bytes().unwrap();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn create_stake_bulk() {
+    let staked_amount: Vec<U256> = runtime::get_named_arg("staked_amount");
+    let lock_days: Vec<u64> = runtime::get_named_arg("lock_days");
+    let referrer: Vec<Key> = runtime::get_named_arg("referrer");
+    WiseTokenStruct::default().create_stake_bulk(staked_amount, lock_days, referrer);
+}
+
+#[no_mangle]
+fn create_stake() {
+    let staked_amount: U256 = runtime::get_named_arg("staked_amount");
+    let lock_days: u64 = runtime::get_named_arg("lock_days");
+    let referrer: Key = runtime::get_named_arg("referrer");
+    let (stake_id, start_day, referral_id): (Vec<u32>, U256, Vec<u32>) =
+        WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
+    runtime::ret(CLValue::from_t((stake_id, start_day, referral_id)).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn end_stake() {
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+// TODO make entrypoint
+#[no_mangle]
+fn scrape_interest() {
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let scrape_days: u64 = runtime::get_named_arg("scrape_days");
+    let (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty): (
+        U256,
+        U256,
+        U256,
+        U256,
+        U256,
+    ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
+    let ret: Vec<U256> = vec![
+        scrape_day,
+        scrape_amount,
+        remaining_days,
+        stakers_penalty,
+        referrer_penalty,
+    ];
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn check_mature_stake() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn check_stake_by_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let (stake, penalty_amount, is_mature): (Vec<u8>, U256, bool) =
+        WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
+    runtime::ret(CLValue::from_t((stake, penalty_amount, is_mature)).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn create_liquidity_stake() {
+    let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
+    let liquidity_stake_id: Vec<u32> =
+        WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
+    runtime::ret(CLValue::from_t(liquidity_stake_id).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn end_liquidity_stake() {
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn check_liquidity_stake_by_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let ret: Vec<u8> =
+        WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
 
@@ -466,6 +628,163 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
 
+    entry_points.add_entry_point(EntryPoint::new(
+        "scrape_interest",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("scrape_days", CLType::U64),
+        ],
+        CLType::List(Box::new(CLType::U256)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_referrals_by_id",
+        vec![
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::List(Box::new(CLType::U8)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "current_wise_day",
+        vec![],
+        u64::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "liquidity_guard_trigger",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "manual_daily_snapshot",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "manual_daily_snapshot_point",
+        vec![Parameter::new("update_day", u64::cl_type())],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_stable_usd",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "referrer_interest",
+        vec![
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("scrape_days", CLType::U256),
+        ],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_bulk",
+        vec![
+            Parameter::new("staked_amount", CLType::List(Box::new(CLType::U256))),
+            Parameter::new("lock_days", CLType::List(Box::new(u64::cl_type()))),
+            Parameter::new("referrer", CLType::List(Box::new(CLType::Key))),
+        ],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake",
+        vec![
+            Parameter::new("staked_amount", CLType::U256),
+            Parameter::new("lock_days", u64::cl_type()),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::U256),
+            Box::new(CLType::List(Box::new(CLType::U32))),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_stake",
+        vec![Parameter::new(
+            "stake_id",
+            CLType::List(Box::new(CLType::U32)),
+        )],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_mature_stake",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("staker", CLType::Key),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_mature_stake",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("staker", CLType::Key),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U8))),
+            Box::new(CLType::U256),
+            Box::new(CLType::Bool),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_liquidity_stake",
+        vec![Parameter::new("liquidity_tokens", CLType::U256)],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_liquidity_stake",
+        vec![Parameter::new(
+            "liquidity_stake_id",
+            CLType::List(Box::new(CLType::U32)),
+        )],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_liquidity_stake_by_id",
+        vec![
+            Parameter::new("staker", CLType::Key),
+            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::U32))),
+        ],
+        CLType::List(Box::new(CLType::U8)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
     entry_points.add_entry_point(EntryPoint::new(
         "set_liquidity_transfomer",
         vec![
