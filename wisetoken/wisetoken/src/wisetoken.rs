@@ -147,8 +147,11 @@ pub trait WiseToken<Storage: ContractStorage>:
         let scspr: Key = Declaration::get_scspr(self);
         let self_hash: Key = data::contract_hash();
 
-        let path: Vec<Key> = vec![wcspr, scspr, self_hash];
-
+        let _path: Vec<Key> = vec![wcspr, scspr, self_hash];
+        let mut path : Vec<String> = Vec::new();
+        for i in _path{
+            path.push(i.to_formatted_string());
+        }
         // get the consts struct from declaration
         let constant_struct: Vec<u8> = Declaration::get_declaration_constants(self);
         let constant_struct: DeclarationConstantParameters =
@@ -228,8 +231,11 @@ pub trait WiseToken<Storage: ContractStorage>:
         let router_address: Key = data::router_hash();
         let wcspr: Key = Declaration::get_wcspr(self);
         let scspr: Key = Declaration::get_scspr(self);
-        let path: Vec<Key> = vec![token_address, wcspr, scspr, data::contract_hash()];
-
+        let _path: Vec<Key> = vec![token_address, wcspr, scspr, data::contract_hash()];
+        let mut path : Vec<String> = Vec::new();
+        for i in _path{
+            path.push(i.to_formatted_string());
+        }
         // get the consts struct from declaration
         let constant_struct: Vec<u8> = Declaration::get_declaration_constants(self);
         let constant_struct: DeclarationConstantParameters =
