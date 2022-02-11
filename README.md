@@ -53,6 +53,22 @@ Implementation of `Transfer Helper`, `Stable USD`, `Liquidity Guard` and `Wise T
     - [```burn```](#erc20-burn)
     - [```name```](#erc20-name)
     - [```symbol```](#erc20-symbol)
+    - [```current_wise_day```](#wise-token-current-wise-day)
+    - [```liquidity_guard_trigger```](#wise-token-liquidity-guard-trigger)
+    - [```manual_daily_snapshot```](#wise-token-manual-daily-snapshot)
+    - [```get_stable_usd```](#wise-token-get-stable-usd)
+    - [```referrer_interest```](#wise-token-referrer-interest)
+    - [```referrer_interest_bulk```](#wise-token-referrer-interest-bulk)
+    - [```check_referrals_by_id```](#wise-token-check-referrals-by-id)
+    - [```create_stake_bulk```](#wise-token-create-stake-bulk)
+    - [```create_stake```](#wise-token-create-stake)
+    - [```end_stake```](#wise-token-end-stake)
+    - [```scrape_interest```](#wise-token-scrape-interest)
+    - [```check_mature_stake```](#wise-token-check-mature-stake)
+    - [```check_stake_by_id```](#wise-token-check-stake-by-id)
+    - [```create_liquidity_stake```](#wise-token-create-liquidity-stake)
+    - [```end_liquidity_stake```](#wise-token-end-liquidity-stake)
+    - [```check_liquidity_stake_by_id```](#wise-token-check-liquidity-stake-by-id)
 
 ## Interacting with the contract
 You need to have `casper-client` and `jq` installed on your system to run the examples. The instructions have been tested on Ubuntu 20.04.0 LTS.
@@ -606,3 +622,199 @@ Parameter Name | Type
 ---|---
 
 This method **returns** String.
+
+- ##### current_wise_day <a id="wise-token-current-wise-day"></a>
+Returns the day since launch of WISE.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+
+This method **returns** u64.
+
+- ##### liquidity_guard_trigger <a id="wise-token-liquidity-guard-trigger"></a>
+Enables the liquidity guard if it is disabled.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+
+This method **returns** nothing.
+
+- ##### manual_daily_snapshot <a id="wise-token-manual-daily-snapshot"></a>
+Creates a snapshot from ```update_day``` till the current wise day.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+update_day|u64
+
+This method **returns** nothing.
+
+- ##### get_stable_usd <a id="wise-token-get-stable-usd"></a>
+Returns the value of stable usd.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+---|---
+This method **returns** U256.
+
+- ##### referrer_interest <a id="wise-token-referrer-interest"></a>
+Returns the calculated interest on a particular referral for ```scrape_days``` duration and mints equivalend WISE tokens to ```self.get_caller()```
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+referreral_id|Vec\<u32>
+scrape_days|U256
+
+This method **returns** nothing.
+
+- ##### referrer_interest_bulk <a id="wise-token-referrer-interest-bulk"></a>
+Returns the calculated interest on a several referrals, each for for several ```scrape_days``` duration and mints equivalend WISE tokens to ```self.get_caller()``` in each case.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+referreral_ids | Vec\<Vec\<u32>>
+scrape_days | Vec\<U256>
+
+This method **returns** nothing.
+
+- ##### check_referrals_by_id <a id="wise-token-check-referrals-by-id"></a>
+Calculates rewards and shares for a referrer on a partical referral, and returns all information as a serialized struct.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+referreral_ids | Vec\<u32>
+referrer | Key
+
+This method **returns** StakeInfo type serialized as Vec\<u8>.
+
+- ##### create_stake_bulk <a id="wise-token-create_stake_bulk"></a>
+Creates several stakes for ```self.get_caller()``` each with a referrer.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+staked_amount | U256
+lock_days | Vec\<u64>
+referrer | Vec\<Key>
+
+This method **returns** nothing.
+
+- ##### create_stake <a id="wise-token-create_stake"></a>
+Creates a stake for ```self.get_caller()``` with a referrer.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+stake_id | Vec\<u32>
+start_day | u64
+referral_id | Vec\<u32>
+
+This method **returns** a tupe of order 3 described below.
+
+| Tuple Index | Item Name | Type |
+| --- | --- | --- |
+|0|stake_id | Vec\<u32>
+|1|start_day | u64
+|2| referrer_id | Vec\<u32>
+
+- ##### end_stake <a id="wise-token-end-stake"></a>
+Ends a stakes of given ```stake_id``` having been created by ```self.get_caller()```.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+stake_id | Vec\<u32>
+
+This method **returns** nothing.
+
+- ##### scrape_interest <a id="wise-token-scrape-interest"></a>
+Calculates interests, rewards and penalties for a stake created by ```self.get_caller()``.`
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+stake_id | Vec\<u32>
+scrape_days | u64
+
+This method **returns** a Vec<u32>, described below.
+
+| Vector Index | Item Name | Type |
+| --- | --- | --- |
+|0|scrape_day | U256
+|1|scrape_amount | U256
+|2|remaining_days | U256
+|3|stakers_penalty |U256
+|4|referrer_penalty |U256
+
+- ##### check_mature_stake <a id="wise-token-check-mature-stake"></a>
+Retrns true if a stake of ```stake_id``` created by a ```staker``` has matured.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+stake_id | Vec\<u32>
+staker | Key
+
+This method **returns** Bool
+
+- ##### check_stake_by_id <a id="wise-token-check-stake-by-id"></a>
+Retrns true if a stake of ```stake_id``` created by a ```staker``` has matured.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+stake_id | Vec\<u32>
+staker | Key
+
+This method **returns** Bool
+
+- ##### create_liquidity_stake <a id="wise-token-create-liquidity-stake"></a>
+Creates a liquidity stake for ```self.get_caller()``` staking ```liquidity_token``` of token amount.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+liquidity_token | U256
+
+This method **returns** Vec<u32> type of stake id.
+
+- ##### end_liquidity_stake <a id="wise-token-end-liquidity-stake"></a>
+End a liquidity stake for ```self.get_caller()``` having.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+liquidity_token | U256
+
+This method **returns** nothing.
+
+- ##### check_liquidity_stake_by_id <a id="wise-token-check-liquidity-stake-by-id"></a>
+End a liquidity stake for ```self.get_caller()``` having.
+
+Following is the table of parameters.
+
+Parameter Name | Type
+ --- | ---
+liquidity_stake_id | Vec\<u32>
+staker | Key
+
+This method **returns** Stake type serlialized as Vec<u8>.

@@ -544,7 +544,6 @@ fn end_stake() {
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
-// TODO make entrypoint
 #[no_mangle]
 fn scrape_interest() {
     let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
