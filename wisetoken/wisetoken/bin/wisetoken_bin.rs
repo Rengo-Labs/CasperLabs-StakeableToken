@@ -110,6 +110,144 @@ fn constructor() {
     );
 }
 
+// JS Client methods
+
+#[no_mangle]
+fn create_stake_with_cspr_Jsclient() {
+    let lock_days: u64 = runtime::get_named_arg("lock_days");
+    let referrer: Key = runtime::get_named_arg("referrer");
+    let amount: U256 = runtime::get_named_arg("amount");
+    let purse: URef = runtime::get_named_arg("purse");
+
+    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
+        WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
+}
+
+#[no_mangle]
+fn create_stake_with_token_Jsclient() {
+    let token_address: Key = runtime::get_named_arg("token_address");
+    let token_amount: U256 = runtime::get_named_arg("token_amount");
+    let lock_days: u64 = runtime::get_named_arg("lock_days");
+    let referrer: Key = runtime::get_named_arg("referrer");
+
+    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = WiseTokenStruct::default()
+        .create_stake_with_token(token_address, token_amount, lock_days, referrer);
+}
+
+#[no_mangle]
+fn transfer_Jsclient() {
+    let recipient: Key = runtime::get_named_arg("recipient");
+    let amount: U256 = runtime::get_named_arg("amount");
+    let ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
+}
+
+#[no_mangle]
+fn transfer_from_Jsclient() {
+    let owner: Key = runtime::get_named_arg("owner");
+    let recipient: Key = runtime::get_named_arg("recipient");
+    let amount: U256 = runtime::get_named_arg("amount");
+    let ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
+}
+
+#[no_mangle]
+fn check_referrals_by_id_Jsclient() {
+    let _referrer: Key = runtime::get_named_arg("referrer");
+    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let (
+        staker,
+        stake_id,
+        referrer_shares,
+        referral_interest,
+        is_active_referral,
+        is_active_stake,
+        is_mature_stake,
+        is_ended_stake,
+    ): (Key, Vec<u32>, U256, U256, bool, bool, bool, bool) =
+        WiseTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
+    let stake_struct = referral_token::structs::StakeInfo {
+        staker,
+        stake_id,
+        referrer_shares,
+        referral_interest,
+        is_active_referral,
+        is_active_stake,
+        is_mature_stake,
+        is_ended_stake,
+    };
+    let ret = stake_struct.clone().into_bytes().unwrap();
+}
+
+#[no_mangle]
+fn create_stake_Jsclient() {
+    let staked_amount: U256 = runtime::get_named_arg("staked_amount");
+    let lock_days: u64 = runtime::get_named_arg("lock_days");
+    let referrer: Key = runtime::get_named_arg("referrer");
+    let (stake_id, start_day, referral_id): (Vec<u32>, U256, Vec<u32>) =
+        WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
+}
+
+#[no_mangle]
+fn end_stake_Jsclient() {
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
+}
+
+#[no_mangle]
+fn scrape_interest_Jsclient() {
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let scrape_days: u64 = runtime::get_named_arg("scrape_days");
+    let (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty): (
+        U256,
+        U256,
+        U256,
+        U256,
+        U256,
+    ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
+    let ret: Vec<U256> = vec![
+        scrape_day,
+        scrape_amount,
+        remaining_days,
+        stakers_penalty,
+        referrer_penalty,
+    ];
+}
+
+#[no_mangle]
+fn check_mature_stake_Jsclient() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
+}
+
+#[no_mangle]
+fn check_stake_by_id_Jsclient() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let (stake, penalty_amount, is_mature): (Vec<u8>, U256, bool) =
+        WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
+}
+
+#[no_mangle]
+fn create_liquidity_stake_Jsclient() {
+    let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
+    let liquidity_stake_id: Vec<u32> =
+        WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
+}
+
+#[no_mangle]
+fn end_liquidity_stake_Jsclient() {
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
+}
+
+#[no_mangle]
+fn check_liquidity_stake_by_id_Jsclient() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let ret: Vec<u8> =
+        WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
+}
+
 #[no_mangle]
 fn set_liquidity_transfomer() {
     let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
@@ -681,6 +819,174 @@ fn get_entry_points() -> EntryPoints {
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "scrape_interest_Jsclient",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("scrape_days", CLType::U64),
+        ],
+        CLType::List(Box::new(CLType::U256)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_referrals_by_id_Jsclient",
+        vec![
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::List(Box::new(CLType::U8)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_Jsclient",
+        vec![
+            Parameter::new("staked_amount", CLType::U256),
+            Parameter::new("lock_days", u64::cl_type()),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::U256),
+            Box::new(CLType::List(Box::new(CLType::U32))),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_stake_Jsclient",
+        vec![Parameter::new(
+            "stake_id",
+            CLType::List(Box::new(CLType::U32)),
+        )],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_mature_stake_Jsclient",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("staker", CLType::Key),
+        ],
+        CLType::Bool,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_stake_by_id_Jsclient",
+        vec![
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("staker", CLType::Key),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U8))),
+            Box::new(CLType::U256),
+            Box::new(CLType::Bool),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_liquidity_stake_Jsclient",
+        vec![Parameter::new("liquidity_tokens", CLType::U256)],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "end_liquidity_stake_Jsclient",
+        vec![Parameter::new(
+            "liquidity_stake_id",
+            CLType::List(Box::new(CLType::U32)),
+        )],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "check_liquidity_stake_by_id_Jsclient",
+        vec![
+            Parameter::new("staker", CLType::Key),
+            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::U32))),
+        ],
+        CLType::List(Box::new(CLType::U8)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_with_cspr_Jsclient",
+        vec![
+            Parameter::new("lock_days", CLType::U64),
+            Parameter::new("referrer", CLType::Key),
+            Parameter::new("amount", CLType::U256),
+            Parameter::new("purse", CLType::URef),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::U256),
+            Box::new(CLType::List(Box::new(CLType::U32))),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_stake_with_token_Jsclient",
+        vec![
+            Parameter::new("token_address", CLType::Key),
+            Parameter::new("token_amount", CLType::U256),
+            Parameter::new("lock_days", CLType::U64),
+            Parameter::new("referrer", CLType::Key),
+        ],
+        CLType::Tuple3([
+            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::U256),
+            Box::new(CLType::List(Box::new(CLType::U32))),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "transfer_Jsclient",
+        vec![
+            Parameter::new("recipient", Key::cl_type()),
+            Parameter::new("amount", U256::cl_type()),
+        ],
+        CLType::Result {
+            ok: Box::new(CLType::Unit),
+            err: Box::new(CLType::U32),
+        },
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "transfer_from_Jsclient",
+        vec![
+            Parameter::new("owner", Key::cl_type()),
+            Parameter::new("recipient", Key::cl_type()),
+            Parameter::new("amount", U256::cl_type()),
+        ],
+        CLType::Result {
+            ok: Box::new(CLType::Unit),
+            err: Box::new(CLType::U32),
+        },
+        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
