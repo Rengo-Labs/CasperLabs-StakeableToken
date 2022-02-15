@@ -16,7 +16,7 @@ use casper_types::{
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use declaration_crate::Declaration;
-use erc20_crate::{self, ERC20};
+use erc20_crate::{self, data, ERC20};
 use globals_crate::Globals;
 use helper_crate::Helper;
 use liquidity_token_crate::LiquidityToken;
@@ -606,6 +606,63 @@ fn check_liquidity_stake_by_id() {
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn generate_id() {
+    let x: Key = runtime::get_named_arg("x");
+    let y: U256 = runtime::get_named_arg("y");
+    let z: u8 = runtime::get_named_arg("z");
+
+    let ret = WiseTokenStruct::default().generate_id(x, y, z);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn stakes_pagination() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let offset: U256 = runtime::get_named_arg("offset");
+    let length: U256 = runtime::get_named_arg("length");
+
+    let ret = WiseTokenStruct::default().stakes_pagination(staker, offset, length);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn referrals_pagination() {
+    let staker: Key = runtime::get_named_arg("referrer");
+    let offset: U256 = runtime::get_named_arg("offset");
+    let length: U256 = runtime::get_named_arg("length");
+
+    let ret = WiseTokenStruct::default().referrals_pagination(staker, offset, length);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn latest_stake_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let ret = WiseTokenStruct::default().latest_stake_id(staker);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn latest_referral_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let ret = WiseTokenStruct::default().latest_referrer_id(staker);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn latest_liquidity_stake_id() {
+    let staker: Key = runtime::get_named_arg("staker");
+    let ret = WiseTokenStruct::default().latest_liquidity_stake_id(staker);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn decimals() {
+    let ret = data::decimals();
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
 
@@ -624,6 +681,74 @@ fn get_entry_points() -> EntryPoints {
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "generate_id",
+        vec![
+            Parameter::new("x", CLType::Key),
+            Parameter::new("y", CLType::U256),
+            Parameter::new("z", CLType::U8),
+        ],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "stakes_pagination",
+        vec![
+            Parameter::new("staker", CLType::Key),
+            Parameter::new("length", CLType::U256),
+            Parameter::new("offset", CLType::U256),
+        ],
+        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "referrals_pagination",
+        vec![
+            Parameter::new("referrer", CLType::Key),
+            Parameter::new("length", CLType::U256),
+            Parameter::new("offset", CLType::U256),
+        ],
+        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "latest_referral_id",
+        vec![Parameter::new("staker", CLType::Key)],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "latest_stake_id",
+        vec![Parameter::new("staker", CLType::Key)],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "latest_liquidity_stake_id",
+        vec![Parameter::new("staker", CLType::Key)],
+        CLType::List(Box::new(CLType::U32)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "decimals",
+        vec![],
+        CLType::U8,
+        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
