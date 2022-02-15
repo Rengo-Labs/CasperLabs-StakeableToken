@@ -7,7 +7,7 @@ use casper_contract::{
 use casper_types::{
     bytesrepr::FromBytes,
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, ApiError, Key, RuntimeArgs, URef, U256, U512,
+    runtime_args, ApiError, Key, RuntimeArgs, URef, U128, U256, U512,
 };
 use contract_utils::{ContractContext, ContractStorage};
 
@@ -314,6 +314,100 @@ pub trait WiseToken<Storage: ContractStorage>:
         }
     }
 
+    fn get_inflation(&self, amount: U256) -> U256 {
+        let guard = declaration_crate::data::liquidity_guard_hash();
+
+        let inflation: U256 = runtime::call_contract(
+            ContractHash::from(guard.into_hash().unwrap()),
+            "get_inflation",
+            runtime_args! {
+                "amount"=>amount
+            },
+        );
+
+        inflation
+    }
+
+    fn get_amounts_out(&self, amount_in: U256, path: Vec<Key>) -> Vec<U256> {
+        let router = data::router_hash();
+        let factory = declaration_crate::data::factory_hash();
+
+        let args: RuntimeArgs = runtime_args! {
+            "factory" => factory,
+            "amount_in" => amount_in,
+            "path" => path
+        };
+
+        let amounts_out: Vec<U256> = runtime::call_contract(
+            ContractHash::from(router.into_hash().unwrap()),
+            "get_amounts_out",
+            args,
+        );
+        amounts_out
+    }
+
+    fn get_reserves(&self) -> (U128, U128, u64) {
+        let pair_hash = declaration_crate::data::pair_hash();
+        let (reserve_a, reserve_b, block_timestamp_last): (U128, U128, u64) =
+            runtime::call_contract(
+                Self::_create_hash_from_key(pair_hash),
+                "get_reserves",
+                runtime_args! {},
+            );
+        (reserve_a, reserve_b, block_timestamp_last)
+    }
+
+    fn swap_exact_tokens_for_tokens(
+        &self,
+        deadline: U256,
+        amount_in: U256,
+        amount_out_min: U256,
+        path: Vec<String>,
+        to: Key,
+    ) -> Vec<U256> {
+        let router = data::router_hash();
+
+        let ret: Vec<U256> = runtime::call_contract(
+            ContractHash::from(router.into_hash().unwrap()),
+            "swap_exact_tokens_for_tokens",
+            runtime_args! {
+                "deadline"=>deadline,
+                "amount_in"=>amount_in,
+                "amount_out_min"=>amount_out_min,
+                "path"=>path,
+                "to"=>to
+            },
+        );
+
+        ret
+    }
+
+    fn swap_exact_cspr_for_tokens(
+        &mut self,
+        deadline: U256,
+        amount_out_min: U256,
+        amount_in: U256,
+        _path: Vec<String>,
+        to: Key,
+        caller_purse: URef,
+    ) -> Vec<U256> {
+        let router = data::router_hash();
+
+        let ret: Vec<U256> = runtime::call_contract(
+            ContractHash::from(router.into_hash().unwrap()),
+            "swap_exact_cspr_for_tokens",
+            runtime_args! {
+                "deadline"=>deadline,
+                "amount_in"=>amount_in,
+                "amount_out_min"=>amount_out_min,
+                "path"=>_path,
+                "to"=>to,
+                "purse"=>caller_purse
+            },
+        );
+
+        ret
+    }
     // ************************** Modifiers *************************
 
     fn only_keeper(&self, sender: Key) -> bool {

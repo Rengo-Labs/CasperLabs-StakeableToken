@@ -12,7 +12,7 @@ use casper_types::{
     bytesrepr::ToBytes,
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
+    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U128, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use declaration_crate::Declaration;
@@ -801,6 +801,80 @@ fn decimals() {
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
+#[no_mangle]
+fn create_pair() {
+    WiseTokenStruct::default().create_pair();
+}
+
+#[no_mangle]
+fn get_inflation() {
+    let amount: U256 = runtime::get_named_arg("amount");
+    let ret: U256 = WiseTokenStruct::default().get_inflation(amount);
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_amounts_out() {
+    let path: Vec<Key> = runtime::get_named_arg("path");
+    let amount_in: U256 = runtime::get_named_arg("amount_in");
+
+    let amounts: Vec<U256> = WiseTokenStruct::default().get_amounts_out(amount_in, path);
+    runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
+}
+
+/// This function is to get the reserves like Reserve0, Reserve1 and Block Time Stamp
+///
+
+#[no_mangle]
+fn get_reserves() {
+    let (reserve0, reserve1, block_timestamp_last): (U128, U128, u64) =
+        WiseTokenStruct::default().get_reserves();
+    runtime::ret(CLValue::from_t((reserve0, reserve1, block_timestamp_last)).unwrap_or_revert());
+}
+
+#[no_mangle]
+/// Swap exact tokens for tokens.
+///
+/// Parameters-> amount_in:U256, amount_out_min:U256, path:Vec<Key>, to:Key, deadline:U256
+fn swap_exact_tokens_for_tokens() {
+    let deadline: U256 = runtime::get_named_arg("deadline");
+    let amount_in: U256 = runtime::get_named_arg("amount_in");
+    let amount_out_min: U256 = runtime::get_named_arg("amount_out_min");
+    let path: Vec<String> = runtime::get_named_arg("path");
+    let to: Key = runtime::get_named_arg("to");
+    let amounts: Vec<U256> = WiseTokenStruct::default().swap_exact_tokens_for_tokens(
+        deadline,
+        amount_in,
+        amount_out_min,
+        path,
+        to,
+    );
+    runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
+}
+
+#[no_mangle]
+/// Swap exact cspr for tokens.
+///
+/// Parameters-> amount_out_min:U256, amount_in:U256, path:Vec<Key>, to:Key, deadline:U256, purse:URef
+fn swap_exact_cspr_for_tokens() {
+    let deadline: U256 = runtime::get_named_arg("deadline");
+    let amount_out_min: U256 = runtime::get_named_arg("amount_out_min");
+    let amount_in: U256 = runtime::get_named_arg("amount_in");
+    let path: Vec<String> = runtime::get_named_arg("path");
+    let to: Key = runtime::get_named_arg("to");
+    let purse: URef = runtime::get_named_arg("purse");
+
+    let amounts: Vec<U256> = WiseTokenStruct::default().swap_exact_cspr_for_tokens(
+        deadline,
+        amount_out_min,
+        amount_in,
+        path,
+        to,
+        purse,
+    );
+    runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
+}
+
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
 
@@ -819,6 +893,74 @@ fn get_entry_points() -> EntryPoints {
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "create_pair",
+        vec![],
+        <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_inflation",
+        vec![Parameter::new("amount", CLType::U256)],
+        CLType::U256,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_amounts_out",
+        vec![
+            Parameter::new("amount_in", U256::cl_type()),
+            Parameter::new("path", CLType::List(Box::new(Key::cl_type()))),
+        ],
+        CLType::List(Box::new(U256::cl_type())),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_reserves",
+        vec![],
+        CLType::Tuple3([
+            Box::new(CLType::U128),
+            Box::new(CLType::U128),
+            Box::new(u64::cl_type()),
+        ]),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        String::from("swap_exact_tokens_for_tokens"),
+        vec![
+            Parameter::new("amount_in", CLType::U256),
+            Parameter::new("amount_out_min", CLType::U256),
+            Parameter::new("path", CLType::List(Box::new(String::cl_type()))),
+            Parameter::new("to", CLType::Key),
+            Parameter::new("deadline", CLType::U256),
+        ],
+        CLType::List(Box::new(CLType::U256)),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+
+    entry_points.add_entry_point(EntryPoint::new(
+        String::from("swap_exact_cspr_for_tokens"),
+        vec![
+            Parameter::new("amount_out_min", CLType::U256),
+            Parameter::new("amount_in", CLType::U256),
+            Parameter::new("path", CLType::List(Box::new(String::cl_type()))),
+            Parameter::new("to", CLType::Key),
+            Parameter::new("deadline", CLType::U256),
+            Parameter::new("purse", CLType::URef),
+        ],
+        CLType::List(Box::new(CLType::U256)),
+        EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
 
