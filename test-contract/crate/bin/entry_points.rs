@@ -24,7 +24,7 @@ use contract_utils::{set_key, ContractContext, OnChainContractStorage};
 
 pub mod mappings;
 
-// use stable_usd::StableUSD;
+// use stable_usd_equivalent::StableUSD;
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use helper_crate::Helper;
@@ -334,14 +334,14 @@ fn get_wcspr() {
 }
 
 #[no_mangle]
-fn set_stable_usd() {
-    let value: Key = runtime::get_named_arg("stable_usd");
-    Declaration::set_stable_usd(&Test::default(), value);
+fn set_stable_usd_equivalent() {
+    let value: Key = runtime::get_named_arg("stable_usd_equivalent");
+    Declaration::set_stable_usd_equivalent(&Test::default(), value);
 }
 
 #[no_mangle]
-fn get_stable_usd() {
-    let ret: Key = Declaration::get_stable_usd(&Test::default());
+fn get_stable_usd_equivalent() {
+    let ret: Key = Declaration::get_stable_usd_equivalent(&Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -622,8 +622,8 @@ fn remove_critical_mass() {
 }
 
 #[no_mangle]
-fn referral_token_get_stable_usd() {
-    let ret: U256 = ReferralToken::get_stable_usd(&mut Test::default());
+fn referral_token_get_stable_usd_equivalent() {
+    let ret: U256 = ReferralToken::get_stable_usd_equivalent(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -1040,14 +1040,14 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "set_stable_usd",
-        vec![Parameter::new("stable_usd", CLType::Key)],
+        "set_stable_usd_equivalent",
+        vec![Parameter::new("stable_usd_equivalent", CLType::Key)],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_stable_usd",
+        "get_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -1410,7 +1410,7 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "referral_token_get_stable_usd",
+        "referral_token_get_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,

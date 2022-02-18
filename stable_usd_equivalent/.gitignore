@@ -1,0 +1,9 @@
+/target
+/.history
+/stable_usd_equivalent/target
+/stable_usd_equivalent/.history
+/stable_usd_equivalent/Cargo.lock
+/stable_usd_equivalent_tests/target
+/stable_usd_equivalent_tests/.history
+/stable_usd_equivalent_tests/wasm/*
+Cargo.lock

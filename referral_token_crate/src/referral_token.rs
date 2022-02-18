@@ -168,18 +168,18 @@ pub trait ReferralToken<Storage: ContractStorage>:
             return U256::from(_current_wise_day);
         }
     }
-    fn get_stable_usd(&self) -> U256 {
-        Self::_get_stable_usd(self)
+    fn get_stable_usd_equivalent(&self) -> U256 {
+        Self::_get_stable_usd_equivalent(self)
     }
-    fn _get_stable_usd(&self) -> U256 {
-        let stable_usd = Declaration::get_stable_usd(self);
+    fn _get_stable_usd_equivalent(&self) -> U256 {
+        let stable_usd_equivalent = Declaration::get_stable_usd_equivalent(self);
 
-        let stable_usd: U256 = runtime::call_contract(
-            Self::convert_to_contract_hash(stable_usd),
-            "get_stable_usd",
+        let stable_usd_equivalent: U256 = runtime::call_contract(
+            Self::convert_to_contract_hash(stable_usd_equivalent),
+            "get_stable_usd_equivalent",
             runtime_args! {},
         );
-        stable_usd
+        stable_usd_equivalent
     }
     fn referrer_interest(&self, _referral_id: Vec<u32>, _scrape_days: U256) {
         Self::_referrer_interest(self, self.get_caller(), _referral_id, _scrape_days);

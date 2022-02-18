@@ -4,7 +4,7 @@
 extern crate alloc;
 use alloc::{collections::BTreeSet, format, vec};
 
-use stable_usd::{self, StableUSD};
+use stable_usd_equivalent::{self, StableUSD};
 use casper_contract::{
     contract_api::{runtime, storage},
     unwrap_or_revert::UnwrapOrRevert,
@@ -34,7 +34,7 @@ impl StableUSDStruct {
         wise: Key,
         scspr: Key,
         wcspr: Key,
-        busd: Key,
+        stable_usd: Key,
         router: Key,
     ) {
         StableUSD::init(
@@ -44,21 +44,21 @@ impl StableUSDStruct {
             wise,
             scspr,
             wcspr,
-            busd,
+            stable_usd,
             router,
         );
     }
 }
 
 #[no_mangle]
-fn get_stable_usd() {
-    let ret: U256 = StableUSDStruct::default().get_stable_usd();
+fn get_stable_usd_equivalent() {
+    let ret: U256 = StableUSDStruct::default().get_stable_usd_equivalent();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
-fn update_stable_usd() {
-    StableUSDStruct::default().update_stable_usd();
+fn update_stable_usd_equivalent() {
+    StableUSDStruct::default().update_stable_usd_equivalent();
 }
 
 #[no_mangle]
@@ -69,7 +69,7 @@ fn constructor() {
     let wise: Key = runtime::get_named_arg("wise");
     let scspr: Key = runtime::get_named_arg("scspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
-    let busd: Key = runtime::get_named_arg("busd");
+    let stable_usd: Key = runtime::get_named_arg("stable_usd");
     let router: Key = runtime::get_named_arg("router");
 
     StableUSDStruct::default().constructor(
@@ -78,7 +78,7 @@ fn constructor() {
         wise,
         scspr,
         wcspr,
-        busd,
+        stable_usd,
         router,
     );
 }
@@ -93,7 +93,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("wise", Key::cl_type()),
             Parameter::new("scspr", Key::cl_type()),
             Parameter::new("wcspr", Key::cl_type()),
-            Parameter::new("busd", Key::cl_type()),
+            Parameter::new("stable_usd", Key::cl_type()),
             Parameter::new("router", Key::cl_type()),
         ],
         <()>::cl_type(),
@@ -102,7 +102,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "get_stable_usd",
+        "get_stable_usd_equivalent",
         vec![],
         CLType::U256,
         EntryPointAccess::Public,
@@ -110,7 +110,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "update_stable_usd",
+        "update_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -130,7 +130,7 @@ pub extern "C" fn call() {
     let wise: Key = runtime::get_named_arg("wise");
     let scspr: Key = runtime::get_named_arg("scspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
-    let busd: Key = runtime::get_named_arg("busd");
+    let stable_usd: Key = runtime::get_named_arg("stable_usd");
     let router: Key = runtime::get_named_arg("router");
 
     // Prepare constructor args
@@ -140,7 +140,7 @@ pub extern "C" fn call() {
         "wise" => wise,
         "scspr" => scspr,
         "wcspr" => wcspr,
-        "busd" => busd,
+        "stable_usd" => stable_usd,
         "router"=>router,
     };
 

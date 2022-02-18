@@ -24,13 +24,13 @@ Implementation of `Transfer Helper`, `Stable USD`, `Liquidity Guard` and `Wise T
 - [Stable USD](#stable-usd)
   - [Deployment](#deploying-stable-usd-contract-manually)
   - [Entry Point methods](#stable-usd-entry-point-methods)
-    - [```get_stable_usd```](#stable-usd-get-stable-usd)
-    - [```update_stable_usd```](#stable-usd-update-stable-usd)
+    - [```get_stable_usd_equivalent```](#stable-usd-get-stable-usd)
+    - [```update_stable_usd_equivalent```](#stable-usd-update-stable-usd)
 - [Wise Token](#wise-token)
   - [Deployment](#deploying-wise-token-contract-manually)
   - [Entry Point methods](#wise-token-entry-point-methods)
     - [```set_liquidity_transfomer```](#wise-token-set-liquidity-transfomer)
-    - [```set_busd```](#wise-token-set-busd)
+    - [```set_stable_usd```](#wise-token-set-stable_usd)
     - [```renounce_keeper```](#wise-token-renounce-keeper)
     - [```change_keeper```](#wise-token-change-keeper)
     - [```mint_supply```](#wise-token-mint-supply)
@@ -56,7 +56,7 @@ Implementation of `Transfer Helper`, `Stable USD`, `Liquidity Guard` and `Wise T
     - [```current_wise_day```](#wise-token-current-wise-day)
     - [```liquidity_guard_trigger```](#wise-token-liquidity-guard-trigger)
     - [```manual_daily_snapshot```](#wise-token-manual-daily-snapshot)
-    - [```get_stable_usd```](#wise-token-get-stable-usd)
+    - [```get_stable_usd_equivalent```](#wise-token-get-stable-usd)
     - [```referrer_interest```](#wise-token-referrer-interest)
     - [```referrer_interest_bulk```](#wise-token-referrer-interest-bulk)
     - [```check_referrals_by_id```](#wise-token-check-referrals-by-id)
@@ -275,7 +275,7 @@ sudo casper-client put-deploy \
     --session-arg="wise:string='wise-token-contract-hash'"\
     --session-arg="scspr:string='scspr_contract_hash'"\
     --session-arg="wcspr:string='wcspr_contract_hash'"\
-    --session-arg="busd:string='busd_contract_hash'" \
+    --session-arg="stable_usd:string='stable_usd_contract_hash'" \
     --session-arg="router:string='router_contract_hash'"
 ```
 
@@ -283,16 +283,16 @@ sudo casper-client put-deploy \
 
 Following are the Stable USD's entry point methods.
 
-- ##### get_stable_usd <a id="stable-usd-get-stable-usd"></a>
-Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest Stable USD value.
+- ##### get_stable_usd_equivalent <a id="stable-usd-get-stable-usd"></a>
+Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, stable_usd_contract_hash]* set at deployment,calculates the latest Stable USD value.
 Parameter Name | Type
 |---|--- |
 | --- | --- |
 
 This method **returns** U256.
 
-- ##### update_stable_usd <a id="stable-usd-update-stable-usd"></a>
-Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, busd_contract_hash]* set at deployment,calculates the latest Stable USD value and sets in to contract global state as named key.
+- ##### update_stable_usd_equivalent <a id="stable-usd-update-stable-usd"></a>
+Based on the `path`, a vector of contract hashes of length 4 that is *[wise_contract_hash, scspr_contract_hash, wcspr_contract_hash, stable_usd_contract_hash]* set at deployment,calculates the latest Stable USD value and sets in to contract global state as named key.
 <br> Contract reverts if inflation is assigned already.
 Parameter Name | Type
 |---|--- |
@@ -338,7 +338,7 @@ Parameter Name | Type
 
 This method **returns** U256.
 
-- ##### set_busd <a id="wise-token-update-set-busd"></a>
+- ##### set_stable_usd <a id="wise-token-update-set-stable_usd"></a>
 Sets Stable USD's contract hash to Wise token contract's global state.
 Parameter Name | Type
 |---|--- |
@@ -653,7 +653,7 @@ update_day|u64
 
 This method **returns** nothing.
 
-- ##### get_stable_usd <a id="wise-token-get-stable-usd"></a>
+- ##### get_stable_usd_equivalent <a id="wise-token-get-stable-usd"></a>
 Returns the value of stable usd.
 
 Following is the table of parameters.

@@ -1,5 +1,5 @@
 [package]
-name = "stable_usd_tests"
+name = "stable_usd_equivalent_tests"
 version = "0.1.0"
 authors = ["Muhammad Talha Dar <muhammadtalhadar@scytalelabs.com>"]
 edition = "2018"

@@ -15,10 +15,10 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         wise: Key,
         scspr: Key,
         wcspr: Key,
-        busd: Key,
+        stable_usd: Key,
         router: Key,
     ) {
-        data::set_busd_hash(busd);
+        data::set_stable_usd_hash(stable_usd);
         data::set_self_hash(contract_hash);
         data::set_package_hash(package_hash);
         data::set_scspr_hash(scspr);
@@ -26,19 +26,19 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_wise_hash(wise);
         data::set_router_hash(router);
         data::set_decimals(U256::from(9)); // also sets yodas_per_wise
-        data::set_path(wise, scspr, wcspr, busd);
-        data::set_latest_stable_usd(0.into());
+        data::set_path(wise, scspr, wcspr, stable_usd);
+        data::set_latest_stable_usd_equivalent(0.into());
     }
 
-    fn update_stable_usd(&self) {
-        let latest_stable_usd: U256 = self._get_stable_usd();
-        data::set_latest_stable_usd(latest_stable_usd);
+    fn update_stable_usd_equivalent(&self) {
+        let latest_stable_usd_equivalent: U256 = self._get_stable_usd_equivalent();
+        data::set_latest_stable_usd_equivalent(latest_stable_usd_equivalent);
     }
 
-    fn get_stable_usd(&self) -> U256 {
-        self._get_stable_usd()
+    fn get_stable_usd_equivalent(&self) -> U256 {
+        self._get_stable_usd_equivalent()
     }
-    fn _get_stable_usd(&self) -> U256 {
+    fn _get_stable_usd_equivalent(&self) -> U256 {
         let yodas_per_wise: U256 = data::yodas_per_wise();
         let path: Vec<Key> = data::get_path();
         let results: Vec<U256> = runtime::call_contract(
@@ -52,7 +52,7 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         if results.len() > 0 {
             return results[3];
         } else {
-            return data::latest_stable_usd();
+            return data::latest_stable_usd_equivalent();
         }
     }
     // ============== Helper functions ==============================//

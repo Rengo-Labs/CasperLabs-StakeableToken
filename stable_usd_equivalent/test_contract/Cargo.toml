@@ -8,7 +8,7 @@ casper-contract = "=1.3.2"
 casper-types = "=1.3.2"
 
 [[bin]]
-name = "stable_usd_test"
+name = "stable_usd_equivalent_test"
 path = "src/main.rs"
 bench = false
 doctest = false

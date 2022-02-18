@@ -90,11 +90,11 @@ pub fn set_scspr(scspr: Key) {
     set_key(SCSPR_CONTRACT_HASH, scspr);
 }
 
-pub fn stable_usd() -> Key {
-    get_key(STABLE_USD_CONTRACT_HASH).unwrap_or_revert()
+pub fn stable_usd_equivalent() -> Key {
+    get_key(STABLE_USD_EQUIVALENT_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_stable_usd(stable_usd: Key) {
-    set_key(STABLE_USD_CONTRACT_HASH, stable_usd);
+pub fn set_stable_usd_equivalent(stable_usd_equivalent: Key) {
+    set_key(STABLE_USD_EQUIVALENT_CONTRACT_HASH, stable_usd_equivalent);
 }
 
 pub fn uniswap_pair() -> Key {

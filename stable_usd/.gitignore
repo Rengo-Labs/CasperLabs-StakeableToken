@@ -1,9 +1,0 @@
-/target
-/.history
-/stable_usd/target
-/stable_usd/.history
-/stable_usd/Cargo.lock
-/stable_usd_tests/target
-/stable_usd_tests/.history
-/stable_usd_tests/wasm/*
-Cargo.lock

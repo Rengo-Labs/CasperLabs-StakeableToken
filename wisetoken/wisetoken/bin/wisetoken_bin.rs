@@ -257,9 +257,9 @@ fn set_liquidity_transfomer() {
 }
 
 #[no_mangle]
-fn set_stable_usd() {
+fn set_stable_usd_equivalent() {
     let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
-    WiseToken::set_stable_usd(&WiseTokenStruct::default(), equalizer_address);
+    WiseToken::set_stable_usd_equivalent(&WiseTokenStruct::default(), equalizer_address);
 }
 
 #[no_mangle]
@@ -607,8 +607,8 @@ fn manual_daily_snapshot_point() {
 }
 
 #[no_mangle]
-fn get_stable_usd() {
-    let ret: U256 = <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd(
+fn get_stable_usd_equivalent() {
+    let ret: U256 = <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd_equivalent(
         &WiseTokenStruct::default(),
     );
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
@@ -1254,7 +1254,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "get_stable_usd",
+        "get_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -1369,7 +1369,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "set_stable_usd",
+        "set_stable_usd_equivalent",
         vec![Parameter::new("equalizer_address", CLType::Key)],
         <()>::cl_type(),
         EntryPointAccess::Public,

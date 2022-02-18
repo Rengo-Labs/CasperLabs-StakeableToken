@@ -34,19 +34,19 @@ fn set_key_by_name() {
 }
 
 #[no_mangle]
-fn get_stable_usd() {
-    let stable_usd: ContractHash = get_key("stable_usd");
+fn get_stable_usd_equivalent() {
+    let stable_usd_equivalent: ContractHash = get_key("stable_usd_equivalent");
 
     let ret: U256 =
-        runtime::call_contract(stable_usd, "get_stable_usd", runtime_args! {});
-    set_key("get_stable_usd_result", ret);
+        runtime::call_contract(stable_usd_equivalent, "get_stable_usd_equivalent", runtime_args! {});
+    set_key("get_stable_usd_equivalent_result", ret);
 }
 
 #[no_mangle]
-fn update_stable_usd() {
-    let stable_usd: ContractHash = get_key(&"stable_usd");
+fn update_stable_usd_equivalent() {
+    let stable_usd_equivalent: ContractHash = get_key(&"stable_usd_equivalent");
 
-    let () = runtime::call_contract(stable_usd, "update_stable_usd", runtime_args! {});
+    let () = runtime::call_contract(stable_usd_equivalent, "update_stable_usd_equivalent", runtime_args! {});
 }
 
 #[no_mangle]
@@ -172,14 +172,14 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("stable_usd", Key::cl_type()),
+            Parameter::new("stable_usd_equivalent", Key::cl_type()),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new("constructor")]),
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_stable_usd",
+        "get_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -196,7 +196,7 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "update_stable_usd",
+        "update_stable_usd_equivalent",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -227,10 +227,10 @@ fn get_entry_points() -> EntryPoints {
 fn constructor() {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let stable_usd: Key = runtime::get_named_arg("stable_usd");
+    let stable_usd_equivalent: Key = runtime::get_named_arg("stable_usd_equivalent");
     set_key(
-        "stable_usd",
-        ContractHash::from(stable_usd.into_hash().unwrap_or_default()),
+        "stable_usd_equivalent",
+        ContractHash::from(stable_usd_equivalent.into_hash().unwrap_or_default()),
     );
     set_key("contract_hash", contract_hash);
     set_key("package_hash", package_hash);
@@ -248,14 +248,14 @@ pub extern "C" fn call() {
     let (package_hash, access_token) = storage::create_contract_package_at_hash();
     let (contract_hash, _): (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
-    let stable_usd: Key = runtime::get_named_arg("stable_usd");
+    let stable_usd_equivalent: Key = runtime::get_named_arg("stable_usd_equivalent");
 
     // Get parameters and pass it to the constructors
     // Prepare constructor args
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
-        "stable_usd"=>stable_usd
+        "stable_usd_equivalent"=>stable_usd_equivalent
         // TRANSFER_HELPER_HASH_RUNTIME_ARG_NAME=>transfer_helper
     };
 

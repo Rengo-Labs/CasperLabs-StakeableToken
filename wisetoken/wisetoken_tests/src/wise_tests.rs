@@ -36,28 +36,28 @@ fn deploy_erc20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> 
     )
 }
 
-fn deploy_stable_usd(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract {
+fn deploy_stable_usd_equivalent(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract {
     let router: Key = wise.query_named_key("router_contract_hash".to_string());
     let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
     let wcspr: Key = wise.query_named_key("wcspr_contract_hash".to_string());
-    // since busd is an ERC20 token, using casper's erc20 as busd
-    let busd: TestContract = deploy_erc20(&env, owner, "busd stable coin", "busd");
-    // deploy stable_usd eq. contract
-    let stable_usd = TestContract::new(
+    // since stable_usd is an ERC20 token, using casper's erc20 as stable_usd
+    let stable_usd: TestContract = deploy_erc20(&env, owner, "stable_usd stable coin", "stable_usd");
+    // deploy stable_usd_equivalent eq. contract
+    let stable_usd_equivalent = TestContract::new(
         &env,
-        "stable_usd.wasm",
-        "stable_usd",
+        "stable_usd_equivalent.wasm",
+        "stable_usd_equivalent",
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
             "scspr" => scspr,
             "wcspr" => wcspr,
-            "busd" => Key::Hash(busd.contract_hash()),
+            "stable_usd" => Key::Hash(stable_usd.contract_hash()),
             "router" => router
         },
     );
 
-    stable_usd
+    stable_usd_equivalent
 }
 
 fn deploy_pair_contract(
@@ -363,12 +363,12 @@ fn test_wise_deploy() {
 }
 
 #[test]
-fn test_stable_usd_deploy() {
+fn test_stable_usd_equivalent_deploy() {
     let (env, owner, wise_contract, _, _, _, _, _, _, _) = deploy_wise();
-    let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
+    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, wise_contract);
 
     assert_ne!(
-        Key::Hash(stable_usd_contract.contract_hash()),
+        Key::Hash(stable_usd_equivalent_contract.contract_hash()),
         Key::Hash([0u8; 32])
     );
 }
@@ -380,13 +380,13 @@ fn set_liquidity_transfomer() {
 }
 
 #[test]
-fn set_stable_usd() {
+fn set_stable_usd_equivalent() {
     let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
-    let stable_usd_contract = deploy_stable_usd(env, owner, wise_contract);
+    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, wise_contract);
 
-    test_contract.set_stable_usd(
+    test_contract.set_stable_usd_equivalent(
         Sender(owner),
-        Key::Hash(stable_usd_contract.contract_hash()),
+        Key::Hash(stable_usd_equivalent_contract.contract_hash()),
     );
 }
 

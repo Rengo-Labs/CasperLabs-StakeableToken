@@ -21,25 +21,25 @@ use alloc::{
 
 pub const CURRENT_WISE_DAY: u64 = 5; // as is set by test-env
 
-fn deploy_stable_usd(
+fn deploy_stable_usd_equivalent(
     env: &TestEnv,
     owner: AccountHash,
     wise: &TestContract,
     scspr: &TestContract,
     wcspr: &TestContract,
-    busd: &TestContract,
+    stable_usd: &TestContract,
     router: &TestContract,
 ) -> TestContract {
     TestContract::new(
         &env,
-        "stable_usd.wasm",
-        "stable_usd",
+        "stable_usd_equivalent.wasm",
+        "stable_usd_equivalent",
         Sender(owner),
         runtime_args! {
             "wise" => Key::Hash(wise.contract_hash()),
             "scspr" => Key::Hash(scspr.contract_hash()),
             "wcspr" => Key::Hash(wcspr.contract_hash()),
-            "busd" => Key::Hash(busd.contract_hash()),
+            "stable_usd" => Key::Hash(stable_usd.contract_hash()),
             "router"=>Key::Hash(router.contract_hash()),
         },
     )
@@ -669,29 +669,29 @@ fn test_deploy() {
 // }
 
 // // #[test]
-// fn test_get_stable_usd() {
+// fn test_get_stable_usd_equivalent() {
 //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-//     let stable_usd: Key = Key::Account(owner);
+//     let stable_usd_equivalent: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_stable_usd",
+//         "set_stable_usd_equivalent",
 //         runtime_args! {
-//             "stable_usd" => stable_usd
+//             "stable_usd_equivalent" => stable_usd_equivalent
 //         },
 //     );
-//     test.call_contract(Sender(owner), "get_stable_usd", runtime_args! {});
+//     test.call_contract(Sender(owner), "get_stable_usd_equivalent", runtime_args! {});
 //     let ret: Key = TestInstance::instance(test).result();
 // }
 
 // // #[test]
-// fn test_set_stable_usd() {
+// fn test_set_stable_usd_equivalent() {
 //     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-//     let stable_usd: Key = Key::Account(owner);
+//     let stable_usd_equivalent: Key = Key::Account(owner);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_stable_usd",
+//         "set_stable_usd_equivalent",
 //         runtime_args! {
-//             "stable_usd" => stable_usd
+//             "stable_usd_equivalent" => stable_usd_equivalent
 //         },
 //     );
 // }
@@ -2010,7 +2010,7 @@ fn test_remove_critical_mass() {
 
 // Cannot test till StableUSD contract is tested
 // // #[test]
-// // fn test_referral_token_get_stable_usd() {
+// // fn test_referral_token_get_stable_usd_equivalent() {
 // //     let (
 //         env,
 //         owner,
@@ -2026,7 +2026,7 @@ fn test_remove_critical_mass() {
 //         erc20,
 //         scspr,
 //     ) = deploy();
-// //     test.call_contract(Sender(owner), "get_stable_usd", runtime_args! {});
+// //     test.call_contract(Sender(owner), "get_stable_usd_equivalent", runtime_args! {});
 // //     let ret: U256 = TestInstance::instance(test).result();
 // // }
 
@@ -2704,7 +2704,7 @@ fn test_snapshot_set_struct_from_key() {
 // //     );
 // // }
 
-// // NOTE Requires hardcoding stable_usd in create_stake as stable_usd is not setup to execute
+// // NOTE Requires hardcoding stable_usd_equivalent in create_stake as stable_usd_equivalent is not setup to execute
 // // #[test]
 // fn test_create_stake() {
 //     let (
@@ -2722,13 +2722,13 @@ fn test_snapshot_set_struct_from_key() {
 //         erc20,
 //         scspr,
 //     ) = deploy();
-//     // init stable_usd
-//     let stable_usd = deploy_stable_usd(&env, owner, &wcspr, &scspr, &wcspr, &erc20, &uniswap_router);
+//     // init stable_usd_equivalent
+//     let stable_usd_equivalent = deploy_stable_usd_equivalent(&env, owner, &wcspr, &scspr, &wcspr, &erc20, &uniswap_router);
 //     test.call_contract(
 //         Sender(owner),
-//         "set_stable_usd",
+//         "set_stable_usd_equivalent",
 //         runtime_args! {
-//             "stable_usd" => Key::Hash(stable_usd.contract_hash())
+//             "stable_usd_equivalent" => Key::Hash(stable_usd_equivalent.contract_hash())
 //         },
 //     );
 //     // need to create pair and add liquidity for this test

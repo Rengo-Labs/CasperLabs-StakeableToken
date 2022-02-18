@@ -19,20 +19,20 @@ impl StableUSDInstance {
         wise: Key,
         scspr: Key,
         wcspr: Key,
-        busd: Key,
+        stable_usd: Key,
         router: Key,
         factory: Key,
     ) -> TestContract {
         TestContract::new(
             env,
-            "stable_usd.wasm",
+            "stable_usd_equivalent.wasm",
             contract_name,
             sender,
             runtime_args! {
                   "wise" =>wise,
                   "scspr" =>scspr,
                   "wcspr"=>wcspr,
-                  "busd" =>busd,
+                  "stable_usd" =>stable_usd,
                   "router"=>router,
                   "factory" =>factory,
             },
@@ -43,14 +43,14 @@ impl StableUSDInstance {
         StableUSDInstance(contract)
     }
 
-    pub fn get_stable_usd(&self, sender: Sender) {
+    pub fn get_stable_usd_equivalent(&self, sender: Sender) {
         self.0
-            .call_contract(sender, "get_stable_usd", runtime_args! {});
+            .call_contract(sender, "get_stable_usd_equivalent", runtime_args! {});
     }
 
-    pub fn update_stable_usd(&self, sender: Sender) {
+    pub fn update_stable_usd_equivalent(&self, sender: Sender) {
         self.0
-            .call_contract(sender, "update_stable_usd", runtime_args! {});
+            .call_contract(sender, "update_stable_usd_equivalent", runtime_args! {});
     }
 
     pub fn balance_of<T: Into<Key>>(&self, token: &TestContract, account: T) -> U256 {
@@ -122,14 +122,14 @@ impl StableUSDInstance {
             },
         );
     }
-    pub fn proxy(env: &TestEnv, sender: Sender, stable_usd: Key) -> TestContract {
+    pub fn proxy(env: &TestEnv, sender: Sender, stable_usd_equivalent: Key) -> TestContract {
         TestContract::new(
             env,
-            "stable_usd_test.wasm",
+            "stable_usd_equivalent_test.wasm",
             "proxy_contract",
             sender,
             runtime_args! {
-                "stable_usd"=>stable_usd
+                "stable_usd_equivalent"=>stable_usd_equivalent
             },
         )
     }
@@ -174,14 +174,14 @@ impl StableUSDInstance {
             .query_named_key(key_names::SELF_CONTRACT_HASH.to_string())
     }
 
-    pub fn get_stable_usd_result(&self) -> U256 {
+    pub fn get_stable_usd_equivalent_result(&self) -> U256 {
         self.0
-            .query_named_key("get_stable_usd_result".to_string())
+            .query_named_key("get_stable_usd_equivalent_result".to_string())
     }
 
-    pub fn get_update_stable_usd_result(&self) -> U256 {
+    pub fn get_update_stable_usd_equivalent_result(&self) -> U256 {
         self.0
-            .query_named_key(key_names::STABLE_USD_LATEST_STABLE_USD.to_string())
+            .query_named_key(key_names::STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT.to_string())
     }
 }
 

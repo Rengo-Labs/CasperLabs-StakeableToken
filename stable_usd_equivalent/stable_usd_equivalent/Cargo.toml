@@ -1,5 +1,5 @@
 [package]
-name = "stable_usd"
+name = "stable_usd_equivalent"
 version = "0.1.0"
 authors = ["Muhammad Talha Dar <muhammadtalhadar@scytalelabs.com>"]
 edition = "2018"
@@ -15,8 +15,8 @@ renvm-sig = "0.1.1"
 hex = "0.4.3"
 
 [[bin]]
-name = "stable_usd"
-path = "bin/stable_usd_bin.rs"
+name = "stable_usd_equivalent"
+path = "bin/stable_usd_equivalent_bin.rs"
 bench = false
 doctest = false
 test = false

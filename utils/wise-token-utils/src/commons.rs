@@ -7,8 +7,8 @@ pub mod key_names {
     pub const LIQUIDITY_GUARD_CONTRACT_HASH: &str = "liquidity_guard_contract_hash";
     pub const WCSPR_CONTRACT_HASH: &str = "wcspr_contract_hash";
     pub const SCSPR_CONTRACT_HASH: &str = "scspr_contract_hash";
-    pub const BUSD_CONTRACT_HASH: &str = "busd_contract_hash";
     pub const STABLE_USD_CONTRACT_HASH: &str = "stable_usd_contract_hash";
+    pub const STABLE_USD_EQUIVALENT_CONTRACT_HASH: &str = "stable_usd_equivalent_contract_hash";
     pub const UNISWAP_PAIR_CONTRACT_HASH: &str = "uniswap_pair_contract_hash";
     pub const SELF_PACKAGE_HASH: &str = "package_hash";
     pub const SELF_CONTRACT_HASH: &str = "self_hash";
@@ -57,9 +57,9 @@ pub mod key_names {
     // key names from staking token
     pub const STAKING_TOKEN_OWNER: &str = "staking_token_owner";
 
-    // key names fro STABLE_USD
-    pub const STABLE_USD_LATEST_STABLE_USD: &str = "stable_usd_latest_stable_usd";
-    pub const STABLE_USD_YODAS_PER_WISE: &str = "stable_usd_yodas_per_wise";
+    // key names fro STABLE_USD_EQUIVALENT
+    pub const STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT: &str = "stable_usd_equivalent_latest_stable_usd_equivalent";
+    pub const STABLE_USD_EQUIVALENT_YODAS_PER_WISE: &str = "stable_usd_equivalent_yodas_per_wise";
 
     // key names from transfer invoker
     pub const TRANSFER_HELPER_TRANSFER_INVOKER: &str = "transfer_helper_transfer_invoker";

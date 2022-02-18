@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "stable_usd",
-    "stable_usd_tests",
+    "stable_usd_equivalent",
+    "stable_usd_equivalent_tests",
     "test_contract"
 ]
 

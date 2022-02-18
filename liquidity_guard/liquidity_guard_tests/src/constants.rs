@@ -80,10 +80,10 @@ pub const ERC20_TOKEN_CONTRACT_KEY_NAME: &str = "erc20_token_contract";
 // pub const WCSPR_HASH_RUNTIME_ARG_NAME: &str = "wcspr";
 
 // rcontract info
-pub const CONTRACT_NAME: &str = "stable_usd";
-pub const CONTRACT_WASM_NAME: &str = "stable_usd.wasm";
+pub const CONTRACT_NAME: &str = "stable_usd_equivalent";
+pub const CONTRACT_WASM_NAME: &str = "stable_usd_equivalent.wasm";
 pub const PROXY_CONTRACT_NAME: &str = "proxy_contract";
-pub const PROXY_CONTRACT_WASM_NAME: &str = "stable_usd_test.wasm";
+pub const PROXY_CONTRACT_WASM_NAME: &str = "stable_usd_equivalent_test.wasm";
 
 // relating to contracty deployment
 pub const PACKAGE_HASH_KEY_NAME: &str = "package_hash";

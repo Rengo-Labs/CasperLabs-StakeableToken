@@ -157,10 +157,10 @@ pub trait StakingToken<Storage: ContractStorage>:
             is_active: false,
         };
 
-        // NOTE: for unit testing, hard code stable_usd with non zero value
-        let stable_usd: U256 = ReferralToken::get_stable_usd(self);
+        // NOTE: for unit testing, hard code stable_usd_equivalent with non zero value
+        let stable_usd_equivalent: U256 = ReferralToken::get_stable_usd_equivalent(self);
 
-        new_stake.dai_equivalent = (stable_usd
+        new_stake.dai_equivalent = (stable_usd_equivalent
             .checked_mul(new_stake.staked_amount)
             .unwrap_or_revert())
         .checked_div(constants.yodas_per_wise)

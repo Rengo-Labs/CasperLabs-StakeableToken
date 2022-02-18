@@ -44,10 +44,10 @@ impl WiseTestInstance {
         );
     }
 
-    pub fn set_stable_usd(&self, owner: Sender, equalizer_address: Key) {
+    pub fn set_stable_usd_equivalent(&self, owner: Sender, equalizer_address: Key) {
         self.0.call_contract(
             owner,
-            "set_stable_usd",
+            "set_stable_usd_equivalent",
             runtime_args! {
                 "equalizer_address" => equalizer_address
             },
