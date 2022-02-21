@@ -2,16 +2,26 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::{boxed::Box, collections::BTreeSet, format, string::String, vec, vec::Vec};
+use alloc::{
+    boxed::Box,
+    collections::BTreeSet,
+    fmt::{Debug, Display},
+    format,
+    str::FromStr,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 
 use casper_contract::{
     contract_api::{runtime, storage},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
+    bytesrepr::FromBytes,
     bytesrepr::ToBytes,
     contracts::{ContractHash, ContractPackageHash},
-    runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
+    runtime_args, ApiError, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
     EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U128, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
@@ -24,7 +34,11 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
-use wise_token_utils::referral_token;
+use wise_token_utils::{
+    declaration,
+    helpers::{typecast_from_string, typecast_to_string},
+    referral_token,
+};
 use wisetoken::{self, WiseToken};
 
 #[derive(Default)]
@@ -119,7 +133,7 @@ fn create_stake_with_cspr_Jsclient() {
     let amount: U256 = runtime::get_named_arg("amount");
     let purse: URef = runtime::get_named_arg("purse");
 
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
+    let (_stake_id, _start_day, _referrer_id): (Vec<u32>, U256, Vec<u32>) =
         WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
 }
 
@@ -130,15 +144,20 @@ fn create_stake_with_token_Jsclient() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
 
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = WiseTokenStruct::default()
-        .create_stake_with_token(token_address, token_amount, lock_days, referrer);
+    let (_stake_id, _start_day, _referrer_id): (Vec<u32>, U256, Vec<u32>) =
+        WiseTokenStruct::default().create_stake_with_token(
+            token_address,
+            token_amount,
+            lock_days,
+            referrer,
+        );
 }
 
 #[no_mangle]
 fn transfer_Jsclient() {
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
+    let _ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
 }
 
 #[no_mangle]
@@ -146,13 +165,14 @@ fn transfer_from_Jsclient() {
     let owner: Key = runtime::get_named_arg("owner");
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
+    let _ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
 }
 
 #[no_mangle]
 fn check_referrals_by_id_Jsclient() {
     let _referrer: Key = runtime::get_named_arg("referrer");
-    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let _referral_id: Vec<String> = runtime::get_named_arg("referral_id");
+    let referral_id: Vec<u32> = typecast_from_string(_referral_id);
     let (
         staker,
         stake_id,
@@ -174,7 +194,7 @@ fn check_referrals_by_id_Jsclient() {
         is_mature_stake,
         is_ended_stake,
     };
-    let ret = stake_struct.clone().into_bytes().unwrap();
+    let _ret = stake_struct.clone().into_bytes().unwrap();
 }
 
 #[no_mangle]
@@ -182,19 +202,21 @@ fn create_stake_Jsclient() {
     let staked_amount: U256 = runtime::get_named_arg("staked_amount");
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
-    let (stake_id, start_day, referral_id): (Vec<u32>, U256, Vec<u32>) =
+    let (_stake_id, _start_day, _referral_id): (Vec<u32>, U256, Vec<u32>) =
         WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
 }
 
 #[no_mangle]
 fn end_stake_Jsclient() {
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
-    let ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
+    let _ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
 }
 
 #[no_mangle]
 fn scrape_interest_Jsclient() {
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
     let scrape_days: u64 = runtime::get_named_arg("scrape_days");
     let (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty): (
         U256,
@@ -203,7 +225,7 @@ fn scrape_interest_Jsclient() {
         U256,
         U256,
     ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
-    let ret: Vec<U256> = vec![
+    let _ret: Vec<U256> = vec![
         scrape_day,
         scrape_amount,
         remaining_days,
@@ -215,36 +237,42 @@ fn scrape_interest_Jsclient() {
 #[no_mangle]
 fn check_mature_stake_Jsclient() {
     let staker: Key = runtime::get_named_arg("staker");
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
-    let ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
+    let _ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
 }
 
 #[no_mangle]
 fn check_stake_by_id_Jsclient() {
     let staker: Key = runtime::get_named_arg("staker");
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
-    let (stake, penalty_amount, is_mature): (Vec<u8>, U256, bool) =
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
+
+    let (_stake, _penalty_amount, _is_mature): (Vec<u8>, U256, bool) =
         WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
 }
 
 #[no_mangle]
 fn create_liquidity_stake_Jsclient() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
-    let liquidity_stake_id: Vec<u32> =
+    let _liquidity_stake_id: Vec<u32> =
         WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
 }
 
 #[no_mangle]
 fn end_liquidity_stake_Jsclient() {
-    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
+
     let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
 }
 
 #[no_mangle]
 fn check_liquidity_stake_by_id_Jsclient() {
     let staker: Key = runtime::get_named_arg("staker");
-    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
-    let ret: Vec<u8> =
+    let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
+    let _ret: Vec<u8> =
         WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
 }
 
@@ -289,7 +317,14 @@ fn create_stake_with_cspr() {
 
     let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
         WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
-    runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
+    runtime::ret(
+        CLValue::from_t((
+            typecast_to_string(stake_id),
+            start_day,
+            typecast_to_string(referrer_id),
+        ))
+        .unwrap_or_revert(),
+    );
 }
 
 #[no_mangle]
@@ -301,7 +336,14 @@ fn create_stake_with_token() {
 
     let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = WiseTokenStruct::default()
         .create_stake_with_token(token_address, token_amount, lock_days, referrer);
-    runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
+    runtime::ret(
+        CLValue::from_t((
+            typecast_to_string(stake_id),
+            start_day,
+            typecast_to_string(referrer_id),
+        ))
+        .unwrap_or_revert(),
+    );
 }
 
 #[no_mangle]
@@ -608,30 +650,39 @@ fn manual_daily_snapshot_point() {
 
 #[no_mangle]
 fn get_stable_usd_equivalent() {
-    let ret: U256 = <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd_equivalent(
-        &WiseTokenStruct::default(),
-    );
+    let ret: U256 =
+        <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd_equivalent(
+            &WiseTokenStruct::default(),
+        );
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn referrer_interest() {
-    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let referral_id: Vec<String> = runtime::get_named_arg("referral_id");
+    let referral_id: Vec<u32> = typecast_from_string(referral_id);
     let scrape_days: U256 = runtime::get_named_arg("scrape_days");
     WiseTokenStruct::default().referrer_interest(referral_id, scrape_days);
 }
 
 #[no_mangle]
 fn referrer_interest_bulk() {
-    let referral_ids: Vec<Vec<u32>> = runtime::get_named_arg("referral_ids");
-    let scrape_days: Vec<U256> = runtime::get_named_arg("scrape_days");
+    let _referral_ids: Vec<Vec<String>> = runtime::get_named_arg("referral_ids");
+    let mut referral_ids: Vec<Vec<u32>> = Vec::new();
+    for id in _referral_ids {
+        referral_ids.push(typecast_from_string(id));
+    }
+    let scrape_days: Vec<String> = runtime::get_named_arg("scrape_days");
+    let scrape_days: Vec<U256> = typecast_from_string(scrape_days); // TODO verify this function works for U256
     WiseTokenStruct::default().referrer_interest_bulk(referral_ids, scrape_days);
 }
 
 #[no_mangle]
 fn check_referrals_by_id() {
     let _referrer: Key = runtime::get_named_arg("referrer");
-    let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
+    let referral_id: Vec<String> = runtime::get_named_arg("referral_id");
+    let referral_id: Vec<u32> = typecast_from_string(referral_id);
+
     let (
         staker,
         stake_id,
@@ -643,25 +694,33 @@ fn check_referrals_by_id() {
         is_ended_stake,
     ): (Key, Vec<u32>, U256, U256, bool, bool, bool, bool) =
         WiseTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
-    let stake_struct = referral_token::structs::StakeInfo {
-        staker,
-        stake_id,
-        referrer_shares,
-        referral_interest,
-        is_active_referral,
-        is_active_stake,
-        is_mature_stake,
-        is_ended_stake,
-    };
-    let ret = stake_struct.clone().into_bytes().unwrap();
+    let ret: Vec<String> = vec![
+        staker.to_formatted_string(),
+        format!("{:?}", typecast_to_string(stake_id)),
+        referrer_shares.to_string(),
+        referral_interest.to_string(),
+        is_active_referral.to_string(),
+        is_active_stake.to_string(),
+        is_mature_stake.to_string(),
+        is_ended_stake.to_string(),
+    ];
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn create_stake_bulk() {
-    let staked_amount: Vec<U256> = runtime::get_named_arg("staked_amount");
-    let lock_days: Vec<u64> = runtime::get_named_arg("lock_days");
-    let referrer: Vec<Key> = runtime::get_named_arg("referrer");
+    let staked_amount: Vec<String> = runtime::get_named_arg("staked_amount");
+    let staked_amount: Vec<U256> = typecast_from_string(staked_amount);
+
+    let lock_days: Vec<String> = runtime::get_named_arg("lock_days");
+    let lock_days: Vec<u64> = typecast_from_string(lock_days);
+
+    let _referrer: Vec<String> = runtime::get_named_arg("referrer");
+    let mut referrer: Vec<Key> = Vec::new();
+    for key in _referrer.iter() {
+        referrer.push(Key::from_formatted_str(key).unwrap());
+    }
+
     WiseTokenStruct::default().create_stake_bulk(staked_amount, lock_days, referrer);
 }
 
@@ -672,19 +731,28 @@ fn create_stake() {
     let referrer: Key = runtime::get_named_arg("referrer");
     let (stake_id, start_day, referral_id): (Vec<u32>, U256, Vec<u32>) =
         WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
-    runtime::ret(CLValue::from_t((stake_id, start_day, referral_id)).unwrap_or_revert());
+    runtime::ret(
+        CLValue::from_t((
+            typecast_to_string(stake_id),
+            start_day,
+            typecast_to_string(referral_id),
+        ))
+        .unwrap_or_revert(),
+    );
 }
 
 #[no_mangle]
 fn end_stake() {
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
     let ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn scrape_interest() {
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
     let scrape_days: u64 = runtime::get_named_arg("scrape_days");
     let (scrape_day, scrape_amount, remaining_days, stakers_penalty, referrer_penalty): (
         U256,
@@ -693,12 +761,12 @@ fn scrape_interest() {
         U256,
         U256,
     ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
-    let ret: Vec<U256> = vec![
-        scrape_day,
-        scrape_amount,
-        remaining_days,
-        stakers_penalty,
-        referrer_penalty,
+    let ret: Vec<String> = vec![
+        scrape_day.to_string(),
+        scrape_amount.to_string(),
+        remaining_days.to_string(),
+        stakers_penalty.to_string(),
+        referrer_penalty.to_string(),
     ];
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
@@ -706,7 +774,8 @@ fn scrape_interest() {
 #[no_mangle]
 fn check_mature_stake() {
     let staker: Key = runtime::get_named_arg("staker");
-    let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+    let stake_id: Vec<u32> = typecast_from_string(stake_id);
     let ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
@@ -717,7 +786,22 @@ fn check_stake_by_id() {
     let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
     let (stake, penalty_amount, is_mature): (Vec<u8>, U256, bool) =
         WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
-    runtime::ret(CLValue::from_t((stake, penalty_amount, is_mature)).unwrap_or_revert());
+    let stake: declaration::structs::Stake =
+        declaration::structs::Stake::from_bytes(&stake).unwrap().0;
+    let ret: Vec<String> = vec![
+        stake.start_day.to_string(),
+        stake.lock_days.to_string(),
+        stake.final_day.to_string(),
+        stake.close_day.to_string(),
+        stake.scrape_day.to_string(),
+        stake.staked_amount.to_string(),
+        stake.stakes_shares.to_string(),
+        stake.reward_amount.to_string(),
+        penalty_amount.to_string(),
+        is_mature.to_string(),
+        stake.is_active.to_string(),
+    ];
+    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
@@ -725,12 +809,13 @@ fn create_liquidity_stake() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
     let liquidity_stake_id: Vec<u32> =
         WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
-    runtime::ret(CLValue::from_t(liquidity_stake_id).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(liquidity_stake_id)).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn end_liquidity_stake() {
-    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
     let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
@@ -738,9 +823,20 @@ fn end_liquidity_stake() {
 #[no_mangle]
 fn check_liquidity_stake_by_id() {
     let staker: Key = runtime::get_named_arg("staker");
-    let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
-    let ret: Vec<u8> =
+    let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
+    let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
+    let _ret: Vec<u8> =
         WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
+    let l_stake: declaration::structs::LiquidityStake =
+        declaration::structs::LiquidityStake::from_bytes(&_ret)
+            .unwrap()
+            .0;
+    let ret: Vec<String> = vec![
+        l_stake.start_day.to_string(),
+        l_stake.reward_amount.to_string(),
+        l_stake.close_day.to_string(),
+        l_stake.is_active.to_string(),
+    ];
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -751,7 +847,7 @@ fn generate_id() {
     let z: u8 = runtime::get_named_arg("z");
 
     let ret = WiseTokenStruct::default().generate_id(x, y, z);
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
@@ -760,7 +856,11 @@ fn stakes_pagination() {
     let offset: U256 = runtime::get_named_arg("offset");
     let length: U256 = runtime::get_named_arg("length");
 
-    let ret = WiseTokenStruct::default().stakes_pagination(staker, offset, length);
+    let _ret = WiseTokenStruct::default().stakes_pagination(staker, offset, length);
+    let mut ret: Vec<Vec<String>> = Vec::new();
+    for id in _ret {
+        ret.push(typecast_to_string(id));
+    }
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -770,7 +870,11 @@ fn referrals_pagination() {
     let offset: U256 = runtime::get_named_arg("offset");
     let length: U256 = runtime::get_named_arg("length");
 
-    let ret = WiseTokenStruct::default().referrals_pagination(staker, offset, length);
+    let _ret = WiseTokenStruct::default().referrals_pagination(staker, offset, length);
+    let mut ret: Vec<Vec<String>> = Vec::new();
+    for id in _ret {
+        ret.push(typecast_to_string(id));
+    }
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -778,21 +882,21 @@ fn referrals_pagination() {
 fn latest_stake_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let ret = WiseTokenStruct::default().latest_stake_id(staker);
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn latest_referral_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let ret = WiseTokenStruct::default().latest_referrer_id(staker);
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn latest_liquidity_stake_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let ret = WiseTokenStruct::default().latest_liquidity_stake_id(staker);
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
@@ -815,7 +919,11 @@ fn get_inflation() {
 
 #[no_mangle]
 fn get_amounts_out() {
-    let path: Vec<Key> = runtime::get_named_arg("path");
+    let _path: Vec<String> = runtime::get_named_arg("path");
+    let mut path: Vec<Key> = Vec::new();
+    for key in _path.iter() {
+        path.push(Key::from_formatted_str(key).unwrap());
+    }
     let amount_in: U256 = runtime::get_named_arg("amount_in");
 
     let amounts: Vec<U256> = WiseTokenStruct::default().get_amounts_out(amount_in, path);
@@ -849,7 +957,7 @@ fn swap_exact_tokens_for_tokens() {
         path,
         to,
     );
-    runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(amounts)).unwrap_or_revert());
 }
 
 #[no_mangle]
@@ -872,7 +980,7 @@ fn swap_exact_cspr_for_tokens() {
         to,
         purse,
     );
-    runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
+    runtime::ret(CLValue::from_t(typecast_to_string(amounts)).unwrap_or_revert());
 }
 
 fn get_entry_points() -> EntryPoints {
@@ -916,9 +1024,9 @@ fn get_entry_points() -> EntryPoints {
         "get_amounts_out",
         vec![
             Parameter::new("amount_in", U256::cl_type()),
-            Parameter::new("path", CLType::List(Box::new(Key::cl_type()))),
+            Parameter::new("path", CLType::List(Box::new(CLType::String))),
         ],
-        CLType::List(Box::new(U256::cl_type())),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -944,7 +1052,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("to", CLType::Key),
             Parameter::new("deadline", CLType::U256),
         ],
-        CLType::List(Box::new(CLType::U256)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -959,7 +1067,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("deadline", CLType::U256),
             Parameter::new("purse", CLType::URef),
         ],
-        CLType::List(Box::new(CLType::U256)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -967,10 +1075,10 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "scrape_interest_Jsclient",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("scrape_days", CLType::U64),
         ],
-        CLType::List(Box::new(CLType::U256)),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -978,10 +1086,10 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_referrals_by_id_Jsclient",
         vec![
-            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("referrer", CLType::Key),
         ],
-        CLType::List(Box::new(CLType::U8)),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -993,11 +1101,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("lock_days", u64::cl_type()),
             Parameter::new("referrer", CLType::Key),
         ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
-            Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
-        ]),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1006,9 +1110,9 @@ fn get_entry_points() -> EntryPoints {
         "end_stake_Jsclient",
         vec![Parameter::new(
             "stake_id",
-            CLType::List(Box::new(CLType::U32)),
+            CLType::List(Box::new(CLType::String)),
         )],
-        CLType::U256,
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1016,10 +1120,10 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_mature_stake_Jsclient",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("staker", CLType::Key),
         ],
-        CLType::Bool,
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1027,14 +1131,10 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_stake_by_id_Jsclient",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("staker", CLType::Key),
         ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U8))),
-            Box::new(CLType::U256),
-            Box::new(CLType::Bool),
-        ]),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1042,7 +1142,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "create_liquidity_stake_Jsclient",
         vec![Parameter::new("liquidity_tokens", CLType::U256)],
-        CLType::List(Box::new(CLType::U32)),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1051,9 +1151,9 @@ fn get_entry_points() -> EntryPoints {
         "end_liquidity_stake_Jsclient",
         vec![Parameter::new(
             "liquidity_stake_id",
-            CLType::List(Box::new(CLType::U32)),
+            CLType::List(Box::new(CLType::String)),
         )],
-        CLType::U256,
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1062,9 +1162,9 @@ fn get_entry_points() -> EntryPoints {
         "check_liquidity_stake_by_id_Jsclient",
         vec![
             Parameter::new("staker", CLType::Key),
-            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::String))),
         ],
-        CLType::List(Box::new(CLType::U8)),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1077,11 +1177,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("amount", CLType::U256),
             Parameter::new("purse", CLType::URef),
         ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
-            Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
-        ]),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1094,11 +1190,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("lock_days", CLType::U64),
             Parameter::new("referrer", CLType::Key),
         ],
-        CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
-            Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
-        ]),
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1109,10 +1201,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("recipient", Key::cl_type()),
             Parameter::new("amount", U256::cl_type()),
         ],
-        CLType::Result {
-            ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
-        },
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1124,10 +1213,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("recipient", Key::cl_type()),
             Parameter::new("amount", U256::cl_type()),
         ],
-        CLType::Result {
-            ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
-        },
+        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1139,7 +1225,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("y", CLType::U256),
             Parameter::new("z", CLType::U8),
         ],
-        CLType::List(Box::new(CLType::U32)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1151,7 +1237,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("length", CLType::U256),
             Parameter::new("offset", CLType::U256),
         ],
-        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
+        CLType::List(Box::new(CLType::List(Box::new(CLType::String)))),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1163,7 +1249,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("length", CLType::U256),
             Parameter::new("offset", CLType::U256),
         ],
-        CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
+        CLType::List(Box::new(CLType::List(Box::new(CLType::String)))),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1171,7 +1257,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "latest_referral_id",
         vec![Parameter::new("staker", CLType::Key)],
-        CLType::List(Box::new(CLType::U32)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1179,7 +1265,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "latest_stake_id",
         vec![Parameter::new("staker", CLType::Key)],
-        CLType::List(Box::new(CLType::U32)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1187,7 +1273,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "latest_liquidity_stake_id",
         vec![Parameter::new("staker", CLType::Key)],
-        CLType::List(Box::new(CLType::U32)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1203,20 +1289,20 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "scrape_interest",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("scrape_days", CLType::U64),
         ],
-        CLType::List(Box::new(CLType::U256)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "check_referrals_by_id",
         vec![
-            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("referrer", CLType::Key),
         ],
-        CLType::List(Box::new(CLType::U8)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1263,7 +1349,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "referrer_interest",
         vec![
-            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("scrape_days", CLType::U256),
         ],
         CLType::U256,
@@ -1273,9 +1359,9 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "create_stake_bulk",
         vec![
-            Parameter::new("staked_amount", CLType::List(Box::new(CLType::U256))),
-            Parameter::new("lock_days", CLType::List(Box::new(u64::cl_type()))),
-            Parameter::new("referrer", CLType::List(Box::new(CLType::Key))),
+            Parameter::new("staked_amount", CLType::List(Box::new(CLType::String))),
+            Parameter::new("lock_days", CLType::List(Box::new(CLType::String))),
+            Parameter::new("referrer", CLType::List(Box::new(CLType::String))),
         ],
         <()>::cl_type(),
         EntryPointAccess::Public,
@@ -1289,9 +1375,9 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("referrer", CLType::Key),
         ],
         CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
             Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
         ]),
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1300,7 +1386,7 @@ fn get_entry_points() -> EntryPoints {
         "end_stake",
         vec![Parameter::new(
             "stake_id",
-            CLType::List(Box::new(CLType::U32)),
+            CLType::List(Box::new(CLType::String)),
         )],
         CLType::U256,
         EntryPointAccess::Public,
@@ -1309,7 +1395,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_mature_stake",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("staker", CLType::Key),
         ],
         CLType::Bool,
@@ -1319,11 +1405,11 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_mature_stake",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
             Parameter::new("staker", CLType::Key),
         ],
         CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U8))),
+            Box::new(CLType::List(Box::new(CLType::String))),
             Box::new(CLType::U256),
             Box::new(CLType::Bool),
         ]),
@@ -1333,7 +1419,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "create_liquidity_stake",
         vec![Parameter::new("liquidity_tokens", CLType::U256)],
-        CLType::List(Box::new(CLType::U32)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1341,7 +1427,7 @@ fn get_entry_points() -> EntryPoints {
         "end_liquidity_stake",
         vec![Parameter::new(
             "liquidity_stake_id",
-            CLType::List(Box::new(CLType::U32)),
+            CLType::List(Box::new(CLType::String)),
         )],
         CLType::U256,
         EntryPointAccess::Public,
@@ -1351,9 +1437,9 @@ fn get_entry_points() -> EntryPoints {
         "check_liquidity_stake_by_id",
         vec![
             Parameter::new("staker", CLType::Key),
-            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::U32))),
+            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::String))),
         ],
-        CLType::List(Box::new(CLType::U8)),
+        CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1412,9 +1498,9 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("purse", CLType::URef),
         ],
         CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
             Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
         ]),
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1429,9 +1515,9 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("referrer", CLType::Key),
         ],
         CLType::Tuple3([
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
             Box::new(CLType::U256),
-            Box::new(CLType::List(Box::new(CLType::U32))),
+            Box::new(CLType::List(Box::new(CLType::String))),
         ]),
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1485,7 +1571,7 @@ fn get_entry_points() -> EntryPoints {
         ],
         CLType::Result {
             ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
+            err: Box::new(CLType::String),
         },
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1499,7 +1585,7 @@ fn get_entry_points() -> EntryPoints {
         ],
         CLType::Result {
             ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
+            err: Box::new(CLType::String),
         },
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1609,7 +1695,7 @@ fn get_entry_points() -> EntryPoints {
         ],
         CLType::Result {
             ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
+            err: Box::new(CLType::String),
         },
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -1622,7 +1708,7 @@ fn get_entry_points() -> EntryPoints {
         ],
         CLType::Result {
             ok: Box::new(CLType::Unit),
-            err: Box::new(CLType::U32),
+            err: Box::new(CLType::String),
         },
         EntryPointAccess::Public,
         EntryPointType::Contract,

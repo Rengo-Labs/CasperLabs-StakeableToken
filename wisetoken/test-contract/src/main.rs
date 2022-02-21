@@ -129,16 +129,17 @@ fn create_stake_with_cspr_execute() {
     let amount: U256 = runtime::get_named_arg("amount");
     let purse: URef = runtime::get_named_arg("purse");
 
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = runtime::call_contract(
-        wise_contract,
-        "create_stake_with_cspr",
-        runtime_args! {
-            "lock_days" => lock_days,
-            "referrer" => referrer,
-            "amount" => amount,
-            "purse" => purse
-        },
-    );
+    let (stake_id, start_day, referrer_id): (Vec<String>, U256, Vec<String>) =
+        runtime::call_contract(
+            wise_contract,
+            "create_stake_with_cspr",
+            runtime_args! {
+                "lock_days" => lock_days,
+                "referrer" => referrer,
+                "amount" => amount,
+                "purse" => purse
+            },
+        );
 }
 
 #[no_mangle]

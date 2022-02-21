@@ -36,12 +36,17 @@ fn deploy_erc20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> 
     )
 }
 
-fn deploy_stable_usd_equivalent(env: TestEnv, owner: AccountHash, wise: TestContract) -> TestContract {
+fn deploy_stable_usd_equivalent(
+    env: TestEnv,
+    owner: AccountHash,
+    wise: TestContract,
+) -> TestContract {
     let router: Key = wise.query_named_key("router_contract_hash".to_string());
     let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
     let wcspr: Key = wise.query_named_key("wcspr_contract_hash".to_string());
     // since stable_usd is an ERC20 token, using casper's erc20 as stable_usd
-    let stable_usd: TestContract = deploy_erc20(&env, owner, "stable_usd stable coin", "stable_usd");
+    let stable_usd: TestContract =
+        deploy_erc20(&env, owner, "stable_usd stable coin", "stable_usd");
     // deploy stable_usd_equivalent eq. contract
     let stable_usd_equivalent = TestContract::new(
         &env,
