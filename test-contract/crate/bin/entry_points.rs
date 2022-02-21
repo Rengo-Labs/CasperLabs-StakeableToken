@@ -21,6 +21,7 @@ use casper_types::{
     Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{set_key, ContractContext, OnChainContractStorage};
+use wise_token_utils::helpers::{typecast_from_string, typecast_to_string};
 
 pub mod mappings;
 
