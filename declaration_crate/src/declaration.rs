@@ -11,7 +11,7 @@ use crate::data::{self};
 use globals_crate::Globals;
 use hex::encode;
 use renvm_sig::keccak256;
-use wise_token_utils::{commons::key_names::*, declaration::parameters, error_codes};
+use stakeable_token_utils::{commons::key_names::*, declaration::parameters, error_codes};
 
 pub trait Declaration<Storage: ContractStorage>:
     ContractContext<Storage> + Globals<Storage>

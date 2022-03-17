@@ -5,7 +5,7 @@ use casper_types::{
     U256, U512,
 };
 use test_env::{Sender, TestContract, TestEnv};
-use wise_token_utils::commons::key_names;
+use stakeable_token_utils::commons::key_names;
 
 pub struct LiquidityGuardInstance(TestContract);
 impl LiquidityGuardInstance {

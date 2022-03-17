@@ -1,4 +1,4 @@
-// Methods to generate keys for dicitonaries in Wise crates
+// Methods to generate keys for dicitonaries in Stakeable crates
 extern crate alloc;
 use alloc::{format, string::String, vec::Vec};
 

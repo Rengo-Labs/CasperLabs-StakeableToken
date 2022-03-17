@@ -10,7 +10,7 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use timing_crate::Timing;
 
-use wise_token_utils::{commons::key_names::*, declaration, error_codes, events::*, snapshot};
+use stakeable_token_utils::{commons::key_names::*, declaration, error_codes, events::*, snapshot};
 
 use casper_contract::contract_api::runtime;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
@@ -131,7 +131,7 @@ pub trait StakingToken<Storage: ContractStorage>:
                 .0;
 
         let _: () = ERC20::burn(self, staker, staked_amount);
-        let _start_day: u64 = Timing::_next_wise_day(self);
+        let _start_day: u64 = Timing::_next_stakeable_day(self);
         let stake_id: Vec<u32> = Helper::generate_stake_id(self, staker);
 
         //get share_price value from shares
@@ -163,7 +163,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         new_stake.dai_equivalent = (stable_usd_equivalent
             .checked_mul(new_stake.staked_amount)
             .unwrap_or_revert())
-        .checked_div(constants.yodas_per_wise)
+        .checked_div(constants.yodas_per_stakeable)
         .unwrap_or_revert();
 
         if Self::_non_zero_address(referrer) {
@@ -173,7 +173,7 @@ pub trait StakingToken<Storage: ContractStorage>:
                 self._referrer_shares(staked_amount, U256::from(lock_days), referrer);
         }
 
-        emit(&WiseEvents::StakeStart {
+        emit(&StakeableEvents::StakeStart {
             stake_id: stake_id.clone(),
             staker_address: self.get_caller(),
             referral_address: referrer,
@@ -250,7 +250,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             ended_stake.stakes_shares,
         );
 
-        emit(&WiseEvents::StakeEnd {
+        emit(&StakeableEvents::StakeEnd {
             stake_id: _stake_id,
             staker_address: self.get_caller(),
             referral_address: ended_stake.referrer,
@@ -282,8 +282,8 @@ pub trait StakingToken<Storage: ContractStorage>:
                 error_codes::ErrorCodes::StakeInactive as u16,
             ))
         }
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
-        stake.close_day = current_wise_day;
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+        stake.close_day = current_stakeable_day;
         stake.reward_amount = self._calculate_reward_amount(&stake);
         let penalty: U256 = self._calculate_penalty_amount(&stake);
         stake.is_active = false;
@@ -438,14 +438,14 @@ pub trait StakingToken<Storage: ContractStorage>:
 
         let _: () = ERC20::mint(self, self.get_caller(), scrape_amount);
 
-        emit(&WiseEvents::InterestScraped {
+        emit(&StakeableEvents::InterestScraped {
             stake_id: _stake_id,
             staker_address: self.get_caller(),
             scrape_amount,
             scrape_day,
             stakers_penalty,
             referrer_penalty,
-            current_wise_day: Timing::_current_wise_day(self),
+            current_stakeable_day: Timing::_current_stakeable_day(self),
         });
 
         (
@@ -487,7 +487,7 @@ pub trait StakingToken<Storage: ContractStorage>:
 
             Declaration::set_scheduled_to_end(self, _final_day, updated_scheduled_to_end);
         } else {
-            let day: u64 = Timing::_previous_wise_day(self);
+            let day: u64 = Timing::_previous_stakeable_day(self);
             let day: U256 = U256::from(day);
             let snapshot_str: Vec<u8> =
                 Snapshot::get_struct_from_key(self, &day, String::from(SNAPSHOT_SNAPSHOTS_DICT));
@@ -524,7 +524,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         _lock_days: U256,
         _stake_shares: U256,
     ) {
-        let mut current_wise_day: u64 = Timing::_current_wise_day(self);
+        let mut current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
         let declaration_constants_string: Vec<u8> = Declaration::get_declaration_constants(self);
 
         let declaration_constants_struct: declaration::parameters::ConstantParameters =
@@ -536,7 +536,7 @@ pub trait StakingToken<Storage: ContractStorage>:
             Globals::get_globals(self, String::from(GLOBALS_SHARE_PRICE));
 
         if _stake_shares > 0.into()
-            && current_wise_day > (declaration_constants_struct.formula_day).into()
+            && current_stakeable_day > (declaration_constants_struct.formula_day).into()
         {
             let mut new_share_price: U256 = self._get_new_share_price(
                 _staked_amount,
@@ -562,10 +562,10 @@ pub trait StakingToken<Storage: ContractStorage>:
                         / U256::from(100)
                 }
 
-                emit(&WiseEvents::NewSharePrice {
+                emit(&StakeableEvents::NewSharePrice {
                     new_share_price,
                     old_share_price: globals_share_price,
-                    current_wise_day: Timing::_current_wise_day(self),
+                    current_stakeable_day: Timing::_current_stakeable_day(self),
                 });
 
                 Globals::set_globals(self, String::from(GLOBALS_SHARE_PRICE), new_share_price);
@@ -573,9 +573,9 @@ pub trait StakingToken<Storage: ContractStorage>:
             return;
         }
 
-        current_wise_day = Timing::_current_wise_day(self);
+        current_stakeable_day = Timing::_current_stakeable_day(self);
 
-        if current_wise_day == (declaration_constants_struct.formula_day as u64) {
+        if current_stakeable_day == (declaration_constants_struct.formula_day as u64) {
             Globals::set_globals(
                 self,
                 String::from(GLOBALS_SHARE_PRICE),

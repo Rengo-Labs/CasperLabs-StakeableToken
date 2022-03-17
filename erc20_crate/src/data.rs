@@ -3,7 +3,7 @@ use alloc::string::String;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 pub struct Balances {
     dict: Dict,

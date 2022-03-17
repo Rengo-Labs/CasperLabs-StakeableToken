@@ -15,7 +15,7 @@ use renvm_sig::keccak256;
 use declaration_crate::Declaration;
 use globals_crate::Globals;
 use timing_crate::Timing;
-use wise_token_utils::{commons::key_names::*, declaration::structs::*};
+use stakeable_token_utils::{commons::key_names::*, declaration::structs::*};
 
 pub trait Helper<Storage: ContractStorage>:
     ContractContext<Storage> + Globals<Storage> + Declaration<Storage> + Timing<Storage>
@@ -296,9 +296,9 @@ pub trait Helper<Storage: ContractStorage>:
         if _stake.close_day > 0 {
             return _stake.final_day <= _stake.close_day;
         } else {
-            let _current_wise_day: u64 = Timing::_current_wise_day(self);
+            let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
 
-            return _stake.final_day <= _current_wise_day;
+            return _stake.final_day <= _current_stakeable_day;
         }
     }
 
@@ -318,9 +318,9 @@ pub trait Helper<Storage: ContractStorage>:
         if _stake.close_day > 0 {
             return _stake.start_day > _stake.close_day;
         } else {
-            let _current_wise_day: u64 = Timing::_current_wise_day(self);
+            let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
 
-            return _stake.start_day > _current_wise_day;
+            return _stake.start_day > _current_stakeable_day;
         }
     }
 
@@ -332,8 +332,8 @@ pub trait Helper<Storage: ContractStorage>:
         if _stake.is_active == false {
             return Self::_days_diff(U256::from(_stake.close_day), U256::from(_stake.final_day));
         } else {
-            let _current_wise_day: u64 = Timing::_current_wise_day(self);
-            return Self::_days_diff(U256::from(_current_wise_day), U256::from(_stake.final_day));
+            let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+            return Self::_days_diff(U256::from(_current_stakeable_day), U256::from(_stake.final_day));
         }
     }
 
@@ -346,11 +346,11 @@ pub trait Helper<Storage: ContractStorage>:
     }
 
     fn _calculation_day(&self, _stake: Stake) -> U256 {
-        let current_wise_day: U256 =
+        let current_stakeable_day: U256 =
             Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.to_string());
 
-        return if _stake.final_day > current_wise_day.as_u64() {
-            current_wise_day
+        return if _stake.final_day > current_stakeable_day.as_u64() {
+            current_stakeable_day
         } else {
             U256::from(_stake.final_day)
         };
@@ -365,14 +365,14 @@ pub trait Helper<Storage: ContractStorage>:
     }
 
     fn _not_future(&self, _day: U256) -> bool {
-        let _current_wise_day: u64 = Timing::_current_wise_day(self);
+        let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
 
-        return _day <= U256::from(_current_wise_day);
+        return _day <= U256::from(_current_stakeable_day);
     }
 
     fn _not_past(&self, _day: U256) -> bool {
-        let _current_wise_day: u64 = Timing::_current_wise_day(self);
-        return _day >= U256::from(_current_wise_day);
+        let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+        return _day >= U256::from(_current_stakeable_day);
     }
 
     fn _non_zero_address(key: Key) -> bool {
@@ -388,11 +388,11 @@ pub trait Helper<Storage: ContractStorage>:
         };
     }
 
-    fn _prepare_path(_token_address: Key, _synthetic_address: Key, _wise_address: Key) -> Vec<Key> {
+    fn _prepare_path(_token_address: Key, _synthetic_address: Key, _stakeable_address: Key) -> Vec<Key> {
         let mut _path: Vec<Key> = Vec::with_capacity(3);
         _path.push(_token_address);
         _path.push(_synthetic_address);
-        _path.push(_wise_address);
+        _path.push(_stakeable_address);
 
         _path
     }

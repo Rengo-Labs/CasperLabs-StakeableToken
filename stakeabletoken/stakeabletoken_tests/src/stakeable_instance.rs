@@ -1,17 +1,17 @@
 use casper_types::{runtime_args, ContractHash, ContractPackageHash, Key, RuntimeArgs, U256};
 use test_env::{Sender, TestContract, TestEnv};
 
-pub struct WiseTestInstance(pub TestContract);
+pub struct StakeableTestInstance(pub TestContract);
 
-impl WiseTestInstance {
-    pub fn new(env: &TestEnv, wise_address: Key, erc20: Key, sender: Sender) -> WiseTestInstance {
-        WiseTestInstance(TestContract::new(
+impl StakeableTestInstance {
+    pub fn new(env: &TestEnv, stakeable_address: Key, erc20: Key, sender: Sender) -> StakeableTestInstance {
+        StakeableTestInstance(TestContract::new(
             env,
             "contract.wasm",
-            "WiseTest",
+            "StakeableTest",
             sender,
             runtime_args! {
-                "wise_address" => wise_address,
+                "stakeable_address" => stakeable_address,
                 "erc20_address" => erc20
                 // contract_name is passed seperately, so we don't need to pass it here.
             },

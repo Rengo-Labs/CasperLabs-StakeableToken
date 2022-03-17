@@ -16,7 +16,7 @@ cryptoxide = "0.3.3"
 hex = { version = "0.4.3", default-features = false }
 renvm-sig = "0.1.1"
 casper_types_derive = "0.1.0"
-wise-token-utils = { path = "../utils/wise-token-utils" }
+stakeable-token-utils = { path = "../utils/stakeable-token-utils" }
 globals_crate = { path = "../globals_crate" }
 declaration_crate = { path = "../declaration_crate" }
 timing_crate = { path = "../timing_crate" }

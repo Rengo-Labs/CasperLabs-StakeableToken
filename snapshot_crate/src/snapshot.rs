@@ -10,7 +10,7 @@ use casper_types::{
     runtime_args, ApiError, Key, RuntimeArgs, U128, U256,
 };
 use contract_utils::{ContractContext, ContractStorage};
-use wise_token_utils::{
+use stakeable_token_utils::{
     commons::key_names::*, declaration, error_codes::ErrorCodes, events::*, snapshot,
 };
 
@@ -54,7 +54,7 @@ pub trait Snapshot<Storage: ContractStorage>:
                 runtime_args! {},
             );
 
-        emit(&WiseEvents::UniswapReserves {
+        emit(&StakeableEvents::UniswapReserves {
             reserve_a,
             reserve_b,
             block_timestamp_last,
@@ -92,7 +92,7 @@ pub trait Snapshot<Storage: ContractStorage>:
             self.disable_liquidity_guard();
         }
 
-        emit(&WiseEvents::LiquidityGuardStatus {
+        emit(&StakeableEvents::LiquidityGuardStatus {
             liquidity_guard_status,
         });
     }
@@ -258,31 +258,31 @@ pub trait Snapshot<Storage: ContractStorage>:
             //wrap up snapshotting
             Self::adjust_liquidity_rates(self);
 
-            // increment globals.current wise day
-            let new_current_wise_day = Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.into())
+            // increment globals.current stakeable day
+            let new_current_stakeable_day = Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.into())
                 .checked_add(1.into())
                 .ok_or(ApiError::User(ErrorCodes::Overflow as u16))
                 .unwrap_or_revert();
-            Globals::set_globals(self, GLOBALS_CURRENT_WISE_DAY.into(), new_current_wise_day);
+            Globals::set_globals(self, GLOBALS_CURRENT_WISE_DAY.into(), new_current_stakeable_day);
         }
     }
 
     fn _snapshot_trigger(&self) {
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
-        self._daily_snapshot_point(current_wise_day);
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+        self._daily_snapshot_point(current_stakeable_day);
     }
     fn manual_daily_snapshot(&self) {
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
-        self._daily_snapshot_point(current_wise_day);
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+        self._daily_snapshot_point(current_stakeable_day);
     }
 
     fn manual_daily_snapshot_point(&self, _update_day: u64) {
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
 
-        if _update_day > 0 && _update_day < current_wise_day {
-            let current_wise_day_globals: U256 =
+        if _update_day > 0 && _update_day < current_stakeable_day {
+            let current_stakeable_day_globals: U256 =
                 Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.to_string());
-            if _update_day > current_wise_day_globals.as_u64() {
+            if _update_day > current_stakeable_day_globals.as_u64() {
                 self._daily_snapshot_point(_update_day);
             } else {
                 runtime::revert(ApiError::InvalidArgument);

@@ -47,8 +47,8 @@ pub fn self_package_key() -> String {
     format!("package_hash")
 }
 
-pub fn wise_key() -> String {
-    format!("wise_hash")
+pub fn stakeable_key() -> String {
+    format!("stakeable_hash")
 }
 
 pub fn erc20() -> String {

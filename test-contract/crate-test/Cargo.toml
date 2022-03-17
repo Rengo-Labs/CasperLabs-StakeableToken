@@ -10,7 +10,7 @@ casper-contract = "=1.3.2"
 casper-engine-test-support = "=1.3.2"
 casper-types = "=1.3.2"
 contract-utils = {path = "../../utils/contract-utils"}
-wise-token-utils = { path = "../../utils/wise-token-utils" }
+stakeable-token-utils = { path = "../../utils/stakeable-token-utils" }
 hex = "0.4.3"
 test-env = {path = "../../utils/test-env"}
 

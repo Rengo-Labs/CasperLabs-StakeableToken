@@ -6,12 +6,12 @@ use casper_types::{
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 use test_env::{Sender, TestContract, TestEnv};
-use wise_token_utils::commons::key_names::*;
-use wise_token_utils::declaration::structs::*;
-use wise_token_utils::key_gen;
-use wise_token_utils::key_gen::generate_key_for_dictionary;
-use wise_token_utils::snapshot::structs::*;
-use wise_token_utils::timing;
+use stakeable_token_utils::commons::key_names::*;
+use stakeable_token_utils::declaration::structs::*;
+use stakeable_token_utils::key_gen;
+use stakeable_token_utils::key_gen::generate_key_for_dictionary;
+use stakeable_token_utils::snapshot::structs::*;
+use stakeable_token_utils::timing;
 
 extern crate alloc;
 use alloc::{
@@ -24,7 +24,7 @@ pub const CURRENT_WISE_DAY: u64 = 5; // as is set by test-env
 fn deploy_stable_usd_equivalent(
     env: &TestEnv,
     owner: AccountHash,
-    wise: &TestContract,
+    stakeable: &TestContract,
     scspr: &TestContract,
     wcspr: &TestContract,
     stable_usd: &TestContract,
@@ -36,7 +36,7 @@ fn deploy_stable_usd_equivalent(
         "stable_usd_equivalent",
         Sender(owner),
         runtime_args! {
-            "wise" => Key::Hash(wise.contract_hash()),
+            "stakeable" => Key::Hash(stakeable.contract_hash()),
             "scspr" => Key::Hash(scspr.contract_hash()),
             "wcspr" => Key::Hash(wcspr.contract_hash()),
             "stable_usd" => Key::Hash(stable_usd.contract_hash()),
@@ -854,10 +854,10 @@ fn test_set_globals() {
             "value" => value
         },
     );
-    let current_wise_way: U256 = test
+    let current_stakeable_way: U256 = test
         .query_dictionary(GLOBALS_GLOBALS_STRUCT, field)
         .unwrap();
-    assert_eq!(current_wise_way, value);
+    assert_eq!(current_stakeable_way, value);
 }
 
 #[test]
@@ -1333,7 +1333,7 @@ fn test_create_liquidity_stake() {
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
-    let globals_current_wise_day: U256 = 1.into();
+    let globals_current_stakeable_day: U256 = 1.into();
     // setup for liquidity guard trigger
     // initialize liquidity guard status
     test.call_contract(
@@ -1368,7 +1368,7 @@ fn test_create_liquidity_stake() {
         "set_globals",
         runtime_args! {
             "field"=>GLOBALS_CURRENT_WISE_DAY.to_string(),
-            "value"=>globals_current_wise_day.clone()
+            "value"=>globals_current_stakeable_day.clone()
         },
     );
     test.call_contract(
@@ -1459,7 +1459,7 @@ fn test_end_liquidity_stake() {
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
-    let globals_current_wise_day: U256 = 1.into();
+    let globals_current_stakeable_day: U256 = 1.into();
     // setup snapshot trigger
     test.call_contract(
         Sender(owner),
@@ -1493,7 +1493,7 @@ fn test_end_liquidity_stake() {
         "set_globals",
         runtime_args! {
             "field"=>GLOBALS_CURRENT_WISE_DAY.to_string(),
-            "value"=>globals_current_wise_day.clone()
+            "value"=>globals_current_stakeable_day.clone()
         },
     );
     test.call_contract(
@@ -1643,7 +1643,7 @@ fn test_check_liquidity_stake_by_id() {
     ) = deploy();
     let liquidity_tokens: U256 = 100.into();
     let update_day: u64 = 3;
-    let globals_current_wise_day: U256 = 1.into();
+    let globals_current_stakeable_day: U256 = 1.into();
     // setup snapshot trigger
     test.call_contract(
         Sender(owner),
@@ -1677,7 +1677,7 @@ fn test_check_liquidity_stake_by_id() {
         "set_globals",
         runtime_args! {
             "field"=>GLOBALS_CURRENT_WISE_DAY.to_string(),
-            "value"=>globals_current_wise_day.clone()
+            "value"=>globals_current_stakeable_day.clone()
         },
     );
     test.call_contract(
@@ -1857,13 +1857,13 @@ fn test_remove_referrer_shares_to_end() {
         inflation_amount: U256::from(100),
         scheduled_to_end: U256::from(100),
     };
-    let previous_wise_day: U256 = 4.into();
+    let previous_stakeable_day: U256 = 4.into();
     let rsnapshot: Vec<u8> = snapshot.clone().into_bytes().unwrap();
     test.call_contract(
         Sender(owner),
         "snapshot_set_struct_from_key",
         runtime_args! {
-            "key"=>previous_wise_day, //previous wise day is 4, current in 5
+            "key"=>previous_stakeable_day, //previous stakeable day is 4, current in 5
             "struct_name"=> SNAPSHOT_RSNAPSHOTS_DICT,
             "value"=>Bytes::from(rsnapshot)
         },
@@ -1879,7 +1879,7 @@ fn test_remove_referrer_shares_to_end() {
     );
 
     let rsnapshot: Bytes = test
-        .query_dictionary(SNAPSHOT_RSNAPSHOTS_DICT, previous_wise_day.to_string())
+        .query_dictionary(SNAPSHOT_RSNAPSHOTS_DICT, previous_stakeable_day.to_string())
         .unwrap();
     let rsnapshot: Vec<u8> = Vec::from(rsnapshot);
     let rsnapshot: Snapshot = Snapshot::from_bytes(&rsnapshot).unwrap().0;
@@ -1895,7 +1895,7 @@ fn test_add_critical_mass() {
     let referrer: Key = Key::Account(owner);
     let dai_equivalent: U256 = 50.into();
     let total_amount: U256 = 1000.into();
-    let current_wise_day: U256 = 5.into();
+    let current_stakeable_day: U256 = 5.into();
 
     let critical_mass: CriticalMass = CriticalMass {
         total_amount,
@@ -1962,8 +1962,8 @@ fn test_remove_critical_mass() {
     let dai_equivalent: U256 = 50.into();
     let total_amount: U256 = 1000.into();
     let activation_day: U256 = 2.into();
-    let current_wise_day: U256 = 5.into();
-    let start_day: U256 = 30.into(); // must be more than current wise day
+    let current_stakeable_day: U256 = 5.into();
+    let start_day: U256 = 30.into(); // must be more than current stakeable day
 
     // init critical mass dict
     let critical_mass: CriticalMass = CriticalMass {
@@ -2372,7 +2372,7 @@ fn testmanual_daily_snapshot_point() {
         scspr,
     ) = deploy();
     let update_day: u64 = 3;
-    let globals_current_wise_day: U256 = 1.into();
+    let globals_current_stakeable_day: U256 = 1.into();
     // setup for liquidity guard trigger
     // initialize liquidity guard status
     test.call_contract(
@@ -2406,7 +2406,7 @@ fn testmanual_daily_snapshot_point() {
         "set_globals",
         runtime_args! {
             "field"=>GLOBALS_CURRENT_WISE_DAY.to_string(),
-            "value"=>globals_current_wise_day.clone()
+            "value"=>globals_current_stakeable_day.clone()
         },
     );
     test.call_contract(
@@ -2426,7 +2426,7 @@ fn testmanual_daily_snapshot_point() {
         },
     );
     // now call manual daily snapshot point
-    // _current_wise_day() == 5
+    // _current_stakeable_day() == 5
     test.call_contract(
         Sender(owner),
         "manual_daily_snapshot_point",
@@ -2435,13 +2435,13 @@ fn testmanual_daily_snapshot_point() {
         },
     );
 
-    // globals.currentWiseDay will now be globals_current_wise_day +update_day-1
-    let new_current_wise_day_globals: U256 = test
+    // globals.currentStakeableDay will now be globals_current_stakeable_day +update_day-1
+    let new_current_stakeable_day_globals: U256 = test
         .query_dictionary(GLOBALS_GLOBALS_STRUCT, GLOBALS_CURRENT_WISE_DAY.to_string())
         .unwrap();
     assert_eq!(
-        new_current_wise_day_globals,
-        globals_current_wise_day + U256::from(update_day - 1)
+        new_current_stakeable_day_globals,
+        globals_current_stakeable_day + U256::from(update_day - 1)
     );
 }
 
@@ -2509,7 +2509,7 @@ fn test_manual_daily_snapshot() {
         scspr,
     ) = deploy();
     let update_day: u64 = 3;
-    let globals_current_wise_day: U256 = 1.into();
+    let globals_current_stakeable_day: U256 = 1.into();
     // setup for liquidity guard trigger
     // initialize liquidity guard status
     test.call_contract(
@@ -2543,7 +2543,7 @@ fn test_manual_daily_snapshot() {
         "set_globals",
         runtime_args! {
             "field"=>GLOBALS_CURRENT_WISE_DAY.to_string(),
-            "value"=>globals_current_wise_day.clone()
+            "value"=>globals_current_stakeable_day.clone()
         },
     );
     test.call_contract(
@@ -2563,16 +2563,16 @@ fn test_manual_daily_snapshot() {
         },
     );
     // now call manual daily snapshot point
-    // _current_wise_day() == 5
+    // _current_stakeable_day() == 5
     test.call_contract(Sender(owner), "manual_daily_snapshot", runtime_args! {});
 
-    // globals.currentWiseDay will now be globals_current_wise_day +CURRENT_WISE_DAY-1
-    let new_current_wise_day_globals: U256 = test
+    // globals.currentStakeableDay will now be globals_current_stakeable_day +CURRENT_WISE_DAY-1
+    let new_current_stakeable_day_globals: U256 = test
         .query_dictionary(GLOBALS_GLOBALS_STRUCT, GLOBALS_CURRENT_WISE_DAY.to_string())
         .unwrap();
     assert_eq!(
-        new_current_wise_day_globals,
-        globals_current_wise_day + U256::from(CURRENT_WISE_DAY - 1)
+        new_current_stakeable_day_globals,
+        globals_current_stakeable_day + U256::from(CURRENT_WISE_DAY - 1)
     );
 }
 
@@ -2844,7 +2844,7 @@ fn test_end_stake() {
     // init critical mass dict
     let critical_mass: CriticalMass = CriticalMass {
         total_amount: 10.into(),
-        activation_day: 10.into(), // must be more thhan current wise day
+        activation_day: 10.into(), // must be more thhan current stakeable day
     };
     // set struct to dict
     let value: Vec<u8> = critical_mass.clone().into_bytes().unwrap();
@@ -2983,33 +2983,33 @@ fn test_check_stake_by_id() {
 ////////////
 
 #[test]
-fn test_current_wise_day() {
+fn test_current_stakeable_day() {
     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-    test.call_contract(Sender(owner), "current_wise_day", runtime_args! {});
+    test.call_contract(Sender(owner), "current_stakeable_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY, ret);
 }
 
 #[test]
-fn test__current_wise_day() {
+fn test__current_stakeable_day() {
     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-    test.call_contract(Sender(owner), "_current_wise_day", runtime_args! {});
+    test.call_contract(Sender(owner), "_current_stakeable_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY, ret);
 }
 
 #[test]
-fn test__previous_wise_day() {
+fn test__previous_stakeable_day() {
     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-    test.call_contract(Sender(owner), "_previous_wise_day", runtime_args! {});
+    test.call_contract(Sender(owner), "_previous_stakeable_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY - 1, ret);
 }
 
 #[test]
-fn test__next_wise_day() {
+fn test__next_stakeable_day() {
     let (env, owner, test, _, _, _, _, _, _, _, _, _) = deploy();
-    test.call_contract(Sender(owner), "_next_wise_day", runtime_args! {});
+    test.call_contract(Sender(owner), "_next_stakeable_day", runtime_args! {});
     let ret: u64 = TestInstance::instance(test).result();
     assert_eq!(CURRENT_WISE_DAY + 1, ret);
 }

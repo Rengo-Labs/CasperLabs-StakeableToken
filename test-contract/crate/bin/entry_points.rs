@@ -21,7 +21,7 @@ use casper_types::{
     Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{set_key, ContractContext, OnChainContractStorage};
-use wise_token_utils::helpers::{typecast_from_string, typecast_to_string};
+use stakeable_token_utils::helpers::{typecast_from_string, typecast_to_string};
 
 pub mod mappings;
 
@@ -39,7 +39,7 @@ use staking_token_crate::StakingToken;
 use timing_crate::Timing;
 
 // use transfer_helper::TransferHelper;
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 #[derive(Default)]
 struct Test(OnChainContractStorage);
@@ -78,8 +78,8 @@ impl Test {
     ) {
         ERC20::init(
             self,
-            "Wise as erc20".to_string(),
-            "wiseerc20".to_string(),
+            "Stakeable as erc20".to_string(),
+            "stakeableerc20".to_string(),
             9.into(),
             "".to_string(),
             "".to_string(),
@@ -772,26 +772,26 @@ fn check_stake_by_id() {
 // TIMING //
 ////////////
 #[no_mangle]
-fn current_wise_day() {
-    let ret: u64 = Timing::current_wise_day(&mut Test::default());
+fn current_stakeable_day() {
+    let ret: u64 = Timing::current_stakeable_day(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
 #[no_mangle]
-fn _current_wise_day() {
-    let ret: u64 = Timing::current_wise_day_only(&mut Test::default());
+fn _current_stakeable_day() {
+    let ret: u64 = Timing::current_stakeable_day_only(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
 #[no_mangle]
-fn _previous_wise_day() {
-    let ret: u64 = Timing::previous_wise_day(&mut Test::default());
+fn _previous_stakeable_day() {
+    let ret: u64 = Timing::previous_stakeable_day(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
 #[no_mangle]
-fn _next_wise_day() {
-    let ret: u64 = Timing::next_wise_day(&mut Test::default());
+fn _next_stakeable_day() {
+    let ret: u64 = Timing::next_stakeable_day(&mut Test::default());
     mappings::set_key(&mappings::result(), ret);
 }
 
@@ -1572,28 +1572,28 @@ fn get_entry_points() -> EntryPoints {
     // TIMING //
     ////////////
     entry_points.add_entry_point(EntryPoint::new(
-        "current_wise_day",
+        "current_stakeable_day",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "_current_wise_day",
+        "_current_stakeable_day",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "_previous_wise_day",
+        "_previous_stakeable_day",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "_next_wise_day",
+        "_next_stakeable_day",
         vec![],
         <()>::cl_type(),
         EntryPointAccess::Public,

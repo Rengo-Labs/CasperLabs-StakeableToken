@@ -1,5 +1,5 @@
 [package]
-name = "wisetoken"
+name = "stakeabletoken"
 version = "0.1.0"
 authors = ["Muzahir Hussain <muzahir.hussain@scytalelabs.com>"]
 edition = "2018"
@@ -20,11 +20,11 @@ liquidity_token_crate = { path = "../../liquidity_token_crate" }
 referral_token_crate = { path = "../../referral_token_crate" }
 snapshot_crate = { path = "../../snapshot_crate" }
 erc20_crate = { path = "../../erc20_crate" }
-wise-token-utils = { path = "../../utils/wise-token-utils" }
+stakeable-token-utils = { path = "../../utils/stakeable-token-utils" }
 
 [[bin]]
-name = "wisetoken"
-path = "bin/wisetoken_bin.rs"
+name = "stakeabletoken"
+path = "bin/stakeabletoken_bin.rs"
 bench = false
 doctest = false
 test = false

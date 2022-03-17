@@ -12,7 +12,7 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         &mut self,
         contract_hash: Key,
         package_hash: ContractPackageHash,
-        wise: Key,
+        stakeable: Key,
         scspr: Key,
         wcspr: Key,
         stable_usd: Key,
@@ -23,10 +23,10 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_package_hash(package_hash);
         data::set_scspr_hash(scspr);
         data::set_wcspr_hash(wcspr);
-        data::set_wise_hash(wise);
+        data::set_stakeable_hash(stakeable);
         data::set_router_hash(router);
-        data::set_decimals(U256::from(9)); // also sets yodas_per_wise
-        data::set_path(wise, scspr, wcspr, stable_usd);
+        data::set_decimals(U256::from(9)); // also sets yodas_per_stakeable
+        data::set_path(stakeable, scspr, wcspr, stable_usd);
         data::set_latest_stable_usd_equivalent(0.into());
     }
 
@@ -39,13 +39,13 @@ pub trait StableUSD<Storage: ContractStorage>: ContractContext<Storage> {
         self._get_stable_usd_equivalent()
     }
     fn _get_stable_usd_equivalent(&self) -> U256 {
-        let yodas_per_wise: U256 = data::yodas_per_wise();
+        let yodas_per_stakeable: U256 = data::yodas_per_stakeable();
         let path: Vec<Key> = data::get_path();
         let results: Vec<U256> = runtime::call_contract(
             Self::_create_hash_from_key(data::router_hash()),
             "get_amounts_out",
             runtime_args! {
-                "amount_in"=>yodas_per_wise,
+                "amount_in"=>yodas_per_stakeable,
                 "path"=>path
             },
         );

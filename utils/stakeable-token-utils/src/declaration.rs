@@ -66,7 +66,7 @@ pub mod parameters {
     #[derive(Clone, CLTyped, ToBytes, FromBytes)]
     pub struct ConstantParameters {
         pub _decimals: u32,
-        pub yodas_per_wise: U256,
+        pub yodas_per_stakeable: U256,
         pub seconds_in_day: u32,
         pub min_lock_days: u32,
         pub formula_day: u32,
@@ -92,8 +92,8 @@ pub mod parameters {
 
             let mut p = ConstantParameters {
                 _decimals: 18,
-                yodas_per_wise: U256::from(0),
-                //yodas_per_wise: U256::from(10).pow(_decimals.into()),             // cannot access struct's other methods here
+                yodas_per_stakeable: U256::from(0),
+                //yodas_per_stakeable: U256::from(10).pow(_decimals.into()),             // cannot access struct's other methods here
                 seconds_in_day: 86400,
                 min_lock_days: 1,
                 formula_day: 25,
@@ -109,7 +109,7 @@ pub mod parameters {
                 daily_bonus_a: daily_bonus_a.into(),
                 daily_bonus_b: daily_bonus_b.into(),
             };
-            p.yodas_per_wise = U256::from(10).pow(p._decimals.into());
+            p.yodas_per_stakeable = U256::from(10).pow(p._decimals.into());
             p
         }
     }

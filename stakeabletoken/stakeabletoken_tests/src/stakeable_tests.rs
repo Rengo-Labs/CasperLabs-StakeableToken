@@ -13,7 +13,7 @@ use casper_types::{
     ContractHash, ContractPackageHash, Key, PublicKey, RuntimeArgs, SecretKey, U256,
 };
 
-use crate::wise_instance::WiseTestInstance;
+use crate::stakeable_instance::StakeableTestInstance;
 use std::time::{SystemTime, UNIX_EPOCH};
 use test_env::{Sender, TestContract, TestEnv};
 
@@ -39,11 +39,11 @@ fn deploy_erc20(env: &TestEnv, owner: AccountHash, name: &str, symbol: &str) -> 
 fn deploy_stable_usd_equivalent(
     env: TestEnv,
     owner: AccountHash,
-    wise: TestContract,
+    stakeable: TestContract,
 ) -> TestContract {
-    let router: Key = wise.query_named_key("router_contract_hash".to_string());
-    let scspr: Key = wise.query_named_key("scspr_contract_hash".to_string());
-    let wcspr: Key = wise.query_named_key("wcspr_contract_hash".to_string());
+    let router: Key = stakeable.query_named_key("router_contract_hash".to_string());
+    let scspr: Key = stakeable.query_named_key("scspr_contract_hash".to_string());
+    let wcspr: Key = stakeable.query_named_key("wcspr_contract_hash".to_string());
     // since stable_usd is an ERC20 token, using casper's erc20 as stable_usd
     let stable_usd: TestContract =
         deploy_erc20(&env, owner, "stable_usd stable coin", "stable_usd");
@@ -54,7 +54,7 @@ fn deploy_stable_usd_equivalent(
         "stable_usd_equivalent",
         Sender(owner),
         runtime_args! {
-            "wise" => Key::Hash(wise.contract_hash()),
+            "stakeable" => Key::Hash(stakeable.contract_hash()),
             "scspr" => scspr,
             "wcspr" => wcspr,
             "stable_usd" => Key::Hash(stable_usd.contract_hash()),
@@ -148,11 +148,11 @@ fn deploy_scspr(
     )
 }
 
-fn deploy_wise() -> (
+fn deploy_stakeable() -> (
     TestEnv,          // env
     AccountHash,      // owner
-    TestContract,     // wise contract
-    WiseTestInstance, // WiseTestInstance
+    TestContract,     // stakeable contract
+    StakeableTestInstance, // StakeableTestInstance
     TestContract,     // erc20
     TestContract,     // flash_swapper
     TestContract,     // factory
@@ -290,13 +290,13 @@ fn deploy_wise() -> (
         &synthetic_token,
     );
 
-    // Deploy Wise Contract
+    // Deploy Stakeable Contract
     let launch_time: U256 = 10.into();
 
-    let wise_contract = TestContract::new(
+    let stakeable_contract = TestContract::new(
         &env,
-        "wisetoken.wasm",
-        "Wisetoken",
+        "stakeabletoken.wasm",
+        "Stakeabletoken",
         Sender(owner),
         runtime_args! {
             "scspr" => Key::Hash(scspr_contract.contract_hash()),
@@ -310,15 +310,15 @@ fn deploy_wise() -> (
     );
 
     // deploy Test contract
-    let test_contract = WiseTestInstance::new(
+    let test_contract = StakeableTestInstance::new(
         &env,
-        Key::Hash(wise_contract.contract_hash()),
+        Key::Hash(stakeable_contract.contract_hash()),
         Key::Hash(erc20.contract_hash()),
         Sender(owner),
     );
 
     // change keeper to test contract
-    wise_contract.call_contract(
+    stakeable_contract.call_contract(
         Sender(owner),
         "change_keeper",
         runtime_args! {"keeper" => test_contract.test_contract_package_hash()},
@@ -336,7 +336,7 @@ fn deploy_wise() -> (
     (
         env,
         owner,
-        wise_contract,
+        stakeable_contract,
         test_contract,
         erc20,
         flash_swapper,
@@ -359,8 +359,8 @@ fn test_erc20_deploy() {
 }
 
 #[test]
-fn test_wise_deploy() {
-    let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
+fn test_stakeable_deploy() {
+    let (env, owner, stakeable_contract, test_contract, _, _, _, _, _, _) = deploy_stakeable();
     assert_ne!(
         Key::from(test_contract.test_contract_hash()),
         Key::Hash([0u8; 32])
@@ -369,8 +369,8 @@ fn test_wise_deploy() {
 
 #[test]
 fn test_stable_usd_equivalent_deploy() {
-    let (env, owner, wise_contract, _, _, _, _, _, _, _) = deploy_wise();
-    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, wise_contract);
+    let (env, owner, stakeable_contract, _, _, _, _, _, _, _) = deploy_stakeable();
+    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, stakeable_contract);
 
     assert_ne!(
         Key::Hash(stable_usd_equivalent_contract.contract_hash()),
@@ -380,14 +380,14 @@ fn test_stable_usd_equivalent_deploy() {
 
 #[test]
 fn set_liquidity_transfomer() {
-    let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_wise();
+    let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_stakeable();
     test_contract.set_liquidity_transfomer(Sender(owner), Key::from(owner));
 }
 
 #[test]
 fn set_stable_usd_equivalent() {
-    let (env, owner, wise_contract, test_contract, _, _, _, _, _, _) = deploy_wise();
-    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, wise_contract);
+    let (env, owner, stakeable_contract, test_contract, _, _, _, _, _, _) = deploy_stakeable();
+    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, stakeable_contract);
 
     test_contract.set_stable_usd_equivalent(
         Sender(owner),
@@ -397,20 +397,20 @@ fn set_stable_usd_equivalent() {
 
 #[test]
 fn renounce_keeper() {
-    let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_wise();
+    let (_, owner, _, test_contract, _, _, _, _, _, _) = deploy_stakeable();
     test_contract.renounce_keeper(Sender(owner));
 }
 
 #[test]
 fn mint_supply() {
-    let (env, owner, wise, test_contract, _, _, _, _, _, _) = deploy_wise();
+    let (env, owner, stakeable, test_contract, _, _, _, _, _, _) = deploy_stakeable();
     let user: AccountHash = env.next_user();
 
     test_contract
         .set_liquidity_transfomer(Sender(owner), test_contract.test_contract_package_hash()); // make test contract as liquidity_transformer
 
     test_contract.mint_supply(Sender(owner), Key::from(user), 50.into());
-    let amount: U256 = test_contract.balance_of(&wise, Key::from(user));
+    let amount: U256 = test_contract.balance_of(&stakeable, Key::from(user));
 
     assert_eq!(amount, 50.into()) // 1000 + 50 = 1050
 }
@@ -420,7 +420,7 @@ fn create_stake_with_cspr() {
     let (
         env,
         owner,
-        wise_contract,
+        stakeable_contract,
         test_contract,
         _,
         flash_swapper,
@@ -428,27 +428,27 @@ fn create_stake_with_cspr() {
         router_contract,
         wcspr,
         scspr,
-    ) = deploy_wise();
+    ) = deploy_stakeable();
     let user = env.next_user();
 
     // let router_library: ContractHash = router_contract.query_named_key("library_hash".to_string());
     // println!("LIbrary: {}", router_library);
 
     // let router_scspr: ContractHash = router_contract.query_named_key("wcspr".to_string());
-    // let wise_scspr: Key = wise_contract.query_named_key("wcspr_contract_hash".to_string());
-    // assert_eq!(Key::from(router_scspr), wise_scspr);
+    // let stakeable_scspr: Key = stakeable_contract.query_named_key("wcspr_contract_hash".to_string());
+    // assert_eq!(Key::from(router_scspr), stakeable_scspr);
 
     // let router_hash: Key = Key::Hash(wcspr.contract_hash());
     // let router_hash: ContractHash = ContractHash::from(router_hash.into_hash().unwrap_or_default());
 
-    // let wise_hash: Key = Key::Hash(wcspr.contract_hash());
+    // let stakeable_hash: Key = Key::Hash(wcspr.contract_hash());
 
     // let zero: Key = Key::Hash([0u8;32]);
     // assert_eq!(zero, Key::from(router_hash));
 
-    // mint scspr, and wise to test_contract
+    // mint scspr, and stakeable to test_contract
     let _:() = scspr.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
-    let _:() = wise_contract.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
+    let _:() = stakeable_contract.call_contract(Sender(owner), "mint", runtime_args!{"account" => test_contract.test_contract_package_hash(), "amount" => U256::from("900000000000000000000")});
     // create pair of wcspr and scspr
     let pair: TestContract = deploy_pair_contract(
         &env,
@@ -464,7 +464,7 @@ fn create_stake_with_cspr() {
         &Key::Hash(router_contract.contract_hash()),
         &Key::Hash(pair.contract_hash()),
     );
-    // create pair of scspr and wise contract
+    // create pair of scspr and stakeable contract
     let pair: TestContract = deploy_pair_contract(
         &env,
         owner,
@@ -475,7 +475,7 @@ fn create_stake_with_cspr() {
         &test_contract,
         &owner,
         &scspr,
-        &wise_contract,
+        &stakeable_contract,
         &Key::from(user),
         &Key::Hash(router_contract.contract_hash()),
         &Key::Hash(pair.contract_hash()),
@@ -494,7 +494,7 @@ fn extend_lt_auction() {
     let (
         env,
         owner,
-        wise_contract,
+        stakeable_contract,
         test_contract,
         _,
         flash_swapper,
@@ -502,7 +502,7 @@ fn extend_lt_auction() {
         router_contract,
         wcspr,
         scspr,
-    ) = deploy_wise();
+    ) = deploy_stakeable();
     let user = env.next_user();
 
     test_contract
@@ -511,7 +511,7 @@ fn extend_lt_auction() {
 }
 
 fn add_liquidity_cspr(
-    test_contract: &WiseTestInstance,
+    test_contract: &StakeableTestInstance,
     owner: &AccountHash,
     token: &TestContract,
     to: &Key,
@@ -545,7 +545,7 @@ fn add_liquidity_cspr(
 }
 
 fn add_liquidity(
-    test_contract: &WiseTestInstance,
+    test_contract: &StakeableTestInstance,
     owner: &AccountHash,
     token_a: &TestContract,
     token_b: &TestContract,

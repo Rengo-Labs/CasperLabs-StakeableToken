@@ -1,0 +1,15 @@
+/target
+/.history
+/Cargo.lock
+/stakeabletoken/target
+/stakeabletoken/.history
+/stakeabletoken/Cargo.lock
+/stakeabletoken_tests/target
+/stakeabletoken_tests/.history
+/stakeabletoken_tests/wasm/*
+/stakeabletoken_tests/Cargo.lock
+/test-contract/target
+/test-contract/.history
+/test-contract/Cargo.lock
+
+

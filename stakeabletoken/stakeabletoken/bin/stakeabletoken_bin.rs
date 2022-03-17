@@ -34,34 +34,34 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
-use wise_token_utils::{
+use stakeable_token_utils::{
     declaration,
     helpers::{typecast_from_string, typecast_to_string},
     referral_token,
 };
-use wisetoken::{self, WiseToken};
+use stakeabletoken::{self, StakeableToken};
 
 #[derive(Default)]
-struct WiseTokenStruct(OnChainContractStorage);
+struct StakeableTokenStruct(OnChainContractStorage);
 
-impl ContractContext<OnChainContractStorage> for WiseTokenStruct {
+impl ContractContext<OnChainContractStorage> for StakeableTokenStruct {
     fn storage(&self) -> &OnChainContractStorage {
         &self.0
     }
 }
 
-impl WiseToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Declaration<OnChainContractStorage> for WiseTokenStruct {}
-impl Globals<OnChainContractStorage> for WiseTokenStruct {}
-impl Timing<OnChainContractStorage> for WiseTokenStruct {}
-impl StakingToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Helper<OnChainContractStorage> for WiseTokenStruct {}
-impl LiquidityToken<OnChainContractStorage> for WiseTokenStruct {}
-impl ReferralToken<OnChainContractStorage> for WiseTokenStruct {}
-impl Snapshot<OnChainContractStorage> for WiseTokenStruct {}
-impl ERC20<OnChainContractStorage> for WiseTokenStruct {}
+impl StakeableToken<OnChainContractStorage> for StakeableTokenStruct {}
+impl Declaration<OnChainContractStorage> for StakeableTokenStruct {}
+impl Globals<OnChainContractStorage> for StakeableTokenStruct {}
+impl Timing<OnChainContractStorage> for StakeableTokenStruct {}
+impl StakingToken<OnChainContractStorage> for StakeableTokenStruct {}
+impl Helper<OnChainContractStorage> for StakeableTokenStruct {}
+impl LiquidityToken<OnChainContractStorage> for StakeableTokenStruct {}
+impl ReferralToken<OnChainContractStorage> for StakeableTokenStruct {}
+impl Snapshot<OnChainContractStorage> for StakeableTokenStruct {}
+impl ERC20<OnChainContractStorage> for StakeableTokenStruct {}
 
-impl WiseTokenStruct {
+impl StakeableTokenStruct {
     fn constructor(
         &mut self,
         contract_hash: ContractHash,
@@ -76,7 +76,7 @@ impl WiseTokenStruct {
         domain_separator: String,
         permit_type_hash: String,
     ) {
-        WiseToken::init(
+        StakeableToken::init(
             self,
             Key::from(contract_hash),
             package_hash,
@@ -109,7 +109,7 @@ fn constructor() {
     let domain_separator: String = runtime::get_named_arg("domain_separator");
     let permit_type_hash: String = runtime::get_named_arg("permit_type_hash");
 
-    WiseTokenStruct::default().constructor(
+    StakeableTokenStruct::default().constructor(
         contract_hash,
         package_hash,
         synthetic_cspr_address,
@@ -134,7 +134,7 @@ fn create_stake_with_cspr_Jsclient() {
     let purse: URef = runtime::get_named_arg("purse");
 
     let (_stake_id, _start_day, _referrer_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
+        StakeableTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
 }
 
 #[no_mangle]
@@ -145,7 +145,7 @@ fn create_stake_with_token_Jsclient() {
     let referrer: Key = runtime::get_named_arg("referrer");
 
     let (_stake_id, _start_day, _referrer_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake_with_token(
+        StakeableTokenStruct::default().create_stake_with_token(
             token_address,
             token_amount,
             lock_days,
@@ -157,7 +157,7 @@ fn create_stake_with_token_Jsclient() {
 fn transfer_Jsclient() {
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let _ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
+    let _ret = ERC20::transfer(&StakeableTokenStruct::default(), recipient, amount);
 }
 
 #[no_mangle]
@@ -165,7 +165,7 @@ fn transfer_from_Jsclient() {
     let owner: Key = runtime::get_named_arg("owner");
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let _ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
+    let _ret = ERC20::transfer_from(&StakeableTokenStruct::default(), owner, recipient, amount);
 }
 
 #[no_mangle]
@@ -183,7 +183,7 @@ fn check_referrals_by_id_Jsclient() {
         is_mature_stake,
         is_ended_stake,
     ): (Key, Vec<u32>, U256, U256, bool, bool, bool, bool) =
-        WiseTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
+        StakeableTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
     let stake_struct = referral_token::structs::StakeInfo {
         staker,
         stake_id,
@@ -203,14 +203,14 @@ fn create_stake_Jsclient() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
     let (_stake_id, _start_day, _referral_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
+        StakeableTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
 }
 
 #[no_mangle]
 fn end_stake_Jsclient() {
     let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
     let stake_id: Vec<u32> = typecast_from_string(stake_id);
-    let _ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
+    let _ret: U256 = StakeableTokenStruct::default().end_stake(stake_id);
 }
 
 #[no_mangle]
@@ -224,7 +224,7 @@ fn scrape_interest_Jsclient() {
         U256,
         U256,
         U256,
-    ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
+    ) = StakeableTokenStruct::default().scrape_interest(stake_id, scrape_days);
     let _ret: Vec<U256> = vec![
         scrape_day,
         scrape_amount,
@@ -239,7 +239,7 @@ fn check_mature_stake_Jsclient() {
     let staker: Key = runtime::get_named_arg("staker");
     let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
     let stake_id: Vec<u32> = typecast_from_string(stake_id);
-    let _ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
+    let _ret: bool = StakeableTokenStruct::default().check_mature_stake(staker, stake_id);
 }
 
 #[no_mangle]
@@ -249,14 +249,14 @@ fn check_stake_by_id_Jsclient() {
     let stake_id: Vec<u32> = typecast_from_string(stake_id);
 
     let (_stake, _penalty_amount, _is_mature): (Vec<u8>, U256, bool) =
-        WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
+        StakeableTokenStruct::default().check_stake_by_id(staker, stake_id);
 }
 
 #[no_mangle]
 fn create_liquidity_stake_Jsclient() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
     let _liquidity_stake_id: Vec<u32> =
-        WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
+        StakeableTokenStruct::default().create_liquidity_stake(liquidity_tokens);
 }
 
 #[no_mangle]
@@ -264,7 +264,7 @@ fn end_liquidity_stake_Jsclient() {
     let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
     let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
 
-    let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
+    let ret: U256 = StakeableTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
 }
 
 #[no_mangle]
@@ -273,7 +273,7 @@ fn check_liquidity_stake_by_id_Jsclient() {
     let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
     let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
     let _ret: Vec<u8> =
-        WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
+        StakeableTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
 }
 
 #[no_mangle]
@@ -281,31 +281,31 @@ fn set_liquidity_transfomer() {
     let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
     let transformer_purse: URef = runtime::get_named_arg("transformer_purse"); // purse of immutable_transformer account
 
-    WiseTokenStruct::default().set_liquidity_transfomer(immutable_transformer, transformer_purse);
+    StakeableTokenStruct::default().set_liquidity_transfomer(immutable_transformer, transformer_purse);
 }
 
 #[no_mangle]
 fn set_stable_usd_equivalent() {
     let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
-    WiseToken::set_stable_usd_equivalent(&WiseTokenStruct::default(), equalizer_address);
+    StakeableToken::set_stable_usd_equivalent(&StakeableTokenStruct::default(), equalizer_address);
 }
 
 #[no_mangle]
 fn renounce_keeper() {
-    WiseTokenStruct::default().renounce_keeper();
+    StakeableTokenStruct::default().renounce_keeper();
 }
 
 #[no_mangle]
 fn change_keeper() {
     let keeper: Key = runtime::get_named_arg("keeper");
-    WiseTokenStruct::default().change_keeper(keeper);
+    StakeableTokenStruct::default().change_keeper(keeper);
 }
 
 #[no_mangle]
 fn mint_supply() {
     let investor_address: Key = runtime::get_named_arg("investor_address");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().mint_supply(investor_address, amount);
+    StakeableTokenStruct::default().mint_supply(investor_address, amount);
 }
 
 #[no_mangle]
@@ -316,7 +316,7 @@ fn create_stake_with_cspr() {
     let purse: URef = runtime::get_named_arg("purse");
 
     let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
+        StakeableTokenStruct::default().create_stake_with_cspr(lock_days, referrer, amount, purse);
     runtime::ret(
         CLValue::from_t((
             typecast_to_string(stake_id),
@@ -334,7 +334,7 @@ fn create_stake_with_token() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
 
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = WiseTokenStruct::default()
+    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = StakeableTokenStruct::default()
         .create_stake_with_token(token_address, token_amount, lock_days, referrer);
     runtime::ret(
         CLValue::from_t((
@@ -348,31 +348,31 @@ fn create_stake_with_token() {
 
 #[no_mangle]
 fn get_pair_address() {
-    let ret: Key = WiseTokenStruct::default().get_pair_address();
+    let ret: Key = StakeableTokenStruct::default().get_pair_address();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn get_total_staked() {
-    let ret: U256 = WiseTokenStruct::default().get_total_staked();
+    let ret: U256 = StakeableTokenStruct::default().get_total_staked();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn get_liquidity_transformer() {
-    let ret: Key = WiseTokenStruct::default().get_liquidity_transformer();
+    let ret: Key = StakeableTokenStruct::default().get_liquidity_transformer();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn get_synthetic_token_address() {
-    let ret: Key = WiseTokenStruct::default().get_synthetic_token_address();
+    let ret: Key = StakeableTokenStruct::default().get_synthetic_token_address();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn extend_lt_auction() {
-    WiseTokenStruct::default().extend_lt_auction();
+    StakeableTokenStruct::default().extend_lt_auction();
 }
 
 /// This function is to transfer tokens against the address that user provided
@@ -388,7 +388,7 @@ fn extend_lt_auction() {
 fn transfer() {
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer(&WiseTokenStruct::default(), recipient, amount);
+    let ret = ERC20::transfer(&StakeableTokenStruct::default(), recipient, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -419,7 +419,7 @@ fn transfer_from() {
     let owner: Key = runtime::get_named_arg("owner");
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret = ERC20::transfer_from(&WiseTokenStruct::default(), owner, recipient, amount);
+    let ret = ERC20::transfer_from(&StakeableTokenStruct::default(), owner, recipient, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -449,7 +449,7 @@ fn permit() {
     let spender: Key = runtime::get_named_arg("spender");
     let value: U256 = runtime::get_named_arg("value");
     let deadline: u64 = runtime::get_named_arg("deadline");
-    WiseTokenStruct::default().permit(public_key, signature, owner, spender, value, deadline);
+    StakeableTokenStruct::default().permit(public_key, signature, owner, spender, value, deadline);
 }
 
 /// This function is to approve tokens against the address that user provided
@@ -476,7 +476,7 @@ fn permit() {
 fn approve() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().approve(spender, amount);
+    StakeableTokenStruct::default().approve(spender, amount);
 }
 
 /// This function is to mint token against the address that user provided
@@ -492,7 +492,7 @@ fn approve() {
 fn mint() {
     let to: Key = runtime::get_named_arg("to");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().mint(to, amount);
+    StakeableTokenStruct::default().mint(to, amount);
 }
 
 /// This function is to burn token against the address that user provided
@@ -508,7 +508,7 @@ fn mint() {
 fn burn() {
     let from: Key = runtime::get_named_arg("from");
     let amount: U256 = runtime::get_named_arg("amount");
-    WiseTokenStruct::default().burn(from, amount);
+    StakeableTokenStruct::default().burn(from, amount);
 }
 
 /// This function is to return the Balance  of owner against the address that user provided
@@ -521,7 +521,7 @@ fn burn() {
 #[no_mangle]
 fn balance_of() {
     let owner: Key = runtime::get_named_arg("owner");
-    let ret: U256 = WiseTokenStruct::default().balance_of(owner);
+    let ret: U256 = StakeableTokenStruct::default().balance_of(owner);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -535,7 +535,7 @@ fn balance_of() {
 #[no_mangle]
 fn nonce() {
     let owner: Key = runtime::get_named_arg("owner");
-    let ret: U256 = WiseTokenStruct::default().nonce(owner);
+    let ret: U256 = StakeableTokenStruct::default().nonce(owner);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -544,7 +544,7 @@ fn nonce() {
 
 #[no_mangle]
 fn name() {
-    let ret: String = WiseTokenStruct::default().name();
+    let ret: String = StakeableTokenStruct::default().name();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -553,7 +553,7 @@ fn name() {
 
 #[no_mangle]
 fn symbol() {
-    let ret: String = WiseTokenStruct::default().symbol();
+    let ret: String = StakeableTokenStruct::default().symbol();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -570,7 +570,7 @@ fn symbol() {
 fn allowance() {
     let owner: Key = runtime::get_named_arg("owner");
     let spender: Key = runtime::get_named_arg("spender");
-    let ret: U256 = WiseTokenStruct::default().allowance(owner, spender);
+    let ret: U256 = StakeableTokenStruct::default().allowance(owner, spender);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -579,7 +579,7 @@ fn allowance() {
 
 #[no_mangle]
 fn total_supply() {
-    let ret: U256 = WiseTokenStruct::default().total_supply();
+    let ret: U256 = StakeableTokenStruct::default().total_supply();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -596,7 +596,7 @@ fn increase_allowance() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    let ret: Result<(), u32> = WiseTokenStruct::default().increase_allowance(spender, amount);
+    let ret: Result<(), u32> = StakeableTokenStruct::default().increase_allowance(spender, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -613,7 +613,7 @@ fn decrease_allowance() {
     let spender: Key = runtime::get_named_arg("spender");
     let amount: U256 = runtime::get_named_arg("amount");
 
-    let ret: Result<(), u32> = WiseTokenStruct::default().decrease_allowance(spender, amount);
+    let ret: Result<(), u32> = StakeableTokenStruct::default().decrease_allowance(spender, amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -622,37 +622,37 @@ fn decrease_allowance() {
 
 #[no_mangle]
 fn package_hash() {
-    let ret: ContractPackageHash = WiseTokenStruct::default().get_package_hash();
+    let ret: ContractPackageHash = StakeableTokenStruct::default().get_package_hash();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
-fn current_wise_day() {
-    let ret: u64 = WiseTokenStruct::default().current_wise_day();
+fn current_stakeable_day() {
+    let ret: u64 = StakeableTokenStruct::default().current_stakeable_day();
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn liquidity_guard_trigger() {
-    WiseTokenStruct::default().liquidity_guard_trigger();
+    StakeableTokenStruct::default().liquidity_guard_trigger();
 }
 
 #[no_mangle]
 fn manual_daily_snapshot() {
-    WiseTokenStruct::default().manual_daily_snapshot();
+    StakeableTokenStruct::default().manual_daily_snapshot();
 }
 
 #[no_mangle]
 fn manual_daily_snapshot_point() {
     let update_day: u64 = runtime::get_named_arg("update_day");
-    WiseTokenStruct::default().manual_daily_snapshot_point(update_day);
+    StakeableTokenStruct::default().manual_daily_snapshot_point(update_day);
 }
 
 #[no_mangle]
 fn get_stable_usd_equivalent() {
     let ret: U256 =
-        <WiseTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd_equivalent(
-            &WiseTokenStruct::default(),
+        <StakeableTokenStruct as ReferralToken<OnChainContractStorage>>::get_stable_usd_equivalent(
+            &StakeableTokenStruct::default(),
         );
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
@@ -662,7 +662,7 @@ fn referrer_interest() {
     let referral_id: Vec<String> = runtime::get_named_arg("referral_id");
     let referral_id: Vec<u32> = typecast_from_string(referral_id);
     let scrape_days: U256 = runtime::get_named_arg("scrape_days");
-    WiseTokenStruct::default().referrer_interest(referral_id, scrape_days);
+    StakeableTokenStruct::default().referrer_interest(referral_id, scrape_days);
 }
 
 #[no_mangle]
@@ -674,7 +674,7 @@ fn referrer_interest_bulk() {
     }
     let scrape_days: Vec<String> = runtime::get_named_arg("scrape_days");
     let scrape_days: Vec<U256> = typecast_from_string(scrape_days); // TODO verify this function works for U256
-    WiseTokenStruct::default().referrer_interest_bulk(referral_ids, scrape_days);
+    StakeableTokenStruct::default().referrer_interest_bulk(referral_ids, scrape_days);
 }
 
 #[no_mangle]
@@ -693,7 +693,7 @@ fn check_referrals_by_id() {
         is_mature_stake,
         is_ended_stake,
     ): (Key, Vec<u32>, U256, U256, bool, bool, bool, bool) =
-        WiseTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
+        StakeableTokenStruct::default().check_referrals_by_id(_referrer, referral_id);
     let ret: Vec<String> = vec![
         staker.to_formatted_string(),
         format!("{:?}", typecast_to_string(stake_id)),
@@ -721,7 +721,7 @@ fn create_stake_bulk() {
         referrer.push(Key::from_formatted_str(key).unwrap());
     }
 
-    WiseTokenStruct::default().create_stake_bulk(staked_amount, lock_days, referrer);
+    StakeableTokenStruct::default().create_stake_bulk(staked_amount, lock_days, referrer);
 }
 
 #[no_mangle]
@@ -730,7 +730,7 @@ fn create_stake() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
     let (stake_id, start_day, referral_id): (Vec<u32>, U256, Vec<u32>) =
-        WiseTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
+        StakeableTokenStruct::default().create_stake(staked_amount, lock_days, referrer);
     runtime::ret(
         CLValue::from_t((
             typecast_to_string(stake_id),
@@ -745,7 +745,7 @@ fn create_stake() {
 fn end_stake() {
     let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
     let stake_id: Vec<u32> = typecast_from_string(stake_id);
-    let ret: U256 = WiseTokenStruct::default().end_stake(stake_id);
+    let ret: U256 = StakeableTokenStruct::default().end_stake(stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -760,7 +760,7 @@ fn scrape_interest() {
         U256,
         U256,
         U256,
-    ) = WiseTokenStruct::default().scrape_interest(stake_id, scrape_days);
+    ) = StakeableTokenStruct::default().scrape_interest(stake_id, scrape_days);
     let ret: Vec<String> = vec![
         scrape_day.to_string(),
         scrape_amount.to_string(),
@@ -776,7 +776,7 @@ fn check_mature_stake() {
     let staker: Key = runtime::get_named_arg("staker");
     let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
     let stake_id: Vec<u32> = typecast_from_string(stake_id);
-    let ret: bool = WiseTokenStruct::default().check_mature_stake(staker, stake_id);
+    let ret: bool = StakeableTokenStruct::default().check_mature_stake(staker, stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -785,7 +785,7 @@ fn check_stake_by_id() {
     let staker: Key = runtime::get_named_arg("staker");
     let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
     let (stake, penalty_amount, is_mature): (Vec<u8>, U256, bool) =
-        WiseTokenStruct::default().check_stake_by_id(staker, stake_id);
+        StakeableTokenStruct::default().check_stake_by_id(staker, stake_id);
     let stake: declaration::structs::Stake =
         declaration::structs::Stake::from_bytes(&stake).unwrap().0;
     let ret: Vec<String> = vec![
@@ -808,7 +808,7 @@ fn check_stake_by_id() {
 fn create_liquidity_stake() {
     let liquidity_tokens: U256 = runtime::get_named_arg("liquidity_tokens");
     let liquidity_stake_id: Vec<u32> =
-        WiseTokenStruct::default().create_liquidity_stake(liquidity_tokens);
+        StakeableTokenStruct::default().create_liquidity_stake(liquidity_tokens);
     runtime::ret(CLValue::from_t(typecast_to_string(liquidity_stake_id)).unwrap_or_revert());
 }
 
@@ -816,7 +816,7 @@ fn create_liquidity_stake() {
 fn end_liquidity_stake() {
     let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
     let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
-    let ret: U256 = WiseTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
+    let ret: U256 = StakeableTokenStruct::default().end_liquidity_stake(liquidity_stake_id);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -826,7 +826,7 @@ fn check_liquidity_stake_by_id() {
     let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
     let liquidity_stake_id: Vec<u32> = typecast_from_string(liquidity_stake_id);
     let _ret: Vec<u8> =
-        WiseTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
+        StakeableTokenStruct::default().check_liquidity_stake_by_id(staker, liquidity_stake_id);
     let l_stake: declaration::structs::LiquidityStake =
         declaration::structs::LiquidityStake::from_bytes(&_ret)
             .unwrap()
@@ -846,7 +846,7 @@ fn generate_id() {
     let y: U256 = runtime::get_named_arg("y");
     let z: u8 = runtime::get_named_arg("z");
 
-    let ret = WiseTokenStruct::default().generate_id(x, y, z);
+    let ret = StakeableTokenStruct::default().generate_id(x, y, z);
     runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
@@ -856,7 +856,7 @@ fn stakes_pagination() {
     let offset: U256 = runtime::get_named_arg("offset");
     let length: U256 = runtime::get_named_arg("length");
 
-    let _ret = WiseTokenStruct::default().stakes_pagination(staker, offset, length);
+    let _ret = StakeableTokenStruct::default().stakes_pagination(staker, offset, length);
     let mut ret: Vec<Vec<String>> = Vec::new();
     for id in _ret {
         ret.push(typecast_to_string(id));
@@ -870,7 +870,7 @@ fn referrals_pagination() {
     let offset: U256 = runtime::get_named_arg("offset");
     let length: U256 = runtime::get_named_arg("length");
 
-    let _ret = WiseTokenStruct::default().referrals_pagination(staker, offset, length);
+    let _ret = StakeableTokenStruct::default().referrals_pagination(staker, offset, length);
     let mut ret: Vec<Vec<String>> = Vec::new();
     for id in _ret {
         ret.push(typecast_to_string(id));
@@ -881,21 +881,21 @@ fn referrals_pagination() {
 #[no_mangle]
 fn latest_stake_id() {
     let staker: Key = runtime::get_named_arg("staker");
-    let ret = WiseTokenStruct::default().latest_stake_id(staker);
+    let ret = StakeableTokenStruct::default().latest_stake_id(staker);
     runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn latest_referral_id() {
     let staker: Key = runtime::get_named_arg("staker");
-    let ret = WiseTokenStruct::default().latest_referrer_id(staker);
+    let ret = StakeableTokenStruct::default().latest_referrer_id(staker);
     runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
 #[no_mangle]
 fn latest_liquidity_stake_id() {
     let staker: Key = runtime::get_named_arg("staker");
-    let ret = WiseTokenStruct::default().latest_liquidity_stake_id(staker);
+    let ret = StakeableTokenStruct::default().latest_liquidity_stake_id(staker);
     runtime::ret(CLValue::from_t(typecast_to_string(ret)).unwrap_or_revert());
 }
 
@@ -907,13 +907,13 @@ fn decimals() {
 
 #[no_mangle]
 fn create_pair() {
-    WiseTokenStruct::default().create_pair();
+    StakeableTokenStruct::default().create_pair();
 }
 
 #[no_mangle]
 fn get_inflation() {
     let amount: U256 = runtime::get_named_arg("amount");
-    let ret: U256 = WiseTokenStruct::default().get_inflation(amount);
+    let ret: U256 = StakeableTokenStruct::default().get_inflation(amount);
     runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
 }
 
@@ -926,7 +926,7 @@ fn get_amounts_out() {
     }
     let amount_in: U256 = runtime::get_named_arg("amount_in");
 
-    let amounts: Vec<U256> = WiseTokenStruct::default().get_amounts_out(amount_in, path);
+    let amounts: Vec<U256> = StakeableTokenStruct::default().get_amounts_out(amount_in, path);
     runtime::ret(CLValue::from_t(amounts).unwrap_or_revert());
 }
 
@@ -936,7 +936,7 @@ fn get_amounts_out() {
 #[no_mangle]
 fn get_reserves() {
     let (reserve0, reserve1, block_timestamp_last): (U128, U128, u64) =
-        WiseTokenStruct::default().get_reserves();
+        StakeableTokenStruct::default().get_reserves();
     runtime::ret(CLValue::from_t((reserve0, reserve1, block_timestamp_last)).unwrap_or_revert());
 }
 
@@ -950,7 +950,7 @@ fn swap_exact_tokens_for_tokens() {
     let amount_out_min: U256 = runtime::get_named_arg("amount_out_min");
     let path: Vec<String> = runtime::get_named_arg("path");
     let to: Key = runtime::get_named_arg("to");
-    let amounts: Vec<U256> = WiseTokenStruct::default().swap_exact_tokens_for_tokens(
+    let amounts: Vec<U256> = StakeableTokenStruct::default().swap_exact_tokens_for_tokens(
         deadline,
         amount_in,
         amount_out_min,
@@ -972,7 +972,7 @@ fn swap_exact_cspr_for_tokens() {
     let to: Key = runtime::get_named_arg("to");
     let purse: URef = runtime::get_named_arg("purse");
 
-    let amounts: Vec<U256> = WiseTokenStruct::default().swap_exact_cspr_for_tokens(
+    let amounts: Vec<U256> = StakeableTokenStruct::default().swap_exact_cspr_for_tokens(
         deadline,
         amount_out_min,
         amount_in,
@@ -1308,7 +1308,7 @@ fn get_entry_points() -> EntryPoints {
     ));
 
     entry_points.add_entry_point(EntryPoint::new(
-        "current_wise_day",
+        "current_stakeable_day",
         vec![],
         u64::cl_type(),
         EntryPointAccess::Public,
@@ -1724,8 +1724,8 @@ pub extern "C" fn call() {
     let (contract_hash, _): (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let (domain_separator, permit_type_hash) = WiseTokenStruct::default()
-        .get_permit_type_and_domain_separator("Wise Token", contract_hash);
+    let (domain_separator, permit_type_hash) = StakeableTokenStruct::default()
+        .get_permit_type_and_domain_separator("Stakeable Token", contract_hash);
 
     let synthetic_cspr_address: Key = runtime::get_named_arg("scspr");
     let router_address: Key = runtime::get_named_arg("router");

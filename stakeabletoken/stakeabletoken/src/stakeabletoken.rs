@@ -23,10 +23,10 @@ use snapshot_crate::Snapshot;
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
 
-use wise_token_utils::commons::key_names;
-use wise_token_utils::error_codes::ErrorCodes;
+use stakeable_token_utils::commons::key_names;
+use stakeable_token_utils::error_codes::ErrorCodes;
 
-pub trait WiseToken<Storage: ContractStorage>:
+pub trait StakeableToken<Storage: ContractStorage>:
     ContractContext<Storage>
     + Declaration<Storage>
     + StakingToken<Storage>
@@ -75,7 +75,7 @@ pub trait WiseToken<Storage: ContractStorage>:
         ReferralToken::init(self);
         ERC20::init(
             self,
-            "Wise Token".to_string(),
+            "Stakeable Token".to_string(),
             "WISB".to_string(),
             9.into(),
             domain_separator,
@@ -174,7 +174,7 @@ pub trait WiseToken<Storage: ContractStorage>:
 
         // call swap method from router
         let args: RuntimeArgs = runtime_args! {
-            "amount_out_min" => constant_struct.yodas_per_wise,
+            "amount_out_min" => constant_struct.yodas_per_stakeable,
             "amount_in" => amount,
             "path" => path.clone(),
             "to" => Key::from(self.get_caller()),
@@ -249,7 +249,7 @@ pub trait WiseToken<Storage: ContractStorage>:
 
         let args: RuntimeArgs = runtime_args! {
             "amount_in" => token_amount,
-            "amount_out_min" => constant_struct.yodas_per_wise,
+            "amount_out_min" => constant_struct.yodas_per_stakeable,
             "path" => path,
             "to" => self.get_caller(),
             "deadline" => deadline
@@ -286,10 +286,10 @@ pub trait WiseToken<Storage: ContractStorage>:
         let sixteen_days_milliseconds: u64 = 1382400000;
         let ten_minutes_milliseconds: u64 = 600000;
         let blocktime_milliseconds: u64 = runtime::get_blocktime().into();
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
         let mut launch_time_milliseconds: U256 = Declaration::get_launchtime(self);
 
-        if current_wise_day == 15 {
+        if current_stakeable_day == 15 {
             if launch_time_milliseconds.as_u64() + sixteen_days_milliseconds
                 - blocktime_milliseconds
                 <= ten_minutes_milliseconds
@@ -309,7 +309,7 @@ pub trait WiseToken<Storage: ContractStorage>:
                 }
             }
         }
-        if current_wise_day > 15 {
+        if current_stakeable_day > 15 {
             Declaration::set_launchtime(self, U256::from(LAUNCH_TIME));
         }
     }

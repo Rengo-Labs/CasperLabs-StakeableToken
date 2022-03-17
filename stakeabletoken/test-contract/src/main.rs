@@ -25,14 +25,14 @@ pub mod mappings;
 fn constructor() {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let wise_address: Key = runtime::get_named_arg("wise_address");
+    let stakeable_address: Key = runtime::get_named_arg("stakeable_address");
     let erc20_address: Key = runtime::get_named_arg("erc20_address");
 
     mappings::set_key(&mappings::self_hash_key(), contract_hash);
     mappings::set_key(&mappings::self_package_key(), package_hash);
     mappings::set_key(
-        &mappings::wise_key(),
-        ContractHash::from(wise_address.into_hash().unwrap_or_default()),
+        &mappings::stakeable_key(),
+        ContractHash::from(stakeable_address.into_hash().unwrap_or_default()),
     );
     mappings::set_key(
         &mappings::erc20(),
@@ -42,13 +42,13 @@ fn constructor() {
 
 #[no_mangle]
 fn set_liquidity_transfomer() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
 
     let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
     let transformer_purse: URef = system::create_purse();
 
     let _: () = runtime::call_contract(
-        wise_contract,
+        stakeable_contract,
         "set_liquidity_transfomer",
         runtime_args! {
             "immutable_transformer" => immutable_transformer,
@@ -59,11 +59,11 @@ fn set_liquidity_transfomer() {
 
 #[no_mangle]
 fn set_stable_usd_equivalent() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
     let equalizer_address: Key = runtime::get_named_arg("equalizer_address");
 
     let _: () = runtime::call_contract(
-        wise_contract,
+        stakeable_contract,
         "set_stable_usd_equivalent",
         runtime_args! {
             "equalizer_address" => equalizer_address
@@ -73,18 +73,18 @@ fn set_stable_usd_equivalent() {
 
 #[no_mangle]
 fn renounce_keeper() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
-    let _: () = runtime::call_contract(wise_contract, "renounce_keeper", runtime_args! {});
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
+    let _: () = runtime::call_contract(stakeable_contract, "renounce_keeper", runtime_args! {});
 }
 
 #[no_mangle]
 fn mint_supply() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
     let investor_address: Key = runtime::get_named_arg("investor_address");
     let amount: U256 = runtime::get_named_arg("amount");
 
     let _: () = runtime::call_contract(
-        wise_contract,
+        stakeable_contract,
         "mint_supply",
         runtime_args! {
             "investor_address" => investor_address,
@@ -118,11 +118,11 @@ fn create_stake_with_cspr() {
 }
 
 /*
-    This is the actual function that calls the entrypoint of the wise.
+    This is the actual function that calls the entrypoint of the stakeable.
 */
 #[no_mangle]
 fn create_stake_with_cspr_execute() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
 
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
@@ -131,7 +131,7 @@ fn create_stake_with_cspr_execute() {
 
     let (stake_id, start_day, referrer_id): (Vec<String>, U256, Vec<String>) =
         runtime::call_contract(
-            wise_contract,
+            stakeable_contract,
             "create_stake_with_cspr",
             runtime_args! {
                 "lock_days" => lock_days,
@@ -257,9 +257,9 @@ fn transfer_cspr() {
 
 #[no_mangle]
 fn extend_lt_auction() {
-    let wise_contract: ContractHash = mappings::get_key(&mappings::wise_key());
+    let stakeable_contract: ContractHash = mappings::get_key(&mappings::stakeable_key());
 
-    let _: () = runtime::call_contract(wise_contract, "extend_lt_auction", runtime_args! {});
+    let _: () = runtime::call_contract(stakeable_contract, "extend_lt_auction", runtime_args! {});
 }
 
 #[no_mangle]
@@ -324,7 +324,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("wise_address", Key::cl_type()),
+            Parameter::new("stakeable_address", Key::cl_type()),
             Parameter::new("erc20_address", Key::cl_type()),
         ],
         <()>::cl_type(),
@@ -481,7 +481,7 @@ pub extern "C" fn call() {
     let (contract_hash, _): (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let wise_address: Key = runtime::get_named_arg("wise_address");
+    let stakeable_address: Key = runtime::get_named_arg("stakeable_address");
     let erc20_address: Key = runtime::get_named_arg("erc20_address");
 
     // Get parameters and pass it to the constructors
@@ -489,7 +489,7 @@ pub extern "C" fn call() {
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
-        "wise_address" => wise_address,
+        "stakeable_address" => stakeable_address,
         "erc20_address" => erc20_address
     };
 

@@ -4,6 +4,6 @@ extern crate alloc;
 
 pub mod config;
 pub mod data;
-pub mod wisetoken;
+pub mod stakeabletoken;
 
-pub use wisetoken::WiseToken;
+pub use stakeabletoken::StakeableToken;

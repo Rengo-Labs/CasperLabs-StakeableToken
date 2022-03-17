@@ -11,7 +11,7 @@ pub const LAUNCH_TIME: u128 = 1682467200000;
 #[derive(Clone, CLTyped, FromBytes, ToBytes)]
 pub struct DeclarationConstantParameters {
     pub _decimals: u32,
-    pub yodas_per_wise: U256,
+    pub yodas_per_stakeable: U256,
     pub seconds_in_day: u32,
     pub min_lock_days: u32,
     pub formula_day: u32,

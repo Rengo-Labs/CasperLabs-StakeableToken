@@ -3,8 +3,8 @@ use casper_types::{bytesrepr::ToBytes, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 extern crate alloc;
 use alloc::{string::ToString, vec::Vec};
-use wise_token_utils::commons::key_names::*;
-use wise_token_utils::snapshot::structs::*;
+use stakeable_token_utils::commons::key_names::*;
+use stakeable_token_utils::snapshot::structs::*;
 
 pub struct SnapshotsDict {
     dict: Dict,

@@ -9,7 +9,7 @@ use globals_crate::Globals;
 use helper_crate::Helper;
 use snapshot_crate::Snapshot;
 use timing_crate::Timing;
-use wise_token_utils::{commons::key_names::*, declaration, events::*, snapshot};
+use stakeable_token_utils::{commons::key_names::*, declaration, events::*, snapshot};
 
 use casper_contract::contract_api::runtime;
 use casper_types::{
@@ -44,7 +44,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
                 Declaration::set_referral_shares_to_end(self, _final_day, U256::from(0));
             }
         } else {
-            let _day: u64 = Timing::_previous_wise_day(self);
+            let _day: u64 = Timing::_previous_stakeable_day(self);
             let struct_key: U256 = U256::from(_day);
             let snapshots: Vec<u8> = Snapshot::get_struct_from_key(
                 self,
@@ -164,8 +164,8 @@ pub trait ReferralToken<Storage: ContractStorage>:
         if critical_mass.activation_day > 0.into() {
             return critical_mass.activation_day;
         } else {
-            let _current_wise_day: u64 = Timing::_current_wise_day(self);
-            return U256::from(_current_wise_day);
+            let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+            return U256::from(_current_stakeable_day);
         }
     }
     fn get_stable_usd_equivalent(&self) -> U256 {
@@ -235,9 +235,9 @@ pub trait ReferralToken<Storage: ContractStorage>:
                     referral_link.is_active = false;
                 }
             } else {
-                let _current_wise_day: u64 = Timing::_current_wise_day(self);
-                let _current_wise_day: U256 = U256::from(_current_wise_day);
-                let process_days: U256 = Helper::days_diff(self, start_day, _current_wise_day);
+                let _current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
+                let _current_stakeable_day: U256 = U256::from(_current_stakeable_day);
+                let process_days: U256 = Helper::days_diff(self, start_day, _current_stakeable_day);
                 referral_link.processed_days = referral_link.processed_days + process_days;
                 final_day = start_day + process_days.as_u64();
             }
@@ -253,7 +253,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
 
             let _: () = ERC20::mint(self, _referrer, referral_interest);
 
-            emit(&WiseEvents::ReferralCollected {
+            emit(&StakeableEvents::ReferralCollected {
                 staker: referral_link.staker,
                 stake_id: referral_link.stake_id,
                 referrer: _referrer,

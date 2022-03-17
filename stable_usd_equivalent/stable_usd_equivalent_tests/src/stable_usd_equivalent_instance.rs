@@ -8,7 +8,7 @@ use casper_types::{
     U256, U512,
 };
 use test_env::{Sender, TestContract, TestEnv};
-use wise_token_utils::commons::key_names;
+use stakeable_token_utils::commons::key_names;
 
 pub struct StableUSDInstance(TestContract);
 impl StableUSDInstance {
@@ -16,7 +16,7 @@ impl StableUSDInstance {
         env: &TestEnv,
         contract_name: &str,
         sender: Sender,
-        wise: Key,
+        stakeable: Key,
         scspr: Key,
         wcspr: Key,
         stable_usd: Key,
@@ -29,7 +29,7 @@ impl StableUSDInstance {
             contract_name,
             sender,
             runtime_args! {
-                  "wise" =>wise,
+                  "stakeable" =>stakeable,
                   "scspr" =>scspr,
                   "wcspr"=>wcspr,
                   "stable_usd" =>stable_usd,

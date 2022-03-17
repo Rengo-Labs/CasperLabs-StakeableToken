@@ -6,7 +6,7 @@ use contract_utils::{ContractContext, ContractStorage};
 
 // use crate::GLOBALS_{self, GlobalsStruct};
 use crate::data::GlobalsStruct;
-use wise_token_utils::{commons::key_names::*, events::*};
+use stakeable_token_utils::{commons::key_names::*, events::*};
 
 pub trait Globals<Storage: ContractStorage>: ContractContext<Storage> {
     // Will be called by constructor
@@ -95,12 +95,12 @@ pub trait Globals<Storage: ContractStorage>: ContractContext<Storage> {
 
     fn _log_globals(&self) {
         let globals: GlobalsStruct = GlobalsStruct::instance();
-        emit(&WiseEvents::NewGlobals {
+        emit(&StakeableEvents::NewGlobals {
             total_shares: globals.get(GLOBALS_TOTAL_SHARES),
             total_staked: globals.get(GLOBALS_TOTAL_STAKED),
             share_rate: globals.get(GLOBALS_SHARE_PRICE),
             referral_shares: globals.get(GLOBALS_REFERRAL_SHARES),
-            current_wise_day: globals.get(GLOBALS_CURRENT_WISE_DAY).as_u64(),
+            current_stakeable_day: globals.get(GLOBALS_CURRENT_WISE_DAY).as_u64(),
         });
     }
 }

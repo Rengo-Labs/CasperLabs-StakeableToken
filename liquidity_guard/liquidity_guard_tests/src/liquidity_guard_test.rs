@@ -3,7 +3,7 @@ use crate::liquidity_guard_instance::LiquidityGuardInstance;
 use casper_engine_test_support::AccountHash;
 use casper_types::{runtime_args, ContractPackageHash, Key, RuntimeArgs, U256, U512};
 use test_env::{Sender, TestContract, TestEnv};
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 fn deploy_liquidity_guard(env: &TestEnv, owner: AccountHash) -> TestContract {
     TestContract::new(

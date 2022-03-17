@@ -3,7 +3,7 @@ use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key};
 extern crate alloc;
 use alloc::{vec, vec::Vec};
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 pub fn self_hash() -> Key {
     get_key(SELF_CONTRACT_HASH).unwrap_or_revert()
@@ -40,10 +40,10 @@ pub fn set_wcspr_hash(hash: Key) {
     set_key(WCSPR_CONTRACT_HASH, hash);
 }
 
-pub fn wise_hash() -> Key {
+pub fn stakeable_hash() -> Key {
     get_key(WISE_TOKEN_CONTRACT_HASH).unwrap_or_revert()
 }
-pub fn set_wise_hash(hash: Key) {
+pub fn set_stakeable_hash(hash: Key) {
     set_key(WISE_TOKEN_CONTRACT_HASH, hash);
 }
 
@@ -55,7 +55,7 @@ pub fn set_decimals(decimals: U256) {
     set_key(STABLE_USD_EQUIVALENT_YODAS_PER_WISE, U256::from(10).pow(decimals));
 }
 
-pub fn yodas_per_wise() -> U256 {
+pub fn yodas_per_stakeable() -> U256 {
     get_key(STABLE_USD_EQUIVALENT_YODAS_PER_WISE).unwrap_or_default()
 }
 

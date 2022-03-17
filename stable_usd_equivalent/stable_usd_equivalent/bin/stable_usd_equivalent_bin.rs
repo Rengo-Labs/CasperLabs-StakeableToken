@@ -31,7 +31,7 @@ impl StableUSDStruct {
         &mut self,
         contract_hash: ContractHash,
         package_hash: ContractPackageHash,
-        wise: Key,
+        stakeable: Key,
         scspr: Key,
         wcspr: Key,
         stable_usd: Key,
@@ -41,7 +41,7 @@ impl StableUSDStruct {
             self,
             Key::from(contract_hash),
             package_hash,
-            wise,
+            stakeable,
             scspr,
             wcspr,
             stable_usd,
@@ -66,7 +66,7 @@ fn update_stable_usd_equivalent() {
 fn constructor() {
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     let package_hash: ContractPackageHash = runtime::get_named_arg("package_hash");
-    let wise: Key = runtime::get_named_arg("wise");
+    let stakeable: Key = runtime::get_named_arg("stakeable");
     let scspr: Key = runtime::get_named_arg("scspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
     let stable_usd: Key = runtime::get_named_arg("stable_usd");
@@ -75,7 +75,7 @@ fn constructor() {
     StableUSDStruct::default().constructor(
         contract_hash,
         package_hash,
-        wise,
+        stakeable,
         scspr,
         wcspr,
         stable_usd,
@@ -90,7 +90,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("contract_hash", ContractHash::cl_type()),
             Parameter::new("package_hash", ContractPackageHash::cl_type()),
-            Parameter::new("wise", Key::cl_type()),
+            Parameter::new("stakeable", Key::cl_type()),
             Parameter::new("scspr", Key::cl_type()),
             Parameter::new("wcspr", Key::cl_type()),
             Parameter::new("stable_usd", Key::cl_type()),
@@ -127,7 +127,7 @@ pub extern "C" fn call() {
     let (contract_hash, _): (ContractHash, _) =
         storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let wise: Key = runtime::get_named_arg("wise");
+    let stakeable: Key = runtime::get_named_arg("stakeable");
     let scspr: Key = runtime::get_named_arg("scspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
     let stable_usd: Key = runtime::get_named_arg("stable_usd");
@@ -137,7 +137,7 @@ pub extern "C" fn call() {
     let constructor_args = runtime_args! {
         "contract_hash" => contract_hash,
         "package_hash" => package_hash,
-        "wise" => wise,
+        "stakeable" => stakeable,
         "scspr" => scspr,
         "wcspr" => wcspr,
         "stable_usd" => stable_usd,

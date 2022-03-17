@@ -3,7 +3,7 @@ use casper_types::{contracts::ContractPackageHash, Key, U256};
 use contract_utils::{get_key, set_key, Dict};
 extern crate alloc;
 use alloc::string::{String, ToString};
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 pub fn self_hash() -> Key {
     get_key(SELF_CONTRACT_HASH).unwrap_or_revert()

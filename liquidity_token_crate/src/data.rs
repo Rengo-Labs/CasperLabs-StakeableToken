@@ -2,7 +2,7 @@ use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{contracts::ContractPackageHash, Key};
 use contract_utils::{get_key, set_key};
 extern crate alloc;
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 pub fn self_hash() -> Key {
     get_key(SELF_CONTRACT_HASH).unwrap_or_revert()

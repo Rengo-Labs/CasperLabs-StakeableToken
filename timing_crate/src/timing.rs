@@ -7,7 +7,7 @@ use casper_types::{ApiError, U256};
 use contract_utils::{ContractContext, ContractStorage};
 use declaration_crate::Declaration;
 use globals_crate::Globals;
-use wise_token_utils::{error_codes::ErrorCodes, timing::parameters::*};
+use stakeable_token_utils::{error_codes::ErrorCodes, timing::parameters::*};
 
 pub trait Timing<Storage: ContractStorage>:
     ContractContext<Storage> + Declaration<Storage> + Globals<Storage>
@@ -15,42 +15,42 @@ pub trait Timing<Storage: ContractStorage>:
     // Will be called by constructor
     fn init(&mut self) {}
 
-    fn current_wise_day(&self) -> u64 {
+    fn current_stakeable_day(&self) -> u64 {
         let launch_time = data::launch_time();
         if Self::_get_now() >= launch_time {
-            Self::_current_wise_day(self)
+            Self::_current_stakeable_day(self)
         } else {
             0
         }
     }
 
-    fn current_wise_day_only(&self) -> u64 {
-        Self::_current_wise_day(self)
+    fn current_stakeable_day_only(&self) -> u64 {
+        Self::_current_stakeable_day(self)
     }
 
-    fn previous_wise_day(&self) -> u64 {
-        Self::_previous_wise_day(self)
+    fn previous_stakeable_day(&self) -> u64 {
+        Self::_previous_stakeable_day(self)
     }
 
-    fn next_wise_day(&self) -> u64 {
-        Self::_next_wise_day(self)
+    fn next_stakeable_day(&self) -> u64 {
+        Self::_next_stakeable_day(self)
     }
 
     // Helper methods
 
-    fn _current_wise_day(&self) -> u64 {
-        Self::_wise_day_from_stamp(Self::_get_now())
+    fn _current_stakeable_day(&self) -> u64 {
+        Self::_stakeable_day_from_stamp(Self::_get_now())
     }
 
-    fn _next_wise_day(&self) -> u64 {
-        Self::_current_wise_day(self) + 1
+    fn _next_stakeable_day(&self) -> u64 {
+        Self::_current_stakeable_day(self) + 1
     }
 
-    fn _previous_wise_day(&self) -> u64 {
-        Self::_current_wise_day(self) - 1
+    fn _previous_stakeable_day(&self) -> u64 {
+        Self::_current_stakeable_day(self) - 1
     }
 
-    fn _wise_day_from_stamp(_timestamp: U256) -> u64 {
+    fn _stakeable_day_from_stamp(_timestamp: U256) -> u64 {
         let launch_time = data::launch_time();
         let seconds_in_day = U256::from(SECONDS_IN_DAY);
 

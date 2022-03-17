@@ -16,7 +16,7 @@ use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
-use wise_token_utils::{
+use stakeable_token_utils::{
     commons::key_names::*, declaration::parameters::*, declaration::structs::*,
     error_codes::ErrorCodes, snapshot,
 };
@@ -72,10 +72,10 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         }
         let liquidity_stake_id: Vec<u32> =
             Helper::generate_liquidity_stake_id(self, self.get_caller());
-        let next_wise_day: u64 = Timing::_next_wise_day(self);
+        let next_stakeable_day: u64 = Timing::_next_stakeable_day(self);
 
         let mut new_liquidity_stake: LiquidityStake = LiquidityStake::new();
-        new_liquidity_stake.start_day = next_wise_day;
+        new_liquidity_stake.start_day = next_stakeable_day;
         new_liquidity_stake.staked_amount = _liquidity_tokens;
         new_liquidity_stake.is_active = true;
 
@@ -121,10 +121,10 @@ pub trait LiquidityToken<Storage: ContractStorage>:
             runtime::revert(ApiError::User(ErrorCodes::StakeInactive as u16))
         }
 
-        let current_wise_day: u64 = Timing::_current_wise_day(self);
+        let current_stakeable_day: u64 = Timing::_current_stakeable_day(self);
 
         liquidity_stake_struct.is_active = false;
-        liquidity_stake_struct.close_day = current_wise_day;
+        liquidity_stake_struct.close_day = current_stakeable_day;
         liquidity_stake_struct.reward_amount =
             LiquidityToken::_calculate_reward_amount(self, &liquidity_stake_struct);
 
@@ -180,10 +180,10 @@ pub trait LiquidityToken<Storage: ContractStorage>:
             .checked_add(U256::from(constant_parameters_struct.min_referral_days))
             .ok_or(ApiError::User(ErrorCodes::Overflow as u16))
             .unwrap_or_revert();
-        let current_wise_day_globals: U256 =
+        let current_stakeable_day_globals: U256 =
             Globals::get_globals(self, GLOBALS_CURRENT_WISE_DAY.to_string());
-        let calculation_day: U256 = if current_wise_day_globals < max_calculation_day {
-            current_wise_day_globals
+        let calculation_day: U256 = if current_stakeable_day_globals < max_calculation_day {
+            current_stakeable_day_globals
         } else {
             max_calculation_day
         };

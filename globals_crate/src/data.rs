@@ -1,7 +1,7 @@
 use casper_types::{U256};
 use contract_utils::{Dict};
 
-use wise_token_utils::commons::key_names::*;
+use stakeable_token_utils::commons::key_names::*;
 
 
 pub struct GlobalsStruct {
