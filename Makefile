@@ -1,7 +1,8 @@
 # paths to other repos
 uniswap_core_directory = ../CasperLabs-UniswapV2-core
 uniswap_router_directory = ../Casperlabs-UniswapRouter
-stakeable_liquidity_transformer_directory = ../CasperLabs-Stakeable-LiquidityTransformer
+# TODO await naming refactor to LiquidityTransformer
+stakeable_liquidity_transformer_directory = ../CasperLabs-Wise-LiquidityTransformer
 stakeable_liquidity_transformer_scspr_directory = ${stakeable_liquidity_transformer_directory}/scspr/SCSPR
 stakeable_token_directory = .
 erc20_directory = erc20

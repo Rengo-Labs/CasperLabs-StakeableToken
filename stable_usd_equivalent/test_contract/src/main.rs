@@ -37,8 +37,11 @@ fn set_key_by_name() {
 fn get_stable_usd_equivalent() {
     let stable_usd_equivalent: ContractHash = get_key("stable_usd_equivalent");
 
-    let ret: U256 =
-        runtime::call_contract(stable_usd_equivalent, "get_stable_usd_equivalent", runtime_args! {});
+    let ret: U256 = runtime::call_contract(
+        stable_usd_equivalent,
+        "get_stable_usd_equivalent",
+        runtime_args! {},
+    );
     set_key("get_stable_usd_equivalent_result", ret);
 }
 
@@ -46,7 +49,11 @@ fn get_stable_usd_equivalent() {
 fn update_stable_usd_equivalent() {
     let stable_usd_equivalent: ContractHash = get_key(&"stable_usd_equivalent");
 
-    let () = runtime::call_contract(stable_usd_equivalent, "update_stable_usd_equivalent", runtime_args! {});
+    let () = runtime::call_contract(
+        stable_usd_equivalent,
+        "update_stable_usd_equivalent",
+        runtime_args! {},
+    );
 }
 
 #[no_mangle]

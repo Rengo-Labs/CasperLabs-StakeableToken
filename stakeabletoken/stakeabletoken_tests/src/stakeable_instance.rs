@@ -4,7 +4,12 @@ use test_env::{Sender, TestContract, TestEnv};
 pub struct StakeableTestInstance(pub TestContract);
 
 impl StakeableTestInstance {
-    pub fn new(env: &TestEnv, stakeable_address: Key, erc20: Key, sender: Sender) -> StakeableTestInstance {
+    pub fn new(
+        env: &TestEnv,
+        stakeable_address: Key,
+        erc20: Key,
+        sender: Sender,
+    ) -> StakeableTestInstance {
         StakeableTestInstance(TestContract::new(
             env,
             "contract.wasm",

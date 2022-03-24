@@ -32,14 +32,14 @@ use helper_crate::Helper;
 use liquidity_token_crate::LiquidityToken;
 use referral_token_crate::ReferralToken;
 use snapshot_crate::Snapshot;
-use staking_token_crate::StakingToken;
-use timing_crate::Timing;
 use stakeable_token_utils::{
     declaration,
     helpers::{typecast_from_string, typecast_to_string},
     referral_token,
 };
 use stakeabletoken::{self, StakeableToken};
+use staking_token_crate::StakingToken;
+use timing_crate::Timing;
 
 #[derive(Default)]
 struct StakeableTokenStruct(OnChainContractStorage);
@@ -281,7 +281,8 @@ fn set_liquidity_transfomer() {
     let immutable_transformer: Key = runtime::get_named_arg("immutable_transformer");
     let transformer_purse: URef = runtime::get_named_arg("transformer_purse"); // purse of immutable_transformer account
 
-    StakeableTokenStruct::default().set_liquidity_transfomer(immutable_transformer, transformer_purse);
+    StakeableTokenStruct::default()
+        .set_liquidity_transfomer(immutable_transformer, transformer_purse);
 }
 
 #[no_mangle]
@@ -334,8 +335,13 @@ fn create_stake_with_token() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
 
-    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) = StakeableTokenStruct::default()
-        .create_stake_with_token(token_address, token_amount, lock_days, referrer);
+    let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
+        StakeableTokenStruct::default().create_stake_with_token(
+            token_address,
+            token_amount,
+            lock_days,
+            referrer,
+        );
     runtime::ret(
         CLValue::from_t((
             typecast_to_string(stake_id),
@@ -1720,72 +1726,102 @@ fn get_entry_points() -> EntryPoints {
 // All session code must have a `call` entrypoint.
 #[no_mangle]
 pub extern "C" fn call() {
-    let (package_hash, access_token) = storage::create_contract_package_at_hash();
-    let (contract_hash, _): (ContractHash, _) =
-        storage::add_contract_version(package_hash, get_entry_points(), Default::default());
+    // Store contract in the account's named keys. Contract name must be same for all new versions of the contracts
+    let contract_name: alloc::string::String = runtime::get_named_arg("contract_name");
 
-    let (domain_separator, permit_type_hash) = StakeableTokenStruct::default()
-        .get_permit_type_and_domain_separator("Stakeable Token", contract_hash);
+    // If this is the first deployment
+    if !runtime::has_key(&format!("{}_package_hash", contract_name)) {
+        // Build new package.
+        let (package_hash, access_token) = storage::create_contract_package_at_hash();
+        // add a first version to this package
+        let (contract_hash, _): (ContractHash, _) =
+            storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    let synthetic_cspr_address: Key = runtime::get_named_arg("scspr");
-    let router_address: Key = runtime::get_named_arg("router");
-    let factory_address: Key = runtime::get_named_arg("factory");
-    let pair_address: Key = runtime::get_named_arg("pair");
-    let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
-    let wcspr: Key = runtime::get_named_arg("wcspr");
-    let launch_time: U256 = runtime::get_named_arg("launch_time");
+        let (domain_separator, permit_type_hash) = StakeableTokenStruct::default()
+            .get_permit_type_and_domain_separator("Stakeable Token", contract_hash);
 
-    // Prepare constructor args
-    let constructor_args = runtime_args! {
-        "contract_hash" => contract_hash,
-        "package_hash" => package_hash,
-        "synthetic_cspr_address" => synthetic_cspr_address,
-        "router_address" => router_address,
-        "launch_time" => launch_time,
-        "factory_address" => factory_address,
-        "pair_address" => pair_address,
-        "liquidity_guard" => liquidity_guard,
-        "wcspr" => wcspr,
-        "domain_separator" => domain_separator,
-        "permit_type_hash" => permit_type_hash,
-    };
+        let synthetic_cspr_address: Key = runtime::get_named_arg("scspr");
+        let router_address: Key = runtime::get_named_arg("router");
+        let factory_address: Key = runtime::get_named_arg("factory");
+        let pair_address: Key = runtime::get_named_arg("pair");
+        let liquidity_guard: Key = runtime::get_named_arg("liquidity_guard");
+        let wcspr: Key = runtime::get_named_arg("wcspr");
+        let launch_time: U256 = runtime::get_named_arg("launch_time");
 
-    // Add the constructor group to the package hash with a single URef.
-    let constructor_access: URef =
-        storage::create_contract_user_group(package_hash, "constructor", 1, Default::default())
-            .unwrap_or_revert()
-            .pop()
+        // Prepare constructor args
+        let constructor_args = runtime_args! {
+            "contract_hash" => contract_hash,
+            "package_hash" => package_hash,
+            "synthetic_cspr_address" => synthetic_cspr_address,
+            "router_address" => router_address,
+            "launch_time" => launch_time,
+            "factory_address" => factory_address,
+            "pair_address" => pair_address,
+            "liquidity_guard" => liquidity_guard,
+            "wcspr" => wcspr,
+            "domain_separator" => domain_separator,
+            "permit_type_hash" => permit_type_hash,
+        };
+
+        // Add the constructor group to the package hash with a single URef.
+        let constructor_access: URef =
+            storage::create_contract_user_group(package_hash, "constructor", 1, Default::default())
+                .unwrap_or_revert()
+                .pop()
+                .unwrap_or_revert();
+
+        // Call the constructor entry point
+        let _: () =
+            runtime::call_versioned_contract(package_hash, None, "constructor", constructor_args);
+
+        // Remove all URefs from the constructor group, so no one can call it for the second time.
+        let mut urefs = BTreeSet::new();
+        urefs.insert(constructor_access);
+        storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
             .unwrap_or_revert();
 
-    // Call the constructor entry point
-    let _: () =
-        runtime::call_versioned_contract(package_hash, None, "constructor", constructor_args);
+        runtime::put_key(
+            &format!("{}_package_hash", contract_name),
+            package_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_package_hash_wrapped", contract_name),
+            storage::new_uref(package_hash).into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash", contract_name),
+            contract_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash_wrapped", contract_name),
+            storage::new_uref(contract_hash).into(),
+        );
+        runtime::put_key(
+            &format!("{}_package_access_token", contract_name),
+            access_token.into(),
+        );
+    }
+    // If contract package did already exist
+    else {
+        // get the package
+        let package_hash: ContractPackageHash =
+            runtime::get_key(&format!("{}_package_hash", contract_name))
+                .unwrap_or_revert()
+                .into_hash()
+                .unwrap()
+                .into();
+        // create new version and install it
+        let (contract_hash, _): (ContractHash, _) =
+            storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    // Remove all URefs from the constructor group, so no one can call it for the second time.
-    let mut urefs = BTreeSet::new();
-    urefs.insert(constructor_access);
-    storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
-        .unwrap_or_revert();
-    // Store contract in the account's named keys.
-    let contract_name: alloc::string::String = runtime::get_named_arg("contract_name");
-    runtime::put_key(
-        &format!("{}_package_hash", contract_name),
-        package_hash.into(),
-    );
-    runtime::put_key(
-        &format!("{}_package_hash_wrapped", contract_name),
-        storage::new_uref(package_hash).into(),
-    );
-    runtime::put_key(
-        &format!("{}_contract_hash", contract_name),
-        contract_hash.into(),
-    );
-    runtime::put_key(
-        &format!("{}_contract_hash_wrapped", contract_name),
-        storage::new_uref(contract_hash).into(),
-    );
-    runtime::put_key(
-        &format!("{}_package_access_token", contract_name),
-        access_token.into(),
-    );
+        // update contract hash
+        runtime::put_key(
+            &format!("{}_contract_hash", contract_name),
+            contract_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash_wrapped", contract_name),
+            storage::new_uref(contract_hash).into(),
+        );
+    }
 }

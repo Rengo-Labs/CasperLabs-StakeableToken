@@ -49,12 +49,15 @@ fn set_transfer_helper() {
     let name: String = runtime::get_named_arg("name");
     let key: Key = runtime::get_named_arg("key");
 
-    set_key(&name, ContractHash::from(key.into_hash().unwrap_or_revert()));
+    set_key(
+        &name,
+        ContractHash::from(key.into_hash().unwrap_or_revert()),
+    );
 }
 
 #[no_mangle]
 fn get_transfer_invoker_address() {
-    let transfer_helper_hash : ContractHash = get_key(&TRANSFER_HELPER_HASH_KEY_NAME);
+    let transfer_helper_hash: ContractHash = get_key(&TRANSFER_HELPER_HASH_KEY_NAME);
     let ret: Key = runtime::call_contract(
         transfer_helper_hash,
         GET_TRANSFER_INVOKER_ADDRESS_ENTRYPOINT_NAME,
@@ -67,11 +70,15 @@ fn get_transfer_invoker_address() {
 fn transfer() {
     let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
-    let erc20 : ContractHash = get_key("erc20");
-    let ret: Result<(), u32> = runtime::call_contract(erc20, "transfer", runtime_args!{
-        "recipient"=>recipient,
-        "amount"=>amount
-    });
+    let erc20: ContractHash = get_key("erc20");
+    let ret: Result<(), u32> = runtime::call_contract(
+        erc20,
+        "transfer",
+        runtime_args! {
+            "recipient"=>recipient,
+            "amount"=>amount
+        },
+    );
     set_key("transfer_result", ret);
 }
 

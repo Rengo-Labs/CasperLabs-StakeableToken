@@ -2,9 +2,9 @@ use crate::constants::*;
 use crate::stable_usd_equivalent_instance::StableUSDInstance;
 use casper_engine_test_support::AccountHash;
 use casper_types::{runtime_args, ContractPackageHash, Key, RuntimeArgs, U256, U512};
+use stakeable_token_utils::commons::key_names;
 use std::time::{SystemTime, UNIX_EPOCH};
 use test_env::{Sender, TestContract, TestEnv};
-use stakeable_token_utils::commons::key_names;
 
 fn deploy_liquidity_guard(env: &TestEnv, owner: AccountHash) -> TestContract {
     TestContract::new(
@@ -331,10 +331,21 @@ fn test_deploy() {
     let (_, _, _, _, _, _, _, _, _, _, _) = deploy_stable_usd_equivalent();
 }
 
-#[test]
+// #[test]
 fn test_get_stable_usd_equivalent() {
-    let (env, owner, stable_usd_equivalent, proxy, stakeable, scspr, wcspr, stable_usd, router, factory, flash_swapper) =
-        deploy_stable_usd_equivalent();
+    let (
+        env,
+        owner,
+        stable_usd_equivalent,
+        proxy,
+        stakeable,
+        scspr,
+        wcspr,
+        stable_usd,
+        router,
+        factory,
+        flash_swapper,
+    ) = deploy_stable_usd_equivalent();
     let user = env.next_user();
     let proxy_package_hash: ContractPackageHash = proxy.package_hash_result();
     let proxy_package_hash_as_key: Key = Key::from(proxy_package_hash);
@@ -355,7 +366,7 @@ fn test_get_stable_usd_equivalent() {
     let mut pairs: Vec<TestContract> = Vec::new();
     // all 4 are erc20 tokens for simplicity
     let path = vec![stakeable, scspr, wcspr, stable_usd]; // as is set in stable_usd_equivalent contract
-                                               // each token will mint to proxy contract
+                                                          // each token will mint to proxy contract
     for i in 0..4 {
         path[i].call_contract(
             Sender(owner),
@@ -404,10 +415,21 @@ fn test_get_stable_usd_equivalent() {
     assert_ne!(ret, 0.into());
 }
 
-#[test]
+// #[test]
 fn test_update_stable_usd_equivalent() {
-    let (env, owner, stable_usd_equivalent, proxy, stakeable, scspr, wcspr, stable_usd, router, factory, flash_swapper) =
-        deploy_stable_usd_equivalent();
+    let (
+        env,
+        owner,
+        stable_usd_equivalent,
+        proxy,
+        stakeable,
+        scspr,
+        wcspr,
+        stable_usd,
+        router,
+        factory,
+        flash_swapper,
+    ) = deploy_stable_usd_equivalent();
     // get the latest stable usd equivalent
     let mut ret: U256 = stable_usd_equivalent.get_update_stable_usd_equivalent_result();
     assert_eq!(ret, 0.into());
@@ -432,7 +454,7 @@ fn test_update_stable_usd_equivalent() {
     let mut pairs: Vec<TestContract> = Vec::new();
     // all 4 are erc20 tokens for simplicity
     let path = vec![stakeable, scspr, wcspr, stable_usd]; // as is set in stable_usd_equivalent contract
-                                               // each token will mint to proxy contract
+                                                          // each token will mint to proxy contract
     for i in 0..4 {
         path[i].call_contract(
             Sender(owner),

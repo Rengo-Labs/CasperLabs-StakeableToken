@@ -4,8 +4,8 @@ use casper_types::{
     bytesrepr::ToBytes, runtime_args, ContractHash, ContractPackageHash, Key, RuntimeArgs, URef,
     U256, U512,
 };
-use test_env::{Sender, TestContract, TestEnv};
 use stakeable_token_utils::commons::key_names;
+use test_env::{Sender, TestContract, TestEnv};
 
 pub struct LiquidityGuardInstance(TestContract);
 impl LiquidityGuardInstance {

@@ -52,7 +52,10 @@ pub fn decimals() -> U256 {
 }
 pub fn set_decimals(decimals: U256) {
     set_key(DECIMALS, decimals);
-    set_key(STABLE_USD_EQUIVALENT_YODAS_PER_WISE, U256::from(10).pow(decimals));
+    set_key(
+        STABLE_USD_EQUIVALENT_YODAS_PER_WISE,
+        U256::from(10).pow(decimals),
+    );
 }
 
 pub fn yodas_per_stakeable() -> U256 {
@@ -63,7 +66,10 @@ pub fn latest_stable_usd_equivalent() -> U256 {
     get_key(STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT).unwrap_or_default()
 }
 pub fn set_latest_stable_usd_equivalent(latest_stable_usd_equivalent: U256) {
-    set_key(STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT, latest_stable_usd_equivalent);
+    set_key(
+        STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT,
+        latest_stable_usd_equivalent,
+    );
 }
 
 pub fn router_hash() -> Key {

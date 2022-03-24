@@ -149,16 +149,16 @@ fn deploy_scspr(
 }
 
 fn deploy_stakeable() -> (
-    TestEnv,          // env
-    AccountHash,      // owner
-    TestContract,     // stakeable contract
+    TestEnv,               // env
+    AccountHash,           // owner
+    TestContract,          // stakeable contract
     StakeableTestInstance, // StakeableTestInstance
-    TestContract,     // erc20
-    TestContract,     // flash_swapper
-    TestContract,     // factory
-    TestContract,     // Router
-    TestContract,     // WCSPR
-    TestContract,     // SCSPR
+    TestContract,          // erc20
+    TestContract,          // flash_swapper
+    TestContract,          // factory
+    TestContract,          // Router
+    TestContract,          // WCSPR
+    TestContract,          // SCSPR
 ) {
     let env = TestEnv::new();
     let owner = env.next_user();
@@ -370,7 +370,8 @@ fn test_stakeable_deploy() {
 #[test]
 fn test_stable_usd_equivalent_deploy() {
     let (env, owner, stakeable_contract, _, _, _, _, _, _, _) = deploy_stakeable();
-    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, stakeable_contract);
+    let stable_usd_equivalent_contract =
+        deploy_stable_usd_equivalent(env, owner, stakeable_contract);
 
     assert_ne!(
         Key::Hash(stable_usd_equivalent_contract.contract_hash()),
@@ -387,7 +388,8 @@ fn set_liquidity_transfomer() {
 #[test]
 fn set_stable_usd_equivalent() {
     let (env, owner, stakeable_contract, test_contract, _, _, _, _, _, _) = deploy_stakeable();
-    let stable_usd_equivalent_contract = deploy_stable_usd_equivalent(env, owner, stakeable_contract);
+    let stable_usd_equivalent_contract =
+        deploy_stable_usd_equivalent(env, owner, stakeable_contract);
 
     test_contract.set_stable_usd_equivalent(
         Sender(owner),

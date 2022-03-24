@@ -11,7 +11,7 @@ use casper_contract::{
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256
+    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use contract_utils::{ContractContext, OnChainContractStorage};
 use liquidity_guard::{self, LiquidityGuard};
@@ -81,57 +81,88 @@ fn get_inflation() {
 
 #[no_mangle]
 fn assign_inflation() {
-   LiquidityGuardStruct::default().assign_inflation();
+    LiquidityGuardStruct::default().assign_inflation();
 }
+
 // All session code must have a `call` entrypoint.
 #[no_mangle]
 pub extern "C" fn call() {
-    let (package_hash, access_token) = storage::create_contract_package_at_hash();
-    let (contract_hash, _): (ContractHash, _) =
-        storage::add_contract_version(package_hash, get_entry_points(), Default::default());
+    // Store contract in the account's named keys. Contract name must be same for all new versions of the contracts
+    let contract_name: alloc::string::String = runtime::get_named_arg("contract_name");
 
-    // Prepare constructor args
-    let constructor_args = runtime_args! {
-        "contract_hash" => contract_hash,
-        "package_hash" => package_hash,
-    };
+    // If this is the first deployment
+    if !runtime::has_key(&format!("{}_package_hash", contract_name)) {
+        // Build new package.
+        let (package_hash, access_token) = storage::create_contract_package_at_hash();
+        // add a first version to this package
+        let (contract_hash, _): (ContractHash, _) =
+            storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    // Add the constructor group to the package hash with a single URef.
-    let constructor_access: URef =
-        storage::create_contract_user_group(package_hash, "constructor", 1, Default::default())
-            .unwrap_or_revert()
-            .pop()
+        // Prepare constructor args
+        let constructor_args = runtime_args! {
+            "contract_hash" => contract_hash,
+            "package_hash" => package_hash,
+        };
+
+        // Add the constructor group to the package hash with a single URef.
+        let constructor_access: URef =
+            storage::create_contract_user_group(package_hash, "constructor", 1, Default::default())
+                .unwrap_or_revert()
+                .pop()
+                .unwrap_or_revert();
+
+        // Call the constructor entry point
+        let _: () =
+            runtime::call_versioned_contract(package_hash, None, "constructor", constructor_args);
+
+        // Remove all URefs from the constructor group, so no one can call it for the second time.
+        let mut urefs = BTreeSet::new();
+        urefs.insert(constructor_access);
+        storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
             .unwrap_or_revert();
 
-    // Call the constructor entry point
-    let _: () =
-        runtime::call_versioned_contract(package_hash, None, "constructor", constructor_args);
+        runtime::put_key(
+            &format!("{}_package_hash", contract_name),
+            package_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_package_hash_wrapped", contract_name),
+            storage::new_uref(package_hash).into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash", contract_name),
+            contract_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash_wrapped", contract_name),
+            storage::new_uref(contract_hash).into(),
+        );
+        runtime::put_key(
+            &format!("{}_package_access_token", contract_name),
+            access_token.into(),
+        );
+    }
+    // If contract package did already exist
+    else {
+        // get the package
+        let package_hash: ContractPackageHash =
+            runtime::get_key(&format!("{}_package_hash", contract_name))
+                .unwrap_or_revert()
+                .into_hash()
+                .unwrap()
+                .into();
+        // create new version and install it
+        let (contract_hash, _): (ContractHash, _) =
+            storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
-    // Remove all URefs from the constructor group, so no one can call it for the second time.
-    let mut urefs = BTreeSet::new();
-    urefs.insert(constructor_access);
-    storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
-        .unwrap_or_revert();
-    // Store contract in the account's named keys.
-    let contract_name: alloc::string::String = runtime::get_named_arg("contract_name");
-    runtime::put_key(
-        &format!("{}_package_hash", contract_name),
-        package_hash.into(),
-    );
-    runtime::put_key(
-        &format!("{}_package_hash_wrapped", contract_name),
-        storage::new_uref(package_hash).into(),
-    );
-    runtime::put_key(
-        &format!("{}_contract_hash", contract_name),
-        contract_hash.into(),
-    );
-    runtime::put_key(
-        &format!("{}_contract_hash_wrapped", contract_name),
-        storage::new_uref(contract_hash).into(),
-    );
-    runtime::put_key(
-        &format!("{}_package_access_token", contract_name),
-        access_token.into(),
-    );
+        // update contract hash
+        runtime::put_key(
+            &format!("{}_contract_hash", contract_name),
+            contract_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{}_contract_hash_wrapped", contract_name),
+            storage::new_uref(contract_hash).into(),
+        );
+    }
 }

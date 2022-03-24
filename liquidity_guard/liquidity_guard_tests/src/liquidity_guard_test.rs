@@ -2,8 +2,8 @@ use crate::constants::*;
 use crate::liquidity_guard_instance::LiquidityGuardInstance;
 use casper_engine_test_support::AccountHash;
 use casper_types::{runtime_args, ContractPackageHash, Key, RuntimeArgs, U256, U512};
-use test_env::{Sender, TestContract, TestEnv};
 use stakeable_token_utils::commons::key_names::*;
+use test_env::{Sender, TestContract, TestEnv};
 
 fn deploy_liquidity_guard(env: &TestEnv, owner: AccountHash) -> TestContract {
     TestContract::new(
@@ -31,7 +31,9 @@ fn test_deploy() {
     let (_, guard, _) = deploy();
     let value: u64 = 100000;
     let inflation = U256::from(60835153328 as u64);
-    let ret: U256 = guard.query_dictionary(LIQUIDITY_GUARD_INFLATION_DICT, value.to_string()).unwrap();
+    let ret: U256 = guard
+        .query_dictionary(LIQUIDITY_GUARD_INFLATION_DICT, value.to_string())
+        .unwrap();
     assert_eq!(ret, inflation);
 }
 
@@ -48,18 +50,24 @@ fn test_assign_inflation() {
 
     guard.call_contract(Sender(owner), "assign_inflation", runtime_args! {});
 
-    let ret1: U256 = guard.query_dictionary(LIQUIDITY_GUARD_INFLATION_DICT, value1.to_string()).unwrap();
+    let ret1: U256 = guard
+        .query_dictionary(LIQUIDITY_GUARD_INFLATION_DICT, value1.to_string())
+        .unwrap();
     assert_eq!(ret1, inflation1);
 }
 
 #[test]
-fn get_inflation(){
+fn get_inflation() {
     let (owner, guard, proxy) = deploy();
     let value: u64 = 100000;
     let inflation = U256::from(60835153328 as u64);
-    proxy.call_contract(Sender(owner), "get_inflation", runtime_args!{
-        "amount"=>value
-    });
+    proxy.call_contract(
+        Sender(owner),
+        "get_inflation",
+        runtime_args! {
+            "amount"=>value
+        },
+    );
     let ret: U256 = proxy.query_named_key("result".to_string());
     assert_eq!(inflation, ret);
 }

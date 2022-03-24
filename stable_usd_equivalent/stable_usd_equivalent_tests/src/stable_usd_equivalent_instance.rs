@@ -7,8 +7,8 @@ use casper_types::{
     bytesrepr::ToBytes, runtime_args, ContractHash, ContractPackageHash, Key, RuntimeArgs, URef,
     U256, U512,
 };
-use test_env::{Sender, TestContract, TestEnv};
 use stakeable_token_utils::commons::key_names;
+use test_env::{Sender, TestContract, TestEnv};
 
 pub struct StableUSDInstance(TestContract);
 impl StableUSDInstance {
@@ -180,8 +180,9 @@ impl StableUSDInstance {
     }
 
     pub fn get_update_stable_usd_equivalent_result(&self) -> U256 {
-        self.0
-            .query_named_key(key_names::STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT.to_string())
+        self.0.query_named_key(
+            key_names::STABLE_USD_EQUIVALENT_LATEST_STABLE_USD_EQUIVALENT.to_string(),
+        )
     }
 }
 

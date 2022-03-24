@@ -7,8 +7,8 @@ use casper_types::{
     bytesrepr::ToBytes, runtime_args, ContractHash, ContractPackageHash, Key, RuntimeArgs, URef,
     U256, U512,
 };
-use test_env::{Sender, TestContract, TestEnv};
 use stakeable_token_utils::commons::key_names;
+use test_env::{Sender, TestContract, TestEnv};
 
 pub struct TransferHelperInstance(TestContract);
 impl TransferHelperInstance {
@@ -64,11 +64,15 @@ impl TransferHelperInstance {
         );
     }
 
-    pub fn forward_funds(&self, sender: Sender, token_address: Key, forward_amount: U256){
-        self.0.call_contract(sender, FORWARD_FUNDS_ENTRYPOINT_NAME, runtime_args!{
-            TOKEN_ADDRESS_RUNTIME_ARG_NAME=>token_address,
-            FORWARD_AMOUNT_RUNTIME_ARG_NAME=>forward_amount
-        });
+    pub fn forward_funds(&self, sender: Sender, token_address: Key, forward_amount: U256) {
+        self.0.call_contract(
+            sender,
+            FORWARD_FUNDS_ENTRYPOINT_NAME,
+            runtime_args! {
+                TOKEN_ADDRESS_RUNTIME_ARG_NAME=>token_address,
+                FORWARD_AMOUNT_RUNTIME_ARG_NAME=>forward_amount
+            },
+        );
     }
 
     // ================== ERC20 Methods ==================== //
@@ -100,7 +104,8 @@ impl TransferHelperInstance {
 
     // ======================================================= //
     pub fn package_hash_result(&self) -> ContractPackageHash {
-        self.0.query_named_key(key_names::SELF_PACKAGE_HASH.to_string())
+        self.0
+            .query_named_key(key_names::SELF_PACKAGE_HASH.to_string())
     }
 
     pub fn contract_hash_result(&self) -> Key {
@@ -108,11 +113,13 @@ impl TransferHelperInstance {
     }
 
     pub fn self_hash_result(&self) -> Key {
-        self.0.query_named_key(key_names::SELF_CONTRACT_HASH.to_string())
+        self.0
+            .query_named_key(key_names::SELF_CONTRACT_HASH.to_string())
     }
 
     pub fn self_contract_hash_result(&self) -> Key {
-        self.0.query_named_key(SELF_CONTRACT_HASH_KEY_NAME.to_string())
+        self.0
+            .query_named_key(SELF_CONTRACT_HASH_KEY_NAME.to_string())
     }
 
     pub fn get_transfer_invoker_address_result(&self) -> Key {
