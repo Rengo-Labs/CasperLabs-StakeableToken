@@ -624,7 +624,7 @@ Parameter Name | Type
 This method **returns** String.
 
 - ##### current_stakeable_day <a id="stakeable-token-current-stakeable-day"></a>
-Returns the day since launch of WISE.
+Returns the day since launch of the stakeable token.
 
 Following is the table of parameters.
 
@@ -663,7 +663,7 @@ Parameter Name | Type
 This method **returns** U256.
 
 - ##### referrer_interest <a id="stakeable-token-referrer-interest"></a>
-Returns the calculated interest on a particular referral for ```scrape_days``` duration and mints equivalend WISE tokens to ```self.get_caller()```
+Returns the calculated interest on a particular referral for ```scrape_days``` duration and mints equivalent the stakeable tokens to ```self.get_caller()```
 
 Following is the table of parameters.
 
@@ -675,7 +675,7 @@ scrape_days|U256
 This method **returns** nothing.
 
 - ##### referrer_interest_bulk <a id="stakeable-token-referrer-interest-bulk"></a>
-Returns the calculated interest on a several referrals, each for for several ```scrape_days``` duration and mints equivalend WISE tokens to ```self.get_caller()``` in each case.
+Returns the calculated interest on a several referrals, each for for several ```scrape_days``` duration and mints equivalent the stakeable tokens to ```self.get_caller()``` in each case.
 
 Following is the table of parameters.
 

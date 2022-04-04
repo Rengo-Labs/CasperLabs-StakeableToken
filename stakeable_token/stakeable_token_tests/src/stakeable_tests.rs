@@ -295,8 +295,8 @@ fn deploy_stakeable() -> (
 
     let stakeable_contract = TestContract::new(
         &env,
-        "stakeabletoken.wasm",
-        "Stakeabletoken",
+        "stakeable_token.wasm",
+        "stakeable_token",
         Sender(owner),
         runtime_args! {
             "scspr" => Key::Hash(scspr_contract.contract_hash()),

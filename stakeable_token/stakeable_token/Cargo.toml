@@ -1,5 +1,5 @@
 [package]
-name = "stakeabletoken"
+name = "stakeable_token"
 version = "0.1.0"
 authors = ["Muzahir Hussain <muzahir.hussain@scytalelabs.com>"]
 edition = "2018"
@@ -23,8 +23,8 @@ erc20_crate = { path = "../../erc20_crate" }
 stakeable-token-utils = { path = "../../utils/stakeable-token-utils" }
 
 [[bin]]
-name = "stakeabletoken"
-path = "bin/stakeabletoken_bin.rs"
+name = "stakeable_token"
+path = "bin/stakeable_token_bin.rs"
 bench = false
 doctest = false
 test = false

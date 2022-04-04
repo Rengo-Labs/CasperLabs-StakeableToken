@@ -37,7 +37,7 @@ use stakeable_token_utils::{
     helpers::{typecast_from_string, typecast_to_string},
     referral_token,
 };
-use stakeabletoken::{self, StakeableToken};
+use stakeable_token::{self, StakeableToken};
 use staking_token_crate::StakingToken;
 use timing_crate::Timing;
 

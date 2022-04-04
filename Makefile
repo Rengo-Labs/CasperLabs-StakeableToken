@@ -1,8 +1,8 @@
 # paths to other repos
-uniswap_core_directory = ../CasperLabs-UniswapV2-core
-uniswap_router_directory = ../Casperlabs-UniswapRouter
+uniswap_core_directory = ../uniswap-casper-core
+uniswap_router_directory = ../uniswap-casper-router
 # TODO await naming refactor to LiquidityTransformer
-stakeable_liquidity_transformer_directory = ../CasperLabs-Wise-LiquidityTransformer
+stakeable_liquidity_transformer_directory = ../liquidity-transformer
 stakeable_liquidity_transformer_scspr_directory = ${stakeable_liquidity_transformer_directory}/scspr/SCSPR
 stakeable_token_directory = .
 erc20_directory = erc20
@@ -25,7 +25,7 @@ synthetic_helper_contract = ${stakeable_liquidity_transformer_directory}/${stake
 synthetic_token_contract = ${stakeable_liquidity_transformer_directory}/${stakeable_liquidity_transformer_scspr_directory}/SyntheticToken
 
 # paths to stakeable contracts
-stakeable_token_contract = ${stakeable_token_directory}/stakeabletoken
+stakeable_token_contract = ${stakeable_token_directory}/stakeable_token
 liquidity_guard_contract = ${stakeable_token_directory}/liquidity_guard
 stable_usd_equivalent_contract = ${stakeable_token_directory}/stable_usd_equivalent
 transfer_helper_contract = ${stakeable_token_directory}/transfer_helper
@@ -37,18 +37,18 @@ stakeable_crates_test_contract = ${stakeable_token_directory}/test-contract
 wasm_src_path = target/wasm32-unknown-unknown/release
 wasm_dest_stable_usd_equivalent = ${stable_usd_equivalent_contract}/stable_usd_equivalent_tests/wasm
 wasm_dest_transfer_helper = ${transfer_helper_contract}/transfer_helper_tests/wasm
-wasm_dest_stakeable_token = ${stakeable_token_contract}/stakeabletoken_tests/wasm
+wasm_dest_stakeable_token = ${stakeable_token_contract}/stakeable_token_tests/wasm
 wasm_dest_liquidity_guard = ${liquidity_guard_contract}/liquidity_guard_tests/wasm
 wasm_dest_stakeable_crates_test_contract = ${stakeable_crates_test_contract}/crate-test/wasm
 
 # commands as variables
-contract_build_command = make build-contract
-test_contract_build_command = make build-test-contract
+contract_build_command = make prepare && make build-contract
+test_contract_build_command = make prepare && make build-test-contract
 
 all:
 # build erc20
 	cd ${erc20_directory} && ${contract_build_command}
-	
+
 # build core contracts
 #	cd ${erc20_contract} && ${contract_build_command}
 	cd ${factory_contract} && ${contract_build_command}
@@ -172,7 +172,6 @@ clean:
 	cd ${stable_usd_equivalent_contract} && make clean
 	cd ${stakeable_token_contract} && make clean
 	cd ${stakeable_crates_test_contract} && make clean
-
 
 test:
 	make all

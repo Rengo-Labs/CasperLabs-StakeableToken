@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "stakeabletoken",
-    "stakeabletoken_tests",
+    "stakeable_token",
+    "stakeable_token_tests",
     "test-contract"
 ]
 
