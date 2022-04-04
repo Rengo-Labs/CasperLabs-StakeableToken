@@ -77,6 +77,16 @@ You need to have `casper-client` and `jq` installed on your system to run the ex
 
 You can install the required software by issuing the following commands. If you are on an up-to-date Casper node, you probably already have all of the prerequisites installed so you can skip this step.
 
+First checkout the following repos:
+
+```bash
+git clone git@github.com:Rengo-Labs/uniswap-casper-core.git
+git clone git@github.com:Rengo-Labs/uniswap-casper-router.git
+git clone git@github.com:Rengo-Labs/liquidity-transformer.git
+```
+
+Then install all other prequisites
+
 ```bash
 # Update package repositories
 sudo apt update
