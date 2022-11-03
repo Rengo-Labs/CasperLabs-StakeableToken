@@ -56,10 +56,10 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
                 .checked_div(self.total_supply())
                 .unwrap_or_revert_with(Errors::DivisionByZero2)
         };
-        if ratio < 40.into() && is_liquidity_guard_active() == false {
+        if ratio < 40.into() && !is_liquidity_guard_active() {
             self._enable_liquidity_guard();
         }
-        if ratio > 60.into() && is_liquidity_guard_active() == true {
+        if ratio > 60.into() && is_liquidity_guard_active() {
             self._disable_liquidity_guard();
         }
         emit(&Events::LiquidityGuardStatus {
@@ -82,7 +82,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
 
     /// @notice allows volunteer to offload snapshots to save on gas during next start/end stake in case manualDailySnapshot reach block limit
     fn manual_daily_snapshot_point(&mut self, update_day: u64) {
-        if update_day <= 0 || update_day >= self._current_stakeable_day() {
+        if update_day == 0 || update_day >= self._current_stakeable_day() {
             runtime::revert(Errors::SnapshotDayDoesNotExistYet);
         }
         if U256::from(update_day) <= globals().current_stakeable_day {
@@ -94,7 +94,7 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
     /// @notice internal function that offloads global values to daily snapshots updates globals.currentStakeableDay
     fn _daily_snapshot_point(&mut self, update_day: u64) {
         self.liquidity_guard_trigger();
-        let mut scheduled_to_end_today: U256 = 0.into();
+        let mut scheduled_to_end_today: U256;
         let total_staked_today: U256 = globals().total_staked;
         let mut day: U256 = globals().current_stakeable_day;
         while day < U256::from(update_day) {
@@ -187,15 +187,14 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
 
     /// @notice moves inflation up and down by 0.006% from regular shares to liquidity shares if the liquidityGuard is active (visa-versa)
     fn _adjust_liquidity_rates(&self) {
-        if is_liquidity_guard_active() == true && liquidity_rate() < INFLATION_RATE_MAX {
+        if is_liquidity_guard_active() && liquidity_rate() < INFLATION_RATE_MAX {
             set_liquidity_rate(liquidity_rate() + 6);
             set_inflation_rate(inflation_rate() - 6);
             return;
         }
-        if is_liquidity_guard_active() == false && inflation_rate() < INFLATION_RATE_MAX {
+        if !is_liquidity_guard_active() && inflation_rate() < INFLATION_RATE_MAX {
             set_inflation_rate(inflation_rate() + 6);
             set_liquidity_rate(liquidity_rate() - 6);
-            return;
         }
     }
 

@@ -71,7 +71,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
     }
 
     fn _remove_critical_mass(&self, referrer: Key, dai_equivalent: U256, start_day: U256) {
-        if self._not_future(start_day) == false && self._non_zero_address(referrer) {
+        if !self._not_future(start_day) && self._non_zero_address(referrer) {
             CriticalMass::instance().set(&referrer, {
                 let mut critical_mass = CriticalMass::instance().get(&referrer);
                 critical_mass.total_amount = if critical_mass.total_amount > dai_equivalent {
@@ -115,7 +115,7 @@ pub trait ReferralToken<Storage: ContractStorage>:
                 "path" => path()
             },
         );
-        if results.len() > 0 {
+        if !results.is_empty() {
             results[3]
         } else {
             latest_stable_usd_equivalent()
@@ -217,9 +217,8 @@ pub trait ReferralToken<Storage: ContractStorage>:
         let mut referral_interest: U256 = 0.into();
         let mut day: U256 = start_day;
         while day < final_day {
-            referral_interest = referral_interest
-                + (stake.stakes_shares * PRECISION_RATE
-                    / RSnapshots::instance().get(&day).inflation_amount);
+            referral_interest += stake.stakes_shares * PRECISION_RATE
+                / RSnapshots::instance().get(&day).inflation_amount;
             day = day + 1;
         }
         referral_interest

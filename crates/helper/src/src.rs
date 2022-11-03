@@ -73,7 +73,7 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> + Timing<St
             let stake_id: Vec<u32> = Self::generate_id(self, staker, stake_index - 1, 0x01);
             if Stakes::instance().get(&staker, &stake_id).staked_amount > 0.into() {
                 stakes[i] = stake_id;
-                i = i + 1;
+                i += 1;
             }
             stake_index = stake_index - 1;
         }
@@ -99,7 +99,7 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> + Timing<St
             let r_id: Vec<u32> = Self::generate_id(self, referrer, r_index - 1, 0x02);
             if self._non_zero_address(ReferrerLinks::instance().get(&referrer, &r_id).staker) {
                 referrals[i] = r_id;
-                i = i + 1;
+                i += 1;
             }
             r_index = r_index - 1;
         }
@@ -185,11 +185,11 @@ pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> + Timing<St
     }
 
     fn _stake_ended(&self, stake: Stake) -> bool {
-        stake.is_active == false || self._is_mature_stake(stake)
+        !stake.is_active || self._is_mature_stake(stake)
     }
 
     fn _days_left(&self, stake: Stake) -> U256 {
-        if stake.is_active == false {
+        if !stake.is_active {
             self._days_diff(stake.close_day.into(), stake.final_day.into())
         } else {
             self._days_diff(self._current_stakeable_day().into(), stake.final_day.into())

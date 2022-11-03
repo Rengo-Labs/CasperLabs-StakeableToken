@@ -55,10 +55,13 @@ pub trait StakingToken<Storage: ContractStorage>:
             self._create_stake(self.get_caller(), staked_amount, lock_days, referrer);
         let mut referral_id: Vec<u32> = Default::default();
         if new_stake.referrer_shares > 0.into() {
-            let mut referrer_link: ReferrerLink = ReferrerLink::default();
-            referrer_link.staker = self.get_caller();
-            referrer_link.stake_id = stake_id.clone();
-            referrer_link.is_active = true;
+            let referrer_link: ReferrerLink = ReferrerLink {
+                staker: self.get_caller(),
+                stake_id: stake_id.clone(),
+                reward_amount: Default::default(),
+                processed_days: Default::default(),
+                is_active: true,
+            };
             referral_id = self._generate_referral_id(referrer);
             ReferrerLinks::instance().set(&referrer, &referral_id, referrer_link);
             self._increase_referral_count(referrer);
@@ -100,24 +103,31 @@ pub trait StakingToken<Storage: ContractStorage>:
         self.burn(staker, staked_amount);
         let start_day = self._next_stakeable_day();
         let stake_id = self._generate_stake_id(staker);
-        let mut new_stake: Stake = Stake::default();
-        new_stake.lock_days = lock_days;
-        new_stake.start_day = start_day;
-        new_stake.final_day = start_day + lock_days;
-        new_stake.is_active = true;
-        new_stake.staked_amount = staked_amount;
+        let mut new_stake: Stake = Stake {
+            stakes_shares: Default::default(),
+            staked_amount,
+            reward_amount: Default::default(),
+            start_day,
+            lock_days,
+            final_day: start_day + lock_days,
+            close_day: Default::default(),
+            scrape_day: Default::default(),
+            dai_equivalent: self
+                ._get_stable_usd_equivalent()
+                .checked_mul(staked_amount)
+                .unwrap_or_revert_with(Errors::MultiplicationOverflow5)
+                .checked_div(YODAS_PER_STAKEABLE)
+                .unwrap_or_revert_with(Errors::DivisionByZero5),
+            referrer_shares: Default::default(),
+            referrer: account_zero_address(),
+            is_active: true,
+        };
         self._stakes_shares(
             staked_amount,
             lock_days.into(),
             referrer,
             globals().share_price,
         );
-        let latest_stable_usd_equivalent = self._get_stable_usd_equivalent();
-        new_stake.dai_equivalent = latest_stable_usd_equivalent
-            .checked_mul(staked_amount)
-            .unwrap_or_revert_with(Errors::MultiplicationOverflow5)
-            .checked_div(YODAS_PER_STAKEABLE)
-            .unwrap_or_revert_with(Errors::DivisionByZero5);
         if self._non_zero_address(referrer) {
             new_stake.referrer = referrer;
             self._add_critical_mass(new_stake.referrer, new_stake.dai_equivalent);
@@ -227,7 +237,7 @@ pub trait StakingToken<Storage: ContractStorage>:
         let mut referrer_penalty: U256 = 0.into();
         let mut stakers_penalty: U256 = 0.into();
         let mut remaining_days: U256 = 0.into();
-        if self._is_mature_stake(stake) == false {
+        if !self._is_mature_stake(stake) {
             remaining_days = self._days_left(stake);
             stakers_penalty = self._stakes_shares(
                 scrape_amount,
@@ -589,9 +599,8 @@ pub trait StakingToken<Storage: ContractStorage>:
         let mut reward_amount: U256 = 0.into();
         let mut day: U256 = start_day;
         while day < final_day {
-            reward_amount = reward_amount
-                + (stake_shares * PRECISION_RATE
-                    / Snapshots::instance().get(&day).inflation_amount);
+            reward_amount +=
+                stake_shares * PRECISION_RATE / Snapshots::instance().get(&day).inflation_amount;
             day = day + 1;
         }
         reward_amount
