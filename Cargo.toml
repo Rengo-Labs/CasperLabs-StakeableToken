@@ -8,6 +8,7 @@ members = [
     "crates/helper",
     "crates/snapshot",
     "crates/referral-token",
+    "crates/staking-token",
     # Transfer helper
     "transfer-helper/bin",
     "transfer-helper/session-code",
