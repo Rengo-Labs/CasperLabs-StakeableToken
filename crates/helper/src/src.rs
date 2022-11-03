@@ -1,14 +1,13 @@
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
 use casper_types::{bytesrepr::ToBytes, runtime_args, Key, RuntimeArgs, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::{
-    errors::Errors,
-    functions::{account_zero_address, key_to_hash},
-};
 use renvm_sig::keccak256;
 use timing::{
-    globals, src::Timing, CriticalMass, LiquidityStakeCount, ReferralCount, ReferrerLinks, Stake,
-    StakeCount, Stakes,
+    errors::Errors,
+    functions::{account_zero_address, key_to_hash},
+    globals,
+    src::Timing,
+    CriticalMass, LiquidityStakeCount, ReferralCount, ReferrerLinks, Stake, StakeCount, Stakes,
 };
 
 pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> + Timing<Storage> {

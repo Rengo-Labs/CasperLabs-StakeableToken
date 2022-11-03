@@ -2,12 +2,12 @@ use crate::data::*;
 use casper_contract::contract_api::runtime;
 use casper_types::{runtime_args, RuntimeArgs, U256};
 use casperlabs_contract_utils::{set_key, ContractContext, ContractStorage};
-use common::{
+use global::{
     errors::Errors,
     functions::{block_timestamp, key_to_hash, package_hash},
     keys::LAUNCH_TIME,
+    src::Globals,
 };
-use global::src::Globals;
 
 pub trait Declaration<Storage: ContractStorage>:
     ContractContext<Storage> + Globals<Storage>

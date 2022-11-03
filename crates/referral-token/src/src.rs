@@ -1,15 +1,15 @@
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
 use casper_types::{runtime_args, Key, RuntimeArgs, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::{
+use snapshot::{
+    data::*,
     errors::Errors,
     events::{emit, Events},
     functions::key_to_hash,
-};
-use snapshot::{
-    data::*, latest_stable_usd_equivalent, path, src::Snapshot, uniswap_router, CriticalMass,
-    ReferralSharesToEnd, ReferrerLink, ReferrerLinks, Stake, Stakes, PRECISION_RATE,
-    THRESHOLD_LIMIT, YODAS_PER_STAKEABLE,
+    latest_stable_usd_equivalent, path,
+    src::Snapshot,
+    uniswap_router, CriticalMass, ReferralSharesToEnd, ReferrerLink, ReferrerLinks, Stake, Stakes,
+    PRECISION_RATE, THRESHOLD_LIMIT, YODAS_PER_STAKEABLE,
 };
 
 pub trait ReferralToken<Storage: ContractStorage>:

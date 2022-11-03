@@ -600,7 +600,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "global",
 ]
 
@@ -849,7 +848,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "hex",
  "renvm-sig",
  "timing",
@@ -1074,6 +1072,16 @@ name = "linked-hash-map"
 version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
+
+[[package]]
+name = "liquidity-token"
+version = "0.1.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "staking-token",
+]
 
 [[package]]
 name = "lmdb"
@@ -1462,7 +1470,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "snapshot",
 ]
 
@@ -1669,7 +1676,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "helper",
 ]
 
@@ -1681,7 +1687,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "referral-token",
 ]
 
@@ -1794,7 +1799,6 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
- "common",
  "declaration",
 ]
 

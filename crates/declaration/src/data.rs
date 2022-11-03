@@ -1,10 +1,7 @@
 use casper_types::{Key, U256};
 use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use casperlabs_contract_utils::{get_key, set_key, Dict};
-use common::{
-    functions::{account_zero_address, package_hash, zero_address},
-    keys::*,
-};
+use global::{functions::*, keys::*};
 
 pub const DECIMALS: U256 = U256([9, 0, 0, 0]);
 pub const YODAS_PER_STAKEABLE: U256 = U256([1_000_000_000, 0, 0, 0]); // 10 ** DECIMALS

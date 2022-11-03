@@ -2,12 +2,13 @@ use casper_contract::contract_api::runtime;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{Key, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::{
+use referral_token::{
     errors::Errors,
     events::{emit, Events},
     functions::account_zero_address,
+    src::ReferralToken,
+    *,
 };
-use referral_token::{src::ReferralToken, *};
 
 pub trait StakingToken<Storage: ContractStorage>:
     ContractContext<Storage> + ReferralToken<Storage>

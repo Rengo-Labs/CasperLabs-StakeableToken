@@ -3,12 +3,13 @@ use casper_contract::contract_api::runtime;
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{runtime_args, Key, RuntimeArgs, U128, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::{
+use helper::{
     errors::Errors,
     events::{emit, Events},
     functions::key_to_hash,
+    src::Helper,
+    *,
 };
-use helper::{src::Helper, *};
 
 pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<Storage> {
     fn init(&self) {

@@ -1,8 +1,8 @@
 use casper_types::U256;
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::functions::block_timestamp;
 use declaration::{
     data::{launch_time, MILLI_SECONDS_IN_DAY},
+    functions::block_timestamp,
     src::Declaration,
 };
 

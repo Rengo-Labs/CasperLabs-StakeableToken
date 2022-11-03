@@ -3,7 +3,7 @@ use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use casperlabs_contract_utils::Dict;
 extern crate alloc;
 use alloc::{string::ToString, vec::Vec};
-use common::keys::{LSNAPSHOTS_DICT, RSNAPSHOTS_DICT, SNAPSHOTS_DICT};
+use helper::keys::{LSNAPSHOTS_DICT, RSNAPSHOTS_DICT, SNAPSHOTS_DICT};
 
 #[derive(Default, Debug, Clone, Copy, CLTyped, ToBytes, FromBytes)]
 pub struct SnapShot {

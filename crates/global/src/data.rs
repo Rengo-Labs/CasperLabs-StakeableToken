@@ -3,7 +3,7 @@ use alloc::vec::Vec;
 use casper_types::U256;
 use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use casperlabs_contract_utils::{get_key, set_key};
-use common::keys::*;
+use common::keys::GLOBALS;
 
 #[derive(Default, Debug, Clone, Copy, CLTyped, ToBytes, FromBytes)]
 pub struct Globals {
