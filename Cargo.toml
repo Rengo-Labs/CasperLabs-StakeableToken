@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "common",
+    # Crates
+    "crates/global",
+    "crates/declaration",
+    "crates/timing",
+    "crates/helper",
+    "crates/snapshot",
+    "crates/referral-token",
+    # Transfer helper
+    "transfer-helper/bin",
+    "transfer-helper/session-code",
+    "transfer-helper/src",
+    "transfer-helper/tests",
+]
+
+[profile.release]
+codegen-units = 1
+lto = true
