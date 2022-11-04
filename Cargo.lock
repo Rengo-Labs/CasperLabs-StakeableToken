@@ -1793,6 +1793,7 @@ dependencies = [
  "casper-types",
  "casperlabs-contract-utils",
  "casperlabs-test-env",
+ "hex",
 ]
 
 [[package]]
