@@ -7,16 +7,16 @@ use snapshot::{
     events::{emit, Events},
     functions::key_to_hash,
     latest_stable_usd_equivalent, path,
-    src::Snapshot,
+    src::SNAPSHOT,
     uniswap_router, CriticalMass, ReferralSharesToEnd, ReferrerLink, ReferrerLinks, Stake, Stakes,
     PRECISION_RATE, THRESHOLD_LIMIT, YODAS_PER_STAKEABLE,
 };
 
-pub trait ReferralToken<Storage: ContractStorage>:
-    ContractContext<Storage> + Snapshot<Storage>
+pub trait REFERRALTOKEN<Storage: ContractStorage>:
+    ContractContext<Storage> + SNAPSHOT<Storage>
 {
     fn init(&self) {
-        Snapshot::init(self);
+        SNAPSHOT::init(self);
     }
 
     fn _add_referrer_shares_to_end(&self, final_day: U256, shares: U256) {

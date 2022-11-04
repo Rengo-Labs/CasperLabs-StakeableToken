@@ -3,14 +3,14 @@ use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use declaration::{
     data::{launch_time, MILLI_SECONDS_IN_DAY},
     functions::block_timestamp,
-    src::Declaration,
+    src::DECLARATION,
 };
 
-pub trait Timing<Storage: ContractStorage>:
-    ContractContext<Storage> + Declaration<Storage>
+pub trait TIMING<Storage: ContractStorage>:
+    ContractContext<Storage> + DECLARATION<Storage>
 {
     fn init(&self) {
-        Declaration::init(self);
+        DECLARATION::init(self);
     }
 
     fn current_stakeable_day(&self) -> u64 {

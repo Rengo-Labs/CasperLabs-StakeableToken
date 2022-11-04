@@ -1,13 +1,13 @@
 use crate::data::{is_ready, set_is_ready, InflationLN};
 use casper_contract::contract_api::runtime;
-use casper_types::Key;
+use casper_types::{Key, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use common::{
     errors::Errors,
     functions::{set_contract_hash, set_package_hash},
 };
 
-pub trait LiquidityGuard<Storage: ContractStorage>: ContractContext<Storage> {
+pub trait LIQUIDITYGUARD<Storage: ContractStorage>: ContractContext<Storage> {
     fn init(&mut self, contract_hash: Key, package_hash: Key) {
         InflationLN::init();
         set_contract_hash(contract_hash);
@@ -523,5 +523,9 @@ pub trait LiquidityGuard<Storage: ContractStorage>: ContractContext<Storage> {
         inflation_ln.set(&102988, 123966332u64.into());
         inflation_ln.set(&102994, 123721514u64.into());
         inflation_ln.set(&103000, 123477676u64.into());
+    }
+
+    fn get_inflation(&self, amount: u32) -> U256 {
+        InflationLN::instance().get(&amount)
     }
 }

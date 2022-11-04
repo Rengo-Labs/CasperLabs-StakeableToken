@@ -6,13 +6,13 @@ use timing::{
     errors::Errors,
     functions::{account_zero_address, key_to_hash},
     globals,
-    src::Timing,
+    src::TIMING,
     CriticalMass, LiquidityStakeCount, ReferralCount, ReferrerLinks, Stake, StakeCount, Stakes,
 };
 
-pub trait Helper<Storage: ContractStorage>: ContractContext<Storage> + Timing<Storage> {
+pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<Storage> {
     fn init(&self) {
-        Timing::init(self);
+        TIMING::init(self);
     }
 
     fn _not_contract(&self, addr: Key) -> bool {

@@ -1101,6 +1101,7 @@ dependencies = [
  "casper-contract",
  "casper-types",
  "casperlabs-contract-utils",
+ "common",
 ]
 
 [[package]]
@@ -1739,6 +1740,7 @@ dependencies = [
  "casper-contract",
  "casper-types",
  "casperlabs-contract-utils",
+ "common",
 ]
 
 [[package]]
@@ -1993,6 +1995,7 @@ dependencies = [
  "casper-contract",
  "casper-types",
  "casperlabs-contract-utils",
+ "common",
 ]
 
 [[package]]

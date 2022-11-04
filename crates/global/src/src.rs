@@ -8,7 +8,7 @@ use common::{
     events::{emit, Events},
 };
 
-pub trait Globals<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Storage> {
+pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Storage> {
     fn init(&self) {
         set_globals({
             let mut globals = globals();

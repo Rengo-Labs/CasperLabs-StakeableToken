@@ -7,7 +7,7 @@ use common::{
     functions::{key_to_hash, set_contract_hash, set_package_hash},
 };
 
-pub trait TransferHelper<Storage: ContractStorage>: ContractContext<Storage> {
+pub trait TRANSFERHELPER<Storage: ContractStorage>: ContractContext<Storage> {
     fn init(&self, contract_hash: Key, package_hash: Key, transfer_invoker: Key) {
         set_transfer_invoker(transfer_invoker);
         set_contract_hash(contract_hash);

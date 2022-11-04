@@ -6,21 +6,17 @@ use referral_token::{
     errors::Errors,
     events::{emit, Events},
     functions::account_zero_address,
-    src::ReferralToken,
+    src::REFERRALTOKEN,
     *,
 };
 
-pub trait StakingToken<Storage: ContractStorage>:
-    ContractContext<Storage> + ReferralToken<Storage>
+pub trait STAKINGTOKEN<Storage: ContractStorage>:
+    ContractContext<Storage> + REFERRALTOKEN<Storage>
 {
     fn init(&self) {
-        ReferralToken::init(self);
+        REFERRALTOKEN::init(self);
     }
 
-    /// @notice A method for a staker to create multiple stakes
-    /// @param _stakedAmount amount of STAKEABLE staked.
-    /// @param _lockDays amount of days it is locked for.
-    /// @param _referrer address of the referrer
     fn create_stake_bulk(
         &mut self,
         staked_amount: Vec<U256>,
@@ -32,10 +28,6 @@ pub trait StakingToken<Storage: ContractStorage>:
         }
     }
 
-    /// @notice A method for a staker to create a stake
-    /// @param _stakedAmount amount of STAKEABLE staked.
-    /// @param _lockDays amount of days it is locked for.
-    /// @param _referrer address of the referrer
     fn create_stake(
         &mut self,
         staked_amount: U256,
@@ -138,8 +130,6 @@ pub trait StakingToken<Storage: ContractStorage>:
         (new_stake, stake_id, start_day)
     }
 
-    /// @notice A method for a staker to remove a stake belonging to his address by providing ID of a stake.
-    /// @param stake_id unique bytes sequence reference to the stake
     fn end_stake(&mut self, stake_id: Vec<u32>) -> U256 {
         self.snapshot_trigger();
         let (ended_stake, penalty_amount) = self._end_stake(self.get_caller(), stake_id.clone());
@@ -205,9 +195,6 @@ pub trait StakingToken<Storage: ContractStorage>:
         (stake, penalty)
     }
 
-    /// @notice alloes to scrape interest from active stake
-    /// @param _stakeID unique bytes sequence reference to the stake
-    /// @param _scrapeDays amount of days to proccess, 0 = all
     fn scrape_interest(
         &mut self,
         stake_id: Vec<u32>,

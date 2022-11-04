@@ -7,13 +7,13 @@ use helper::{
     errors::Errors,
     events::{emit, Events},
     functions::key_to_hash,
-    src::Helper,
+    src::HELPER,
     *,
 };
 
-pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<Storage> {
+pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<Storage> {
     fn init(&self) {
-        Helper::init(self);
+        HELPER::init(self);
         Snapshots::init();
         RSnapshots::init();
         LSnapshots::init();
@@ -23,7 +23,6 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
         self._daily_snapshot_point(self._current_stakeable_day());
     }
 
-    /// @notice allows to activate/deactivate liquidity guard manually based on the liquidity in UNISWAP pair contract
     fn liquidity_guard_trigger(&mut self) {
         let (reserve_a, reserve_b, block_timestamp_last): (U128, U128, u64) =
             runtime::call_versioned_contract(
@@ -76,12 +75,10 @@ pub trait Snapshot<Storage: ContractStorage>: ContractContext<Storage> + Helper<
         set_is_liquidity_guard_active(false);
     }
 
-    /// @notice allows volunteer to offload snapshots to save on gas during next start/end stake
     fn manual_daily_snapshot(&mut self) {
         self._daily_snapshot_point(self._current_stakeable_day());
     }
 
-    /// @notice allows volunteer to offload snapshots to save on gas during next start/end stake in case manualDailySnapshot reach block limit
     fn manual_daily_snapshot_point(&mut self, update_day: u64) {
         if update_day == 0 || update_day >= self._current_stakeable_day() {
             runtime::revert(Errors::SnapshotDayDoesNotExistYet);

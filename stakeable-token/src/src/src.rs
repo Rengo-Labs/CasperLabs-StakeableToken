@@ -1,16 +1,28 @@
 use crate::data::*;
-use casper_contract::contract_api::runtime;
+use casper_contract::contract_api::{runtime, system};
 use casper_types::{runtime_args, Key, RuntimeArgs, URef, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
-use common::{errors::Errors, functions::*};
-use liquidity_token::{
-    globals, scspr, set_scspr, src::LiquidityToken, uniswap_pair, uniswap_router, ERC20,
+use common::{
+    errors::Errors,
+    functions::{set_package_hash, *},
 };
+use liquidity_token::*;
 
-pub trait StakeableToken<Storage: ContractStorage>:
-    ContractContext<Storage> + LiquidityToken<Storage>
+pub trait STAKEABLETOKEN<Storage: ContractStorage>:
+    ContractContext<Storage> + LIQUIDITYTOKEN<Storage>
 {
-    fn init(&mut self, contract_hash: Key, package_hash: Key, purse: URef, scspr: Key) {
+    #[allow(clippy::too_many_arguments)]
+    fn init(
+        &mut self,
+        scspr: Key,
+        wcspr: Key,
+        uniswap_router: Key,
+        uniswap_factory: Key,
+        uniswap_pair: Key,
+        liquidity_guard: Key,
+        contract_hash: Key,
+        package_hash: Key,
+    ) {
         ERC20::init(
             self,
             "Stakeable Token".into(),
@@ -20,16 +32,19 @@ pub trait StakeableToken<Storage: ContractStorage>:
             contract_hash,
             key_to_hash(package_hash, Errors::InvalidHash10),
         );
-        set_scspr(scspr);
         set_transformer_gate_keeper(self.get_caller());
+
+        set_scspr(scspr);
+        set_wcspr(wcspr);
+        set_uniswap_router(uniswap_router);
+        set_uniswap_factory(uniswap_factory);
+        set_uniswap_pair(uniswap_pair);
+        set_liquidity_guard(liquidity_guard);
         set_contract_hash(contract_hash);
         set_package_hash(package_hash);
-        set_purse(purse);
+        set_purse(system::create_purse());
     }
 
-    /// @notice ability to define liquidity transformer contract
-    /// @dev this method renounce transformerGateKeeper access
-    /// @param _immutableTransformer contract address
     fn set_liquidity_transfomer(&self, immutable_transformer: Key, transformer_purse: URef) {
         if transformer_gate_keeper() != self.get_caller() {
             runtime::revert(Errors::TransformerDefined);
@@ -38,10 +53,6 @@ pub trait StakeableToken<Storage: ContractStorage>:
         set_transformer_gate_keeper(account_zero_address());
     }
 
-    /// @notice allows liquidityTransformer to mint supply
-    /// @dev executed from liquidityTransformer upon PANCAKESWAP transfer and during reservation payout to contributors and referrers
-    /// @param _investorAddress address for minting WISE tokens
-    /// @param _amount of tokens to mint for _investorAddress
     fn mint_supply(&mut self, investor_address: Key, amount: U256) {
         if self.get_caller() != liquidity_transformer().0 {
             runtime::revert(Errors::WrongTransformer);
@@ -49,10 +60,6 @@ pub trait StakeableToken<Storage: ContractStorage>:
         self.mint(investor_address, amount);
     }
 
-    /// @notice allows to create stake directly with BNB if you don't have WISE tokens method will wrap
-    ///     your BNB to SBNB and use that amount on PANCAKESWAP returned amount of WISE tokens will b used to stake
-    /// @param _lockDays amount of days it is locked for.
-    /// @param _referrer referrer address for +10% bonus
     fn create_stake_with_cspr(
         &mut self,
         lock_days: u64,

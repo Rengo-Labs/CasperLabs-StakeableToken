@@ -6,14 +6,14 @@ use global::{
     errors::Errors,
     functions::{block_timestamp, key_to_hash, package_hash},
     keys::LAUNCH_TIME,
-    src::Globals,
+    src::GLOBAL,
 };
 
-pub trait Declaration<Storage: ContractStorage>:
-    ContractContext<Storage> + Globals<Storage>
+pub trait DECLARATION<Storage: ContractStorage>:
+    ContractContext<Storage> + GLOBAL<Storage>
 {
     fn init(&self) {
-        Globals::init(self);
+        GLOBAL::init(self);
         set_key(LAUNCH_TIME, U256::from(block_timestamp()));
         StakeCount::init();
         ReferralCount::init();

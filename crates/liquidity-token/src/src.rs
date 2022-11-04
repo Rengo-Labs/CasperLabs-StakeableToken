@@ -3,19 +3,17 @@ use casper_types::{Key, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use staking_token::{
     errors::Errors, functions::package_hash, globals, is_liquidity_guard_active, set_globals,
-    src::StakingToken, uniswap_pair, LSnapshots, LiquidityStake, LiquidityStakes,
+    src::STAKINGTOKEN, uniswap_pair, LSnapshots, LiquidityStake, LiquidityStakes,
     MIN_REFERRAL_DAYS, PRECISION_RATE,
 };
 
-pub trait LiquidityToken<Storage: ContractStorage>:
-    ContractContext<Storage> + StakingToken<Storage>
+pub trait LIQUIDITYTOKEN<Storage: ContractStorage>:
+    ContractContext<Storage> + STAKINGTOKEN<Storage>
 {
     fn init(&self) {
-        StakingToken::init(self);
+        STAKINGTOKEN::init(self);
     }
 
-    /// @notice A method for a staker to create a liquidity stake
-    /// @param _liquidityTokens amount of UNI-STAKEABLE staked.
     fn create_liquidity_stake(&mut self, liquidity_tokens: U256) -> Vec<u32> {
         self.snapshot_trigger();
         if !is_liquidity_guard_active() {
@@ -52,8 +50,6 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         liquidity_stake_id
     }
 
-    /// @notice A method for a staker to end a liquidity stake
-    /// @param _liquidityStakeID - identification number
     fn end_liquidity_stake(&mut self, liquidity_stake_id: Vec<u32>) -> U256 {
         self.snapshot_trigger();
         let mut liquidity_stake =
@@ -82,8 +78,6 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         liquidity_stake.reward_amount
     }
 
-    /// @notice returns full view and details of a liquidity stake belonging to caller
-    /// @param _liquidityStakeID - stakeID
     fn check_liquidity_stake_by_id(
         &self,
         staker: Key,
@@ -93,7 +87,7 @@ pub trait LiquidityToken<Storage: ContractStorage>:
         (
             stake.start_day.into(),
             stake.staked_amount,
-            LiquidityToken::_calculate_reward_amount(self, stake),
+            LIQUIDITYTOKEN::_calculate_reward_amount(self, stake),
             stake.close_day.into(),
             stake.is_active,
         )

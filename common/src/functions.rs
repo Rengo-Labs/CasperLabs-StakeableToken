@@ -2,6 +2,11 @@ use crate::{
     errors::Errors,
     keys::{CONTRACT_HASH, PACKAGE_HASH, PURSE},
 };
+extern crate alloc;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
 use casper_types::{ContractPackageHash, Key, URef};
 use casperlabs_contract_utils::{get_key, set_key};
@@ -45,4 +50,15 @@ pub fn set_purse(purse: URef) {
 }
 pub fn purse() -> URef {
     get_key(PURSE).unwrap_or_default()
+}
+
+pub fn typecast_to_string<T>(list: Vec<T>) -> Vec<String>
+where
+    T: ToString,
+{
+    let mut ret: Vec<String> = Vec::new();
+    for item in list.iter() {
+        ret.push(item.to_string());
+    }
+    ret
 }

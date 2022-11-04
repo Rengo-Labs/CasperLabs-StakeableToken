@@ -3,6 +3,12 @@ pub const CONTRACT_HASH: &str = "contract_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
 pub const PURSE: &str = "purse";
 
+// session keys
+pub const GET_INFLATION: &str = "get_inflation";
+pub const GET_STABLE_USD_EQUIVALENT: &str = "get_stable_usd_equivalent";
+pub const FORWARD_FUNDS: &str = "forward_funds";
+pub const GET_TRANSFER_INVOKER_ADDRESS: &str = "get_transfer_invoker_address";
+
 // global
 pub const GLOBALS: &str = "globals";
 
