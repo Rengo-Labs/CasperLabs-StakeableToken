@@ -12,8 +12,8 @@ use casper_contract::{
 use casper_types::{
     bytesrepr::ToBytes, runtime_args, ApiError, CLTyped, Key, RuntimeArgs, URef, U256,
 };
-
 use common::keys::*;
+
 // Key is the same a destination
 fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
     // Store `value` under a new unforgeable reference.

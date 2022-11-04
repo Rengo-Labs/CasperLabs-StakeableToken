@@ -19,7 +19,7 @@ use casper_types::{
     EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use casperlabs_contract_utils::{ContractContext, OnChainContractStorage};
-use stakeable_token_crate::{functions::*, *, transformer_gate_keeper};
+use stakeable_token_crate::{functions::*, transformer_gate_keeper, *};
 
 #[derive(Default)]
 struct StakeableToken(OnChainContractStorage);
@@ -100,7 +100,7 @@ fn set_liquidity_transfomer() {
 
 /// @notice allows liquidityTransformer to mint supply
 /// @dev executed from liquidityTransformer upon PANCAKESWAP transfer and during reservation payout to contributors and referrers
-/// @param _investorAddress address for minting WISE tokens
+/// @param _investorAddress address for minting stakeable tokens
 /// @param _amount of tokens to mint for _investorAddress
 #[no_mangle]
 fn mint_supply() {
@@ -109,8 +109,8 @@ fn mint_supply() {
     StakeableToken::default().mint_supply(investor_address, amount);
 }
 
-/// @notice allows to create stake directly with BNB if you don't have WISE tokens method will wrap
-///     your BNB to SBNB and use that amount on PANCAKESWAP returned amount of WISE tokens will b used to stake
+/// @notice allows to create stake directly with BNB if you don't have stakeable tokens method will wrap
+///     your BNB to SBNB and use that amount on PANCAKESWAP returned amount of stakeable tokens will b used to stake
 /// @param _lockDays amount of days it is locked for.
 /// @param _referrer referrer address for +10% bonus
 #[no_mangle]
@@ -450,7 +450,7 @@ fn create_stake_bulk() {
     let lock_days: Vec<u64> = runtime::get_named_arg("lock_days");
     let _referrer: Vec<String> = runtime::get_named_arg("referrer");
     let mut referrer: Vec<Key> = Vec::new();
-    for i in & _referrer {
+    for i in &_referrer {
         referrer.push(Key::from_formatted_str(i).unwrap());
     }
     StakeableToken::default().create_stake_bulk(staked_amount, lock_days, referrer);
@@ -843,8 +843,10 @@ fn get_entry_points() -> EntryPoints {
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "get_scrapes",
-        vec![Parameter::new("key0", Key::cl_type()),
-        Parameter::new("key1", CLType::List(Box::new(u32::cl_type())))],
+        vec![
+            Parameter::new("key0", Key::cl_type()),
+            Parameter::new("key1", CLType::List(Box::new(u32::cl_type()))),
+        ],
         CLType::U256,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -886,7 +888,7 @@ fn get_entry_points() -> EntryPoints {
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "snapshots",
-        vec![Parameter::new("Key", CLType::U256)],
+        vec![Parameter::new("key", CLType::U256)],
         CLType::List(Box::new(SnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,

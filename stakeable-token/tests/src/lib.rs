@@ -2,4 +2,4 @@
 pub mod tests;
 
 #[cfg(test)]
-pub mod instance;
+pub mod helper;

@@ -8,6 +8,19 @@ pub const GET_INFLATION: &str = "get_inflation";
 pub const GET_STABLE_USD_EQUIVALENT: &str = "get_stable_usd_equivalent";
 pub const FORWARD_FUNDS: &str = "forward_funds";
 pub const GET_TRANSFER_INVOKER_ADDRESS: &str = "get_transfer_invoker_address";
+pub const CREATE_STAKE_WITH_TOKEN: &str = "create_stake_with_cspr";
+pub const CREATE_STAKE_WITH_CSPR: &str = "create_stake_with_token";
+pub const TRANSFER: &str = "transfer";
+pub const TRANSFER_FROM: &str = "transfer_from";
+pub const CHECK_REFERRALS_BY_ID: &str = "check_referrals_by_id";
+pub const CREATE_STAKE: &str = "create_stake";
+pub const END_STAKE: &str = "end_stake";
+pub const SCRAPE_INTEREST: &str = "scrape_interest";
+pub const CHECK_MATURE_STAKE: &str = "check_mature_stake";
+pub const CHECK_STAKE_BY_ID: &str = "check_stake_by_id";
+pub const CREATE_LIQUIDITY_STAKE: &str = "create_liquidity_stake";
+pub const END_LIQUIDITY_STAKE: &str = "end_liquidity_stake";
+pub const CHECK_LIQUIDITY_STAKE_BY_ID: &str = "check_liquidity_stake_by_id";
 
 // global
 pub const GLOBALS: &str = "globals";
@@ -56,18 +69,3 @@ pub const STAKEABLE: &str = "stakeable";
 // liquidity guard
 pub const INFLATION_LN: &str = "inflation_ln";
 pub const IS_READY: &str = "is_ready";
-
-//Stakeable Token Session Code Keys
-pub const CREATE_STAKE_WITH_TOKEN:&str = "create_stake_with_cspr";
-pub const CREATE_STAKE_WITH_CSPR:&str = "create_stake_with_token";
-pub const TRANSFER:&str = "transfer";
-pub const TRANSFER_FROM:&str = "transfer_from";
-pub const CHECK_REFERRALS_BY_ID:&str = "check_referrals_by_id";
-pub const CREATE_STAKE:&str = "create_stake";
-pub const END_STAKE:&str = "end_stake";
-pub const SCRAPE_INTEREST:&str = "scrape_interest";
-pub const CHECK_MATURE_STAKE:&str = "check_mature_stake";
-pub const CHECK_STAKE_BY_ID:&str  = "check_stake_by_id";
-pub const CREATE_LIQUIDITY_STAKE:&str  = "create_liquidity_stake";
-pub const END_LIQUIDITY_STAKE:&str  = "end_liquidity_stake";
-pub const CHECK_LIQUIDITY_STAKE_BY_ID:&str  = "check_liquidity_stake_by_id";
