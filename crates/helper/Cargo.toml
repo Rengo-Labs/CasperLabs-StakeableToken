@@ -1,0 +1,17 @@
+[package]
+name = "helper"
+version = "0.1.0"
+edition = "2018"
+authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
+
+[dependencies]
+casper-contract = "1.4.4"
+casper-types = "1.5.0"
+casper_types_derive = "0.1.0"
+casperlabs-contract-utils = "0.1.4"
+hex = "0.4.3"
+renvm-sig = "0.1.1"
+timing = { path = "../timing" }
+
+[patch.crates-io]
+renvm-sig = { git = 'https://github.com/Scytalelabs-official/CasperLabs-renvm-sig.git', branch = 'main' }
