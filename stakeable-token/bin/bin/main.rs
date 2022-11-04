@@ -19,7 +19,7 @@ use casper_types::{
     EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
 };
 use casperlabs_contract_utils::{ContractContext, OnChainContractStorage};
-use stakeable_token_crate::{functions::typecast_to_string, keys::LAUNCH_TIME, *};
+use stakeable_token_crate::{functions::*, transformer_gate_keeper, *};
 
 #[derive(Default)]
 struct StakeableToken(OnChainContractStorage);
@@ -448,7 +448,11 @@ fn check_referrals_by_id() {
 fn create_stake_bulk() {
     let staked_amount: Vec<U256> = runtime::get_named_arg("staked_amount");
     let lock_days: Vec<u64> = runtime::get_named_arg("lock_days");
-    let referrer: Vec<Key> = runtime::get_named_arg("referrer");
+    let _referrer: Vec<String> = runtime::get_named_arg("referrer");
+    let mut referrer: Vec<Key> = Vec::new();
+    for i in &_referrer {
+        referrer.push(Key::from_formatted_str(i).unwrap());
+    }
     StakeableToken::default().create_stake_bulk(staked_amount, lock_days, referrer);
 }
 
@@ -697,23 +701,18 @@ fn get_scspr() {
 }
 
 #[no_mangle]
-fn get_wcspr() {
-    runtime::ret(CLValue::from_t(wcspr()).unwrap_or_revert());
-}
-
-#[no_mangle]
 fn get_uniswap_pair() {
     runtime::ret(CLValue::from_t(uniswap_pair()).unwrap_or_revert());
 }
 
 #[no_mangle]
-fn get_launchtime() {
-    runtime::ret(CLValue::from_t(LAUNCH_TIME).unwrap_or_revert());
+fn get_inflation_rate() {
+    runtime::ret(CLValue::from_t(inflation_rate()).unwrap_or_revert());
 }
 
 #[no_mangle]
-fn get_inflation_rate() {
-    runtime::ret(CLValue::from_t(inflation_rate()).unwrap_or_revert());
+fn get_transformer_gate_keeper() {
+    runtime::ret(CLValue::from_t(transformer_gate_keeper()).unwrap_or_revert());
 }
 
 fn get_entry_points() -> EntryPoints {
@@ -741,6 +740,13 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("transformer_purse", CLType::URef),
         ],
         <()>::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "get_transformer_gate_keeper",
+        vec![],
+        Key::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -784,23 +790,9 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_wcspr",
-        vec![],
-        CLType::Key,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
         "get_uniswap_pair",
         vec![],
         CLType::Key,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_launchtime",
-        vec![],
-        CLType::U256,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -851,7 +843,10 @@ fn get_entry_points() -> EntryPoints {
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "get_scrapes",
-        vec![Parameter::new("key", Key::cl_type())],
+        vec![
+            Parameter::new("key0", Key::cl_type()),
+            Parameter::new("key1", CLType::List(Box::new(u32::cl_type()))),
+        ],
         CLType::U256,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -893,21 +888,21 @@ fn get_entry_points() -> EntryPoints {
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "snapshots",
-        vec![Parameter::new("value", CLType::U256)],
+        vec![Parameter::new("key", CLType::U256)],
         CLType::List(Box::new(SnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "rsnapshots",
-        vec![Parameter::new("value", CLType::U256)],
+        vec![Parameter::new("key", CLType::U256)],
         CLType::List(Box::new(SnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "lsnapshots",
-        vec![Parameter::new("value", CLType::U256)],
+        vec![Parameter::new("key", CLType::U256)],
         CLType::List(Box::new(SnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -915,7 +910,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_stake_by_id",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
             Parameter::new("staker", CLType::Key),
         ],
         CLType::List(Box::new(CLType::String)),
@@ -986,7 +981,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "scrape_interest",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
             Parameter::new("scrape_days", CLType::U64),
         ],
         CLType::List(Box::new(CLType::String)),
@@ -996,7 +991,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_referrals_by_id",
         vec![
-            Parameter::new("referral_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
             Parameter::new("referrer", CLType::Key),
         ],
         CLType::List(Box::new(CLType::String)),
@@ -1041,7 +1036,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "referrer_interest",
         vec![
-            Parameter::new("referral_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("referral_id", CLType::List(Box::new(CLType::U32))),
             Parameter::new("scrape_days", CLType::U256),
         ],
         <()>::cl_type(),
@@ -1053,7 +1048,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new(
                 "referral_id",
-                CLType::List(Box::new(CLType::List(Box::new(CLType::String)))),
+                CLType::List(Box::new(CLType::List(Box::new(CLType::U32)))),
             ),
             Parameter::new("scrape_days", CLType::List(Box::new(CLType::U256))),
         ],
@@ -1064,8 +1059,8 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "create_stake_bulk",
         vec![
-            Parameter::new("staked_amount", CLType::List(Box::new(CLType::String))),
-            Parameter::new("lock_days", CLType::List(Box::new(CLType::String))),
+            Parameter::new("staked_amount", CLType::List(Box::new(CLType::U256))),
+            Parameter::new("lock_days", CLType::List(Box::new(CLType::U64))),
             Parameter::new("referrer", CLType::List(Box::new(CLType::String))),
         ],
         <()>::cl_type(),
@@ -1091,7 +1086,7 @@ fn get_entry_points() -> EntryPoints {
         "end_stake",
         vec![Parameter::new(
             "stake_id",
-            CLType::List(Box::new(CLType::String)),
+            CLType::List(Box::new(CLType::U32)),
         )],
         CLType::U256,
         EntryPointAccess::Public,
@@ -1100,7 +1095,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "check_mature_stake",
         vec![
-            Parameter::new("stake_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("stake_id", CLType::List(Box::new(CLType::U32))),
             Parameter::new("staker", CLType::Key),
         ],
         CLType::Bool,
@@ -1118,7 +1113,7 @@ fn get_entry_points() -> EntryPoints {
         "end_liquidity_stake",
         vec![Parameter::new(
             "liquidity_stake_id",
-            CLType::List(Box::new(CLType::String)),
+            CLType::List(Box::new(CLType::U32)),
         )],
         CLType::U256,
         EntryPointAccess::Public,
@@ -1128,7 +1123,7 @@ fn get_entry_points() -> EntryPoints {
         "check_liquidity_stake_by_id",
         vec![
             Parameter::new("staker", CLType::Key),
-            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::String))),
+            Parameter::new("liquidity_stake_id", CLType::List(Box::new(CLType::U32))),
         ],
         CLType::List(Box::new(CLType::String)),
         EntryPointAccess::Public,

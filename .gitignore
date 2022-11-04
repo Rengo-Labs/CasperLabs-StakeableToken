@@ -1,1 +1,6 @@
 target
+Cargo.lock
+liquidity-guard/tests/wasm/*.wasm
+stable-usd-equivalent/tests/wasm/*.wasm
+stakeable-token/tests/wasm/*.wasm
+transfer-helper/tests/wasm/*.wasm
