@@ -1,13 +1,11 @@
 [package]
-name = "declaration"
-version = "0.1.0"
-edition = "2018"
+name = "liquidity-guard-crate"
+version = "0.2.0"
 authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
+edition = "2018"
 
 [dependencies]
 casper-contract = "1.4.4"
 casper-types = "1.5.0"
-casper_types_derive = "0.1.0"
 casperlabs-contract-utils = "0.1.4"
 common = { path = "../../common" }
-global = { path = "../global" }

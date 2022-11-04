@@ -18,7 +18,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     /// @notice A method for a staker to create multiple stakes
-    /// @param _stakedAmount amount of WISE staked.
+    /// @param _stakedAmount amount of STAKEABLE staked.
     /// @param _lockDays amount of days it is locked for.
     /// @param _referrer address of the referrer
     fn create_stake_bulk(
@@ -33,7 +33,7 @@ pub trait StakingToken<Storage: ContractStorage>:
     }
 
     /// @notice A method for a staker to create a stake
-    /// @param _stakedAmount amount of WISE staked.
+    /// @param _stakedAmount amount of STAKEABLE staked.
     /// @param _lockDays amount of days it is locked for.
     /// @param _referrer address of the referrer
     fn create_stake(

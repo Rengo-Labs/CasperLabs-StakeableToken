@@ -15,7 +15,7 @@ pub trait LiquidityToken<Storage: ContractStorage>:
     }
 
     /// @notice A method for a staker to create a liquidity stake
-    /// @param _liquidityTokens amount of UNI-WISE staked.
+    /// @param _liquidityTokens amount of UNI-STAKEABLE staked.
     fn create_liquidity_stake(&mut self, liquidity_tokens: U256) -> Vec<u32> {
         self.snapshot_trigger();
         if !is_liquidity_guard_active() {

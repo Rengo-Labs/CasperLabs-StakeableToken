@@ -1,9 +1,9 @@
 use crate::{
     errors::Errors,
-    keys::{CONTRACT_HASH, PACKAGE_HASH},
+    keys::{CONTRACT_HASH, PACKAGE_HASH, PURSE},
 };
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
-use casper_types::{ContractPackageHash, Key};
+use casper_types::{ContractPackageHash, Key, URef};
 use casperlabs_contract_utils::{get_key, set_key};
 
 pub fn zero_address() -> Key {
@@ -38,4 +38,11 @@ pub fn set_package_hash(package_hash: Key) {
 }
 pub fn package_hash() -> Key {
     get_key(PACKAGE_HASH).unwrap_or_else(zero_address)
+}
+
+pub fn set_purse(purse: URef) {
+    set_key(PURSE, purse);
+}
+pub fn purse() -> URef {
+    get_key(PURSE).unwrap_or_default()
 }

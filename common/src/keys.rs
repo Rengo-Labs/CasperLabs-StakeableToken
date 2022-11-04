@@ -1,6 +1,7 @@
 // common keys
 pub const CONTRACT_HASH: &str = "contract_hash";
 pub const PACKAGE_HASH: &str = "package_hash";
+pub const PURSE: &str = "purse";
 
 // global
 pub const GLOBALS: &str = "globals";
@@ -37,3 +38,15 @@ pub const TRANSFER_INVOKER: &str = "transfer_invoker";
 pub const SNAPSHOTS_DICT: &str = "snapshots_dict";
 pub const RSNAPSHOTS_DICT: &str = "rsnapshots_dict";
 pub const LSNAPSHOTS_DICT: &str = "lsnapshots_dict";
+
+// liquidity_transformer
+pub const LIQUIDITY_TRANSFORMER: &str = "liquidity_transformer";
+pub const LIQUIDITY_TRANSFORMER_PURSE: &str = "liquidity_transformer_purse";
+pub const TRANSFORMER_GATE_KEEPER: &str = "transformer_gate_keeper";
+
+// stable usd equivalent
+pub const STAKEABLE: &str = "stakeable";
+
+// liquidity guard
+pub const INFLATION_LN: &str = "inflation_ln";
+pub const IS_READY: &str = "is_ready";

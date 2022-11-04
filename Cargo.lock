@@ -600,6 +600,7 @@ dependencies = [
  "casper-types",
  "casper_types_derive",
  "casperlabs-contract-utils",
+ "common",
  "global",
 ]
 
@@ -1072,6 +1073,46 @@ name = "linked-hash-map"
 version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
+
+[[package]]
+name = "liquidity-guard"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "liquidity-guard-crate",
+]
+
+[[package]]
+name = "liquidity-guard-crate"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "common",
+]
+
+[[package]]
+name = "liquidity-guard-session-code"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+]
+
+[[package]]
+name = "liquidity-guard-tests"
+version = "0.1.0"
+dependencies = [
+ "casper-contract",
+ "casper-engine-test-support",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "casperlabs-test-env",
+]
 
 [[package]]
 name = "liquidity-token"
@@ -1613,15 +1654,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "session-code-transfer-helper"
-version = "0.2.0"
-dependencies = [
- "casper-contract",
- "casper-types",
- "casperlabs-contract-utils",
-]
-
-[[package]]
 name = "sha2"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1677,6 +1709,88 @@ dependencies = [
  "casper_types_derive",
  "casperlabs-contract-utils",
  "helper",
+]
+
+[[package]]
+name = "stable-usd-equivalent"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "stable-usd-equivalent-crate",
+]
+
+[[package]]
+name = "stable-usd-equivalent-crate"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "common",
+ "referral-token",
+]
+
+[[package]]
+name = "stable-usd-equivalent-session-code"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+]
+
+[[package]]
+name = "stable-usd-equivalent-tests"
+version = "0.1.0"
+dependencies = [
+ "casper-contract",
+ "casper-engine-test-support",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "casperlabs-test-env",
+]
+
+[[package]]
+name = "stakeable-token"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "stakeable-token-crate",
+]
+
+[[package]]
+name = "stakeable-token-crate"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "common",
+ "liquidity-token",
+]
+
+[[package]]
+name = "stakeable-token-session-code"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+]
+
+[[package]]
+name = "stakeable-token-tests"
+version = "0.1.0"
+dependencies = [
+ "casper-contract",
+ "casper-engine-test-support",
+ "casper-types",
+ "casperlabs-contract-utils",
+ "casperlabs-test-env",
 ]
 
 [[package]]
@@ -1873,6 +1987,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "transfer-helper-session-code"
+version = "0.2.0"
+dependencies = [
+ "casper-contract",
+ "casper-types",
+ "casperlabs-contract-utils",
+]
+
+[[package]]
 name = "transfer-helper-tests"
 version = "0.1.0"
 dependencies = [
@@ -1881,8 +2004,6 @@ dependencies = [
  "casper-types",
  "casperlabs-contract-utils",
  "casperlabs-test-env",
- "hex",
- "renvm-sig",
 ]
 
 [[package]]

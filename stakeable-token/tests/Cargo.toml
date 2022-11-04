@@ -1,5 +1,5 @@
 [package]
-name = "transfer-helper-tests"
+name = "stakeable-token-tests"
 version = "0.1.0"
 authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
 edition = "2018"
