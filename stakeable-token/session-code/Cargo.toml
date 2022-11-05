@@ -1,5 +1,5 @@
 [package]
-name = "stakeable-token-session-code"
+name = "session-code-stakeable"
 version = "0.2.0"
 authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
 edition = "2018"
@@ -11,7 +11,7 @@ common = {path = "../../common"}
 casperlabs-contract-utils = "0.1.4"
 
 [[bin]]
-name = "stakeable-token-session-code"
+name = "session-code-stakeable"
 path = "bin/main.rs"
 bench = false
 doctest = false

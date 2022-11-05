@@ -43,6 +43,7 @@ impl StakeableToken {
     #[allow(clippy::too_many_arguments)]
     fn constructor(
         &mut self,
+        stable_usd: Key,
         scspr: Key,
         wcspr: Key,
         uniswap_router: Key,
@@ -54,6 +55,7 @@ impl StakeableToken {
     ) {
         STAKEABLETOKEN::init(
             self,
+            stable_usd,
             scspr,
             wcspr,
             uniswap_router,
@@ -68,6 +70,7 @@ impl StakeableToken {
 
 #[no_mangle]
 fn constructor() {
+    let stable_usd: Key = runtime::get_named_arg("stable_usd");
     let scspr: Key = runtime::get_named_arg("scspr");
     let wcspr: Key = runtime::get_named_arg("wcspr");
     let uniswap_router: Key = runtime::get_named_arg("uniswap_router");
@@ -77,6 +80,7 @@ fn constructor() {
     let contract_hash: Key = runtime::get_named_arg("contract_hash");
     let package_hash: Key = runtime::get_named_arg("package_hash");
     StakeableToken::default().constructor(
+        stable_usd,
         scspr,
         wcspr,
         uniswap_router,
@@ -660,6 +664,24 @@ fn get_scheduled_to_end() {
 }
 
 #[no_mangle]
+fn get_stake_count() {
+    let staker: Key = runtime::get_named_arg("staker");
+    runtime::ret(CLValue::from_t(StakeCount::instance().get(&staker)).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_referral_count() {
+    let referral: Key = runtime::get_named_arg("referral");
+    runtime::ret(CLValue::from_t(ReferralCount::instance().get(&referral)).unwrap_or_revert());
+}
+
+#[no_mangle]
+fn get_liquidity_stake_count() {
+    let staker: Key = runtime::get_named_arg("staker");
+    runtime::ret(CLValue::from_t(LiquidityStakeCount::instance().get(&staker)).unwrap_or_revert());
+}
+
+#[no_mangle]
 fn get_referral_shares_to_end() {
     let key: U256 = runtime::get_named_arg("key");
     runtime::ret(CLValue::from_t(ReferralSharesToEnd::instance().get(&key)).unwrap_or_revert());
@@ -720,6 +742,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "constructor",
         vec![
+            Parameter::new("stable_usd", CLType::Key),
             Parameter::new("scspr", CLType::Key),
             Parameter::new("wcspr", CLType::Key),
             Parameter::new("uniswap_router", CLType::Key),
@@ -804,13 +827,6 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "get_lt_balance",
-        vec![],
-        CLType::U256,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
         "create_pair",
         vec![],
         <()>::cl_type(),
@@ -828,16 +844,6 @@ fn get_entry_points() -> EntryPoints {
         "get_total_penalties",
         vec![Parameter::new("key", U256::cl_type())],
         CLType::U256,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_liquidity_stake",
-        vec![
-            Parameter::new("staker", Key::cl_type()),
-            Parameter::new("id", CLType::List(Box::new(String::cl_type()))),
-        ],
-        CLType::List(Box::new(u8::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -869,13 +875,6 @@ fn get_entry_points() -> EntryPoints {
         "get_liquidity_stake_count",
         vec![Parameter::new("staker", Key::cl_type())],
         CLType::U256,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        "get_liquidity_guard_status",
-        vec![],
-        bool::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -1309,6 +1308,7 @@ pub extern "C" fn call() {
         let (contract_hash, _): (ContractHash, _) =
             storage::add_contract_version(package_hash, get_entry_points(), Default::default());
 
+        let stable_usd: Key = runtime::get_named_arg("stable_usd");
         let scspr: Key = runtime::get_named_arg("scspr");
         let wcspr: Key = runtime::get_named_arg("wcspr");
         let uniswap_router: Key = runtime::get_named_arg("uniswap_router");
@@ -1318,6 +1318,7 @@ pub extern "C" fn call() {
 
         // Prepare constructor args
         let constructor_args = runtime_args! {
+            "stable_usd" => stable_usd,
             "scspr" => scspr,
             "wcspr" => wcspr,
             "uniswap_router" => uniswap_router,

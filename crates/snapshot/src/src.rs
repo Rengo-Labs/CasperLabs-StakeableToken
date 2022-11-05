@@ -94,14 +94,15 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
         self.liquidity_guard_trigger();
         let mut scheduled_to_end_today: U256;
         let total_staked_today: U256 = globals().total_staked;
-        let mut day: U256 = globals().current_stakeable_day;
-        while day < U256::from(update_day) {
+        for day in globals().current_stakeable_day.as_u128()..update_day.into() {
             // ------------------------------------
             // prepare snapshot for regular shares
             // reusing scheduledToEndToday variable
-            scheduled_to_end_today = ScheduledToEnd::instance().get(&day)
-                + Snapshots::instance().get(&(day - 1)).scheduled_to_end;
-            let mut snapshot: SnapShot = Snapshots::instance().get(&day);
+            scheduled_to_end_today = ScheduledToEnd::instance().get(&day.into())
+                + Snapshots::instance()
+                    .get(&(day - 1).into())
+                    .scheduled_to_end;
+            let mut snapshot: SnapShot = Snapshots::instance().get(&day.into());
             snapshot.scheduled_to_end = scheduled_to_end_today;
             snapshot.total_shares = if globals().total_shares > scheduled_to_end_today {
                 globals().total_shares - scheduled_to_end_today
@@ -116,7 +117,7 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
                 .checked_div(self._inflation_amount(
                     total_staked_today,
                     total_supply,
-                    TotalPenalties::instance().get(&day),
+                    TotalPenalties::instance().get(&day.into()),
                     runtime::call_versioned_contract(
                         key_to_hash(liquidity_guard(), Errors::InvalidHash7),
                         None,
@@ -128,13 +129,15 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
                 ))
                 .unwrap_or_revert_with(Errors::DivisionByZero1);
             // store regular snapshot
-            Snapshots::instance().set(&day, snapshot);
+            Snapshots::instance().set(&day.into(), snapshot);
             // ------------------------------------
             // prepare snapshot for referrer shares
             // reusing scheduledToEndToday variable
-            scheduled_to_end_today = ReferralSharesToEnd::instance().get(&day)
-                + RSnapshots::instance().get(&(day - 1)).scheduled_to_end;
-            let mut rsnapshot: RSnapShot = RSnapshots::instance().get(&day);
+            scheduled_to_end_today = ReferralSharesToEnd::instance().get(&day.into())
+                + RSnapshots::instance()
+                    .get(&(day - 1).into())
+                    .scheduled_to_end;
+            let mut rsnapshot: RSnapShot = RSnapshots::instance().get(&day.into());
             rsnapshot.scheduled_to_end = scheduled_to_end_today;
             rsnapshot.total_shares = if globals().referral_shares > scheduled_to_end_today {
                 globals().referral_shares - scheduled_to_end_today
@@ -148,11 +151,11 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
                 .checked_div(self._referral_inflation(total_staked_today, total_supply))
                 .unwrap_or_revert_with(Errors::DivisionByZero3);
             // store referral snapshot
-            RSnapshots::instance().set(&day, rsnapshot);
+            RSnapshots::instance().set(&day.into(), rsnapshot);
             // ------------------------------------
             // prepare snapshot for liquidity shares
             // reusing scheduledToEndToday variable
-            let mut lsnapshot: LSnapShot = LSnapshots::instance().get(&day);
+            let mut lsnapshot: LSnapShot = LSnapshots::instance().get(&day.into());
             lsnapshot.total_shares = globals().liquidity_shares;
             lsnapshot.inflation_amount = lsnapshot
                 .total_shares
@@ -172,14 +175,13 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
                 ))
                 .unwrap_or_revert_with(Errors::DivisionByZero4);
             // store liquidity snapshot
-            LSnapshots::instance().set(&day, lsnapshot);
+            LSnapshots::instance().set(&day.into(), lsnapshot);
             self._adjust_liquidity_rates();
             set_globals({
                 let mut globals = globals();
                 globals.current_stakeable_day = globals.current_stakeable_day + 1;
                 globals
             });
-            day = day + 1;
         }
     }
 

@@ -1,5 +1,5 @@
 [package]
-name = "transfer-helper-session-code"
+name = "session-code-transfer-helper"
 version = "0.2.0"
 authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
 edition = "2018"
@@ -11,7 +11,7 @@ casperlabs-contract-utils = "0.1.4"
 common = { path = "../../common" }
 
 [[bin]]
-name = "transfer-helper-session-code"
+name = "session-code-transfer-helper"
 path = "bin/main.rs"
 bench = false
 doctest = false

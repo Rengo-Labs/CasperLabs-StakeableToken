@@ -14,6 +14,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
     #[allow(clippy::too_many_arguments)]
     fn init(
         &mut self,
+        stable_usd: Key,
         scspr: Key,
         wcspr: Key,
         uniswap_router: Key,
@@ -23,6 +24,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
         contract_hash: Key,
         package_hash: Key,
     ) {
+        LIQUIDITYTOKEN::init(self);
         ERC20::init(
             self,
             "Stakeable Token".into(),
@@ -34,6 +36,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
         );
         set_transformer_gate_keeper(self.get_caller());
 
+        set_stable_usd(stable_usd);
         set_scspr(scspr);
         set_wcspr(wcspr);
         set_uniswap_router(uniswap_router);

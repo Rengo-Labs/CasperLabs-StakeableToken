@@ -5,8 +5,10 @@ use casperlabs_test_env::{TestContract, TestEnv};
 use std::time::SystemTime;
 
 pub const MILLI_SECONDS_IN_DAY: u64 = 86_400_000;
-pub const SCSPR_AMOUNT: U512 = U512([50_000_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
-pub const TRANSFORMER_AMOUNT: U512 = U512([50_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const SCSPR_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const TRANSFORMER_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const TWOTHOUSEND_CSPR: U512 = U512([2_000_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const ONETHOUSEND_CSPR: U256 = U256([1_000_000_000_000, 0, 0, 0]);
 
 pub fn zero_address() -> Key {
     Key::from_formatted_str("hash-0000000000000000000000000000000000000000000000000000000000000000")
@@ -35,18 +37,27 @@ pub fn key_to_str(key: &Key) -> String {
     }
 }
 
-pub fn call(
+pub fn session_code_call(
     env: &TestEnv,
-    wasm: &str,
-    contract: &str,
     sender: AccountHash,
     runtime_args: RuntimeArgs,
     time: u64,
 ) -> TestContract {
-    TestContract::new(env, wasm, contract, sender, runtime_args, time)
+    TestContract::new(
+        env,
+        "session-code-lt.wasm",
+        "session-code-lt",
+        sender,
+        runtime_args,
+        time,
+    )
 }
 
-pub fn result<T: CLTyped + FromBytes>(env: &TestEnv, sender: AccountHash, key: &str) -> T {
+pub fn session_code_result<T: CLTyped + FromBytes>(
+    env: &TestEnv,
+    sender: AccountHash,
+    key: &str,
+) -> T {
     env.query_account_named_key(sender, &[key.into()])
 }
 
@@ -256,9 +267,9 @@ pub fn deploy_liquidity_transformer(
         contract_name,
         sender,
         runtime_args! {
-            "stakeable" => stakeable,
+            "wise" => stakeable,
             "scspr" => scspr,
-            "pair_stakeable" => pair_stakeable,
+            "pair_wise" => pair_stakeable,
             "pair_scspr" => pair_scspr,
             "uniswap_router" => uniswap_router,
             "wcspr" => wcspr,
@@ -272,6 +283,7 @@ pub fn deploy_liquidity_transformer(
 pub fn deploy_stakeable(
     env: &TestEnv,
     owner: AccountHash,
+    stable_usd: &TestContract,
     scspr: &TestContract,
     wcspr: &TestContract,
     uniswap_router: &TestContract,
@@ -286,8 +298,9 @@ pub fn deploy_stakeable(
         "stakeable-token",
         owner,
         runtime_args! {
-            "wcspr" => Key::Hash(wcspr.package_hash()),
+            "stable_usd" => Key::Hash(stable_usd.package_hash()),
             "scspr" => Key::Hash(scspr.package_hash()),
+            "wcspr" => Key::Hash(wcspr.package_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.package_hash()),
             "uniswap_factory" => Key::Hash(uniswap_factory.package_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.package_hash()),

@@ -1,5 +1,5 @@
 [package]
-name = "stable-usd-equivalent-session-code"
+name = "session-code-stable-usd-equivalent"
 version = "0.2.0"
 authors = ["Bassam Monib <bassam.munib@scytalelabs.com>"]
 edition = "2018"
@@ -11,7 +11,7 @@ casperlabs-contract-utils = "0.1.4"
 common = { path = "../../common" }
 
 [[bin]]
-name = "stable-usd-equivalent-session-code"
+name = "session-code-stable-usd-equivalent"
 path = "bin/main.rs"
 bench = false
 doctest = false

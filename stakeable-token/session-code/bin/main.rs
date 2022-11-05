@@ -128,7 +128,7 @@ pub extern "C" fn call() {
             store(CREATE_STAKE, ret);
         }
         END_STAKE => {
-            let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+            let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
             let ret: U256 = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
@@ -141,7 +141,7 @@ pub extern "C" fn call() {
         }
 
         SCRAPE_INTEREST => {
-            let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+            let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
             let scrape_days: u64 = runtime::get_named_arg("scrape_days");
             let ret: Vec<String> = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
