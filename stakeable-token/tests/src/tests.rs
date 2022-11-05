@@ -1,6 +1,10 @@
-use crate::helper::*;
 use casper_types::{account::AccountHash, runtime_args, Key, RuntimeArgs, U256, U512};
 use casperlabs_test_env::{TestContract, TestEnv};
+use tests_common::{
+    deploys::*,
+    helpers::*,
+    keys::{SESSION_WASM_LIQUIDITY_TRANSFORMER, SESSION_WASM_STAKEABLE},
+};
 
 #[allow(clippy::type_complexity)]
 fn deploy() -> (
@@ -137,9 +141,10 @@ fn add_liquidity(
         },
         time,
     );
-    session_code_call(
+    call(
         env,
         owner,
+        SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
             "package_hash" => Key::Hash(wcspr.package_hash()),
             "entrypoint" => "deposit_no_return",
@@ -201,9 +206,10 @@ fn forward_liquidity(
         now(),
     );
     // Using session code as transformer purse fetch with access is required
-    session_code_call(
+    call(
         env,
         owner,
+        SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
             "package_hash" => Key::Hash(token.package_hash()),
             "entrypoint" => "set_liquidity_transfomer",
@@ -264,9 +270,10 @@ fn create_stake() -> (
         },
         now(),
     );
-    session_code_call(
+    call(
         &env,
         owner,
+        SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
             "package_hash" => Key::Hash(liquidity_transformer.package_hash()),
             "entrypoint" => "reserve_wise",
@@ -299,11 +306,10 @@ fn create_stake() -> (
         &wcspr,
         time,
     );
-    TestContract::new(
+    call(
         &env,
-        "session-code-stakeable.wasm",
-        "session-code-stakeable",
         owner,
+        SESSION_WASM_STAKEABLE,
         runtime_args! {
             "entrypoint" => "create_stake",
             "package_hash" => Key::Hash(wise.package_hash()),
@@ -315,7 +321,7 @@ fn create_stake() -> (
     );
 
     // STAKE_ID / START_DATE / REFERAL_ID
-    let ret: (Vec<u32>, U256, Vec<u32>) = session_code_result(&env, owner, "create_stake");
+    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, "create_stake");
 
     (env, owner, wise, ret, time)
 }
@@ -328,11 +334,10 @@ fn test_wise_create_stake() {
 #[test]
 fn test_wise_end_stake() {
     let (env, owner, wise, ret, time) = create_stake();
-    TestContract::new(
+    call(
         &env,
-        "session-code-stakeable.wasm",
-        "session-code-stakeable",
         owner,
+        SESSION_WASM_STAKEABLE,
         runtime_args! {
             "entrypoint" => "end_stake",
             "package_hash" => Key::Hash(wise.package_hash()),
@@ -347,11 +352,10 @@ fn test_wise_scrape_interest() {
     let (env, owner, wise, ret, mut time) = create_stake();
     time += 2 * MILLI_SECONDS_IN_DAY;
     wise.call_contract(owner, "manual_daily_snapshot", runtime_args! {}, time);
-    TestContract::new(
+    call(
         &env,
-        "session-code-stakeable.wasm",
-        "session-code-stakeable",
         owner,
+        SESSION_WASM_STAKEABLE,
         runtime_args! {
             "entrypoint" => "scrape_interest",
             "package_hash" => Key::Hash(wise.package_hash()),

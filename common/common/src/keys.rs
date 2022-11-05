@@ -4,6 +4,9 @@ pub const PACKAGE_HASH: &str = "package_hash";
 pub const PURSE: &str = "purse";
 
 // session keys
+pub const SESSION_WASM_LIQUIDITY_TRANSFORMER: &str = "session-code-lt.wasm";
+pub const SESSION_WASM_STAKEABLE: &str = "session-code-stakeable.wasm";
+pub const SESSION_WASM_TRANSFER_HELPER: &str = "session-code-transfer-helper.wasm";
 pub const GET_INFLATION: &str = "get_inflation";
 pub const GET_STABLE_USD_EQUIVALENT: &str = "get_stable_usd_equivalent";
 pub const FORWARD_FUNDS: &str = "forward_funds";

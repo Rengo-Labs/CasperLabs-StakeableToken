@@ -1,6 +1,8 @@
 [workspace]
 members = [
-    "common",
+    # Commons
+    "common/common",
+    "common/tests-common",
     # Crates
     "crates/global",
     "crates/declaration",

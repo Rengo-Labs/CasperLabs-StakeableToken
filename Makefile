@@ -2,10 +2,10 @@ wasm_src_path = target/wasm32-unknown-unknown/release
 tests_wasm = tests/wasm
 contract_build_command = make prepare && make build-contract
 
-des_wasm_stakeable_token = stakeable-token/${tests_wasm}
+des_session_wasm_stakeable_token = stakeable-token/${tests_wasm}
 des_wasm_liquidity_guard = liquidity-guard/${tests_wasm}
 des_wasm_stable_usd_equivalent = stable-usd-equivalent/${tests_wasm}
-des_wasm_transfer_helper = transfer-helper/${tests_wasm}
+des_session_wasm_transfer_helper = transfer-helper/${tests_wasm}
 
 # Dependencies
 uniswap_core_directory = ../CasperLabs-UniswapV2-core
@@ -49,28 +49,29 @@ build-transfer-helper:
 	cargo build --release -p transfer-helper -p session-code-transfer-helper --target wasm32-unknown-unknown
 
 copy-wasm-file-stakeable-token:
-	cp ${router_contract}/${wasm_src_path}/uniswap-v2-router.wasm ${des_wasm_stakeable_token}
-	cp ${factory_contract}/${wasm_src_path}/factory.wasm ${des_wasm_stakeable_token}
-	cp ${pair_contract}/${wasm_src_path}/pair-token.wasm ${des_wasm_stakeable_token}
-	cp ${erc20_contract}/${wasm_src_path}/erc20-token.wasm ${des_wasm_stakeable_token}
-	cp ${library_contract}/${wasm_src_path}/uniswap-v2-library.wasm ${des_wasm_stakeable_token}
-	cp ${wcspr_contract}/${wasm_src_path}/wcspr-token.wasm ${des_wasm_stakeable_token}
-	cp ${flash_swapper_contract}/${wasm_src_path}/flashswapper-token.wasm ${des_wasm_stakeable_token}
-	cp ${liquidity_transformer_directory}/${wasm_src_path}/scspr.wasm ${des_wasm_stakeable_token}
-	cp ${liquidity_transformer_directory}/${wasm_src_path}/liquidity_transformer.wasm ${des_wasm_stakeable_token}
-	cp ${liquidity_transformer_directory}/${wasm_src_path}/session-code-lt.wasm ${des_wasm_stakeable_token}
-	cp ${wasm_src_path}/liquidity-guard.wasm ${des_wasm_stakeable_token}
-	cp ${wasm_src_path}/stakeable-token.wasm ${des_wasm_stakeable_token}
-	cp ${wasm_src_path}/session-code-stakeable.wasm ${des_wasm_stakeable_token}
+	cp ${router_contract}/${wasm_src_path}/uniswap-v2-router.wasm ${des_session_wasm_stakeable_token}
+	cp ${factory_contract}/${wasm_src_path}/factory.wasm ${des_session_wasm_stakeable_token}
+	cp ${pair_contract}/${wasm_src_path}/pair-token.wasm ${des_session_wasm_stakeable_token}
+	cp ${erc20_contract}/${wasm_src_path}/erc20-token.wasm ${des_session_wasm_stakeable_token}
+	cp ${library_contract}/${wasm_src_path}/uniswap-v2-library.wasm ${des_session_wasm_stakeable_token}
+	cp ${wcspr_contract}/${wasm_src_path}/wcspr-token.wasm ${des_session_wasm_stakeable_token}
+	cp ${flash_swapper_contract}/${wasm_src_path}/flashswapper-token.wasm ${des_session_wasm_stakeable_token}
+	cp ${liquidity_transformer_directory}/${wasm_src_path}/scspr.wasm ${des_session_wasm_stakeable_token}
+	cp ${liquidity_transformer_directory}/${wasm_src_path}/liquidity_transformer.wasm ${des_session_wasm_stakeable_token}
+	cp ${liquidity_transformer_directory}/${wasm_src_path}/session-code-lt.wasm ${des_session_wasm_stakeable_token}
+	cp ${wasm_src_path}/liquidity-guard.wasm ${des_session_wasm_stakeable_token}
+	cp ${wasm_src_path}/stakeable-token.wasm ${des_session_wasm_stakeable_token}
+	cp ${wasm_src_path}/session-code-stakeable.wasm ${des_session_wasm_stakeable_token}
 copy-wasm-file-liquidity-guard:
 	cp ${wasm_src_path}/liquidity-guard.wasm ${des_wasm_liquidity_guard}
-	cp ${wasm_src_path}/liquidity-guard-session-code.wasm ${des_wasm_liquidity_guard}
+	cp ${wasm_src_path}/session-code-liquidity-guard.wasm ${des_wasm_liquidity_guard}
 copy-wasm-file-stable-usd-equivalent:
 	cp ${wasm_src_path}/stable-usd-equivalent.wasm ${des_wasm_stable_usd_equivalent}
-	cp ${wasm_src_path}/stable-usd-equivalent-session-code.wasm ${des_wasm_stable_usd_equivalent}
+	cp ${wasm_src_path}/session-code-stable-usd-equivalent.wasm ${des_wasm_stable_usd_equivalent}
 copy-wasm-file-transfer-helper:
-	cp ${wasm_src_path}/transfer-helper.wasm ${des_wasm_transfer_helper}
-	cp ${wasm_src_path}/transfer-helper-session-code.wasm ${des_wasm_transfer_helper}
+	cp ${wasm_src_path}/transfer-helper.wasm ${des_session_wasm_transfer_helper}
+	cp ${wasm_src_path}/session-code-transfer-helper.wasm ${des_session_wasm_transfer_helper}
+	cp ${erc20_contract}/${wasm_src_path}/erc20-token.wasm ${des_session_wasm_transfer_helper}
 
 test-stakeable-token:
 	cargo test -p stakeable-token-tests
@@ -119,10 +120,10 @@ run-all:
 
 clean:
 	cargo clean
-	rm -rf ${des_wasm_stakeable_token}/*.wasm
+	rm -rf ${des_session_wasm_stakeable_token}/*.wasm
 	rm -rf ${des_wasm_liquidity_guard}/*.wasm
 	rm -rf ${des_wasm_stable_usd_equivalent}/*.wasm
-	rm -rf ${des_wasm_transfer_helper}/*.wasm
+	rm -rf ${des_session_wasm_transfer_helper}/*.wasm
 
 clippy:
 	cargo clippy --all-targets --all -- -D warnings

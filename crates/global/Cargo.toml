@@ -10,4 +10,4 @@ casper-types = "1.5.0"
 casper_types_derive = "0.1.0"
 casperlabs-contract-utils = "0.1.4"
 casperlabs-erc20 = "0.3.0"
-common = { path = "../../common" }
+common = { path = "../../common/common" }
