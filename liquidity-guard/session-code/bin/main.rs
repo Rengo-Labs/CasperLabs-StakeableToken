@@ -9,7 +9,7 @@ use casper_contract::{
 use casper_types::{
     bytesrepr::ToBytes, runtime_args, ApiError, CLTyped, Key, RuntimeArgs, URef, U256,
 };
-use common::keys::GET_INFLATION;
+use common::keys::*;
 
 // Key is the same a destination
 fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
@@ -25,8 +25,8 @@ fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
 
 #[no_mangle]
 pub extern "C" fn call() {
-    let entrypoint: String = runtime::get_named_arg("entrypoint");
-    let package_hash: Key = runtime::get_named_arg("package_hash");
+    let entrypoint: String = runtime::get_named_arg(ENTRYPOINT);
+    let package_hash: Key = runtime::get_named_arg(PACKAGE_HASH);
 
     match entrypoint.as_str() {
         // Stakeable_Token

@@ -1,12 +1,16 @@
 use crate::data::*;
-use casper_contract::contract_api::{runtime, system};
-use casper_types::{runtime_args, Key, RuntimeArgs, URef, U256};
+use casper_contract::{
+    contract_api::{runtime, system},
+    unwrap_or_revert::UnwrapOrRevert,
+};
+use casper_types::{runtime_args, Key, RuntimeArgs, URef, U256, U512};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use common::{
     errors::Errors,
     functions::{set_package_hash, *},
 };
 use liquidity_token::*;
+use num_traits::AsPrimitive;
 
 pub trait STAKEABLETOKEN<Storage: ContractStorage>:
     ContractContext<Storage> + LIQUIDITYTOKEN<Storage>
@@ -14,6 +18,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
     #[allow(clippy::too_many_arguments)]
     fn init(
         &mut self,
+        stable_usd: Key,
         scspr: Key,
         wcspr: Key,
         uniswap_router: Key,
@@ -23,6 +28,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
         contract_hash: Key,
         package_hash: Key,
     ) {
+        LIQUIDITYTOKEN::init(self);
         ERC20::init(
             self,
             "Stakeable Token".into(),
@@ -34,6 +40,7 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
         );
         set_transformer_gate_keeper(self.get_caller());
 
+        set_stable_usd(stable_usd);
         set_scspr(scspr);
         set_wcspr(wcspr);
         set_uniswap_router(uniswap_router);
@@ -64,8 +71,17 @@ pub trait STAKEABLETOKEN<Storage: ContractStorage>:
         &mut self,
         lock_days: u64,
         referrer: Key,
+        _purse: URef,
         amount: U256,
     ) -> (Vec<u32>, U256, Vec<u32>) {
+        // Payable
+        system::transfer_from_purse_to_purse(
+            _purse,
+            purse(),
+            <casper_types::U256 as AsPrimitive<casper_types::U512>>::as_(amount),
+            None,
+        )
+        .unwrap_or_revert();
         let () = runtime::call_versioned_contract(
             key_to_hash(scspr(), Errors::InvalidHash11),
             None,

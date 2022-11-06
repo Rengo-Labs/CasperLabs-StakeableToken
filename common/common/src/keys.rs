@@ -4,12 +4,17 @@ pub const PACKAGE_HASH: &str = "package_hash";
 pub const PURSE: &str = "purse";
 
 // session keys
+pub const ENTRYPOINT: &str = "entrypoint";
+pub const SESSION_WASM_LIQUIDITY_TRANSFORMER: &str = "session-code-lt.wasm";
+pub const SESSION_WASM_STAKEABLE: &str = "session-code-stakeable.wasm";
+pub const SESSION_WASM_TRANSFER_HELPER: &str = "session-code-transfer-helper.wasm";
+pub const SESSION_WASM_LIQUIDITY_GUARD: &str = "session-code-liquidity-guard.wasm";
 pub const GET_INFLATION: &str = "get_inflation";
 pub const GET_STABLE_USD_EQUIVALENT: &str = "get_stable_usd_equivalent";
 pub const FORWARD_FUNDS: &str = "forward_funds";
 pub const GET_TRANSFER_INVOKER_ADDRESS: &str = "get_transfer_invoker_address";
-pub const CREATE_STAKE_WITH_TOKEN: &str = "create_stake_with_cspr";
-pub const CREATE_STAKE_WITH_CSPR: &str = "create_stake_with_token";
+pub const CREATE_STAKE_WITH_TOKEN: &str = "create_stake_with_token";
+pub const CREATE_STAKE_WITH_CSPR: &str = "create_stake_with_cspr";
 pub const TRANSFER: &str = "transfer";
 pub const TRANSFER_FROM: &str = "transfer_from";
 pub const CHECK_REFERRALS_BY_ID: &str = "check_referrals_by_id";
@@ -50,9 +55,6 @@ pub const SCHEDULED_TO_END_DICT: &str = "scheduled_to_end_dict";
 pub const REFERRAL_SHARES_TO_END_DICT: &str = "referral_shares_to_end_dict";
 pub const TOTAL_PENALTIES_DICT: &str = "total_penalties_dict";
 
-// transfer helper
-pub const TRANSFER_INVOKER: &str = "transfer_invoker";
-
 // snapshot
 pub const SNAPSHOTS_DICT: &str = "snapshots_dict";
 pub const RSNAPSHOTS_DICT: &str = "rsnapshots_dict";
@@ -62,9 +64,6 @@ pub const LSNAPSHOTS_DICT: &str = "lsnapshots_dict";
 pub const LIQUIDITY_TRANSFORMER: &str = "liquidity_transformer";
 pub const LIQUIDITY_TRANSFORMER_PURSE: &str = "liquidity_transformer_purse";
 pub const TRANSFORMER_GATE_KEEPER: &str = "transformer_gate_keeper";
-
-// stable usd equivalent
-pub const STAKEABLE: &str = "stakeable";
 
 // liquidity guard
 pub const INFLATION_LN: &str = "inflation_ln";

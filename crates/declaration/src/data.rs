@@ -9,7 +9,7 @@ use common::{
 pub const DECIMALS: U256 = U256([9, 0, 0, 0]);
 pub const YODAS_PER_STAKEABLE: U256 = U256([1_000_000_000, 0, 0, 0]); // 10 ** DECIMALS
 
-pub const MILLI_SECONDS_IN_DAY: u16 = 30_000; // 30 milliseconds
+pub const MILLI_SECONDS_IN_DAY: u32 = 86400000;
 pub const MIN_LOCK_DAYS: u16 = 1;
 pub const FORMULA_DAY: u16 = 25;
 pub const MAX_LOCK_DAYS: u16 = 15330;

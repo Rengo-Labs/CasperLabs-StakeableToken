@@ -67,14 +67,13 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
         };
         let mut i = 0;
         let mut stakes: Vec<Vec<u32>> = Vec::with_capacity((start - finish).as_usize());
-        let mut stake_index: U256 = start;
-        while stake_index > finish {
-            let stake_id: Vec<u32> = Self::generate_id(self, staker, stake_index - 1, 0x01);
+        for stake_index in (finish.as_u128()..start.as_u128()).rev() {
+            let stake_id: Vec<u32> =
+                Self::generate_id(self, staker, (stake_index - 1).into(), 0x01);
             if Stakes::instance().get(&staker, &stake_id).staked_amount > 0.into() {
                 stakes[i] = stake_id;
                 i += 1;
             }
-            stake_index = stake_index - 1;
         }
         stakes
     }
@@ -93,14 +92,12 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
         };
         let mut i = 0;
         let mut referrals: Vec<Vec<u32>> = Vec::with_capacity((start - finish).as_usize());
-        let mut r_index: U256 = start;
-        while r_index > finish {
-            let r_id: Vec<u32> = Self::generate_id(self, referrer, r_index - 1, 0x02);
+        for r_index in (finish.as_u128()..start.as_u128()).rev() {
+            let r_id: Vec<u32> = Self::generate_id(self, referrer, (r_index - 1).into(), 0x02);
             if self._non_zero_address(ReferrerLinks::instance().get(&referrer, &r_id).staker) {
                 referrals[i] = r_id;
                 i += 1;
             }
-            r_index = r_index - 1;
         }
         referrals
     }
@@ -114,7 +111,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
                 StakeCount::instance()
                     .get(&staker)
                     .checked_sub(1.into())
-                    .unwrap_or_revert_with(Errors::SubtractionUnderflow13),
+                    .unwrap_or_revert_with(Errors::SubtractionUnderflow4),
                 0x01,
             )
         }
@@ -129,7 +126,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
                 ReferralCount::instance()
                     .get(&referrer)
                     .checked_sub(1.into())
-                    .unwrap_or_revert_with(Errors::SubtractionUnderflow14),
+                    .unwrap_or_revert_with(Errors::SubtractionUnderflow5),
                 0x02,
             )
         }
@@ -144,7 +141,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
                 LiquidityStakeCount::instance()
                     .get(&staker)
                     .checked_sub(1.into())
-                    .unwrap_or_revert_with(Errors::SubtractionUnderflow15),
+                    .unwrap_or_revert_with(Errors::SubtractionUnderflow6),
                 0x03,
             )
         }
@@ -201,7 +198,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
         } else {
             end_date
                 .checked_sub(start_date)
-                .unwrap_or_revert_with(Errors::SubtractionUnderflow16)
+                .unwrap_or_revert_with(Errors::SubtractionUnderflow7)
         }
     }
 

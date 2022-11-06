@@ -1,54 +1,5 @@
-use casper_types::{
-    account::AccountHash, bytesrepr::FromBytes, runtime_args, CLTyped, Key, RuntimeArgs, U256, U512,
-};
+use casper_types::{account::AccountHash, runtime_args, Key, RuntimeArgs, U256, U512};
 use casperlabs_test_env::{TestContract, TestEnv};
-use std::time::SystemTime;
-
-pub const MILLI_SECONDS_IN_DAY: u64 = 86_400_000;
-pub const SCSPR_AMOUNT: U512 = U512([50_000_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
-pub const TRANSFORMER_AMOUNT: U512 = U512([50_000_000, 0, 0, 0, 0, 0, 0, 0]);
-
-pub fn zero_address() -> Key {
-    Key::from_formatted_str("hash-0000000000000000000000000000000000000000000000000000000000000000")
-        .unwrap()
-}
-
-pub fn account_zero_address() -> Key {
-    Key::from_formatted_str(
-        "account-hash-0000000000000000000000000000000000000000000000000000000000000000",
-    )
-    .unwrap()
-}
-
-pub fn now() -> u64 {
-    SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64
-}
-
-pub fn key_to_str(key: &Key) -> String {
-    match key {
-        Key::Account(account) => account.to_string(),
-        Key::Hash(package) => hex::encode(package),
-        _ => "".into(),
-    }
-}
-
-pub fn call(
-    env: &TestEnv,
-    wasm: &str,
-    contract: &str,
-    sender: AccountHash,
-    runtime_args: RuntimeArgs,
-    time: u64,
-) -> TestContract {
-    TestContract::new(env, wasm, contract, sender, runtime_args, time)
-}
-
-pub fn result<T: CLTyped + FromBytes>(env: &TestEnv, sender: AccountHash, key: &str) -> T {
-    env.query_account_named_key(sender, &[key.into()])
-}
 
 pub fn deploy_uniswap_router(
     env: &TestEnv,
@@ -90,6 +41,7 @@ pub fn deploy_uniswap_factory(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn deploy_uniswap_pair(
     env: &TestEnv,
     owner: AccountHash,
@@ -256,9 +208,9 @@ pub fn deploy_liquidity_transformer(
         contract_name,
         sender,
         runtime_args! {
-            "stakeable" => stakeable,
+            "wise" => stakeable,
             "scspr" => scspr,
-            "pair_stakeable" => pair_stakeable,
+            "pair_wise" => pair_stakeable,
             "pair_scspr" => pair_scspr,
             "uniswap_router" => uniswap_router,
             "wcspr" => wcspr,
@@ -272,12 +224,14 @@ pub fn deploy_liquidity_transformer(
 pub fn deploy_stakeable(
     env: &TestEnv,
     owner: AccountHash,
+    stable_usd: &TestContract,
     scspr: &TestContract,
     wcspr: &TestContract,
     uniswap_router: &TestContract,
     uniswap_factory: &TestContract,
     uniswap_pair: &TestContract,
     liquidity_guard: &TestContract,
+    amount: U512,
     time: u64,
 ) -> TestContract {
     TestContract::new(
@@ -286,12 +240,32 @@ pub fn deploy_stakeable(
         "stakeable-token",
         owner,
         runtime_args! {
-            "wcspr" => Key::Hash(wcspr.package_hash()),
+            "stable_usd" => Key::Hash(stable_usd.package_hash()),
             "scspr" => Key::Hash(scspr.package_hash()),
+            "wcspr" => Key::Hash(wcspr.package_hash()),
             "uniswap_router" => Key::Hash(uniswap_router.package_hash()),
             "uniswap_factory" => Key::Hash(uniswap_factory.package_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.package_hash()),
             "liquidity_guard" => Key::Hash(liquidity_guard.package_hash()),
+            "amount" => amount
+        },
+        time,
+    )
+}
+
+pub fn deploy_transfer_helper(
+    env: &TestEnv,
+    owner: AccountHash,
+    transfer_invoker: Key,
+    time: u64,
+) -> TestContract {
+    TestContract::new(
+        env,
+        "transfer-helper.wasm",
+        "transfer-helper",
+        owner,
+        runtime_args! {
+            "transfer_invoker" => transfer_invoker
         },
         time,
     )
