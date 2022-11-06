@@ -12,21 +12,11 @@ members = [
     "crates/referral-token",
     "crates/staking-token",
     "crates/liquidity-token",
-    # Transfer helper
-    "transfer-helper/bin",
-    "transfer-helper/session-code",
-    "transfer-helper/src",
-    "transfer-helper/tests",
     # Stakeable token
     "stakeable-token/bin",
     "stakeable-token/session-code",
     "stakeable-token/src",
     "stakeable-token/tests",
-    # Stable usd equivalent
-    "stable-usd-equivalent/bin",
-    "stable-usd-equivalent/session-code",
-    "stable-usd-equivalent/src",
-    "stable-usd-equivalent/tests",
     # Liquidity-guard
     "liquidity-guard/bin",
     "liquidity-guard/session-code",

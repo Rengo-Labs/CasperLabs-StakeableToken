@@ -1,6 +1,4 @@
-use casper_types::{
-    account::AccountHash, bytesrepr::FromBytes, runtime_args, CLTyped, Key, RuntimeArgs, U256, U512,
-};
+use casper_types::{account::AccountHash, runtime_args, Key, RuntimeArgs, U256, U512};
 use casperlabs_test_env::{TestContract, TestEnv};
 
 pub fn deploy_uniswap_router(
@@ -43,6 +41,7 @@ pub fn deploy_uniswap_factory(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn deploy_uniswap_pair(
     env: &TestEnv,
     owner: AccountHash,
@@ -232,6 +231,7 @@ pub fn deploy_stakeable(
     uniswap_factory: &TestContract,
     uniswap_pair: &TestContract,
     liquidity_guard: &TestContract,
+    amount: U512,
     time: u64,
 ) -> TestContract {
     TestContract::new(
@@ -247,6 +247,7 @@ pub fn deploy_stakeable(
             "uniswap_factory" => Key::Hash(uniswap_factory.package_hash()),
             "uniswap_pair" => Key::Hash(uniswap_pair.package_hash()),
             "liquidity_guard" => Key::Hash(liquidity_guard.package_hash()),
+            "amount" => amount
         },
         time,
     )

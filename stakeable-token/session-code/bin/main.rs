@@ -6,13 +6,14 @@
 extern crate alloc;
 use alloc::{string::String, vec::Vec};
 use casper_contract::{
-    contract_api::{runtime, storage},
+    contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
-    bytesrepr::ToBytes, runtime_args, ApiError, CLTyped, Key, RuntimeArgs, URef, U256,
+    bytesrepr::ToBytes, runtime_args, ApiError, CLTyped, Key, RuntimeArgs, URef, U256, U512,
 };
 use common::keys::*;
+use num_traits::AsPrimitive;
 
 // Key is the same a destination
 fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
@@ -26,17 +27,25 @@ fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
     runtime::put_key(key, value_key);
 }
 
+fn purse(amount: U512) -> URef {
+    let main_purse: URef = account::get_main_purse();
+    let secondary_purse: URef = system::create_purse();
+    system::transfer_from_purse_to_purse(main_purse, secondary_purse, amount, None)
+        .unwrap_or_revert();
+    secondary_purse
+}
+
 #[no_mangle]
 pub extern "C" fn call() {
-    let entrypoint: String = runtime::get_named_arg("entrypoint");
-    let package_hash: Key = runtime::get_named_arg("package_hash");
+    let entrypoint: String = runtime::get_named_arg(ENTRYPOINT);
+    let package_hash: Key = runtime::get_named_arg(PACKAGE_HASH);
 
     match entrypoint.as_str() {
         // Stakeable_Token
         CREATE_STAKE_WITH_CSPR => {
             let lock_days: u64 = runtime::get_named_arg("lock_days");
             let referrer: Key = runtime::get_named_arg("referrer");
-            let amount: U256 = runtime::get_named_arg("amount");
+            let amount: U512 = runtime::get_named_arg("amount");
             let ret: (Vec<u32>, U256, Vec<u32>) = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
@@ -44,6 +53,7 @@ pub extern "C" fn call() {
                 runtime_args! {
                     "lock_days" => lock_days,
                     "referrer" => referrer,
+                    "purse" => purse(amount),
                     "amount" => amount
                 },
             );

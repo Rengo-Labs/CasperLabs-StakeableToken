@@ -10,13 +10,13 @@ use alloc::{
     vec::Vec,
 };
 use casper_contract::{
-    contract_api::{runtime, storage},
+    contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
     contracts::{ContractHash, ContractPackageHash},
     runtime_args, CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType,
-    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256,
+    EntryPoints, Group, Key, Parameter, RuntimeArgs, URef, U256, U512,
 };
 use casperlabs_contract_utils::{ContractContext, OnChainContractStorage};
 use stakeable_token_crate::{functions::*, transformer_gate_keeper, *};
@@ -121,9 +121,10 @@ fn mint_supply() {
 fn create_stake_with_cspr() {
     let lock_days: u64 = runtime::get_named_arg("lock_days");
     let referrer: Key = runtime::get_named_arg("referrer");
+    let purse: URef = runtime::get_named_arg("purse");
     let amount: U256 = runtime::get_named_arg("amount");
     let (stake_id, start_day, referrer_id): (Vec<u32>, U256, Vec<u32>) =
-        StakeableToken::default().create_stake_with_cspr(lock_days, referrer, amount);
+        StakeableToken::default().create_stake_with_cspr(lock_days, referrer, purse, amount);
     runtime::ret(CLValue::from_t((stake_id, start_day, referrer_id)).unwrap_or_revert());
 }
 
@@ -788,6 +789,7 @@ fn get_entry_points() -> EntryPoints {
         vec![
             Parameter::new("lock_days", CLType::U64),
             Parameter::new("referrer", CLType::Key),
+            Parameter::new("purse", CLType::URef),
             Parameter::new("amount", CLType::U256),
         ],
         CLType::Tuple3([
@@ -1307,6 +1309,15 @@ pub extern "C" fn call() {
         // add a first version to this package
         let (contract_hash, _): (ContractHash, _) =
             storage::add_contract_version(package_hash, get_entry_points(), Default::default());
+
+        // Payable
+        let caller_purse = account::get_main_purse();
+        let purse: URef = system::create_purse();
+        let amount: U512 = runtime::get_named_arg("amount");
+        if amount != 0.into() {
+            system::transfer_from_purse_to_purse(caller_purse, purse, amount, None)
+                .unwrap_or_revert();
+        }
 
         let stable_usd: Key = runtime::get_named_arg("stable_usd");
         let scspr: Key = runtime::get_named_arg("scspr");

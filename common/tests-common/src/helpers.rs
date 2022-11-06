@@ -7,6 +7,7 @@ use std::time::SystemTime;
 pub const MILLI_SECONDS_IN_DAY: u64 = 86_400_000;
 pub const SCSPR_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
 pub const TRANSFORMER_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const STAKEABLE_AMOUNT: U512 = U512([0, 0, 0, 0, 0, 0, 0, 0]);
 pub const TWOTHOUSEND_CSPR: U512 = U512([2_000_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
 pub const ONETHOUSEND_CSPR: U256 = U256([1_000_000_000_000, 0, 0, 0]);
 

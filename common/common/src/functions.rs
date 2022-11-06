@@ -8,7 +8,7 @@ use alloc::{
     vec::Vec,
 };
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
-use casper_types::{ContractPackageHash, Key, URef};
+use casper_types::{ApiError, ContractPackageHash, Key, URef};
 use casperlabs_contract_utils::{get_key, set_key};
 
 pub fn zero_address() -> Key {
@@ -46,10 +46,14 @@ pub fn package_hash() -> Key {
 }
 
 pub fn set_purse(purse: URef) {
-    set_key(PURSE, purse);
+    runtime::put_key(PURSE, purse.into());
 }
 pub fn purse() -> URef {
-    get_key(PURSE).unwrap_or_default()
+    let destination_purse_key = runtime::get_key(PURSE).unwrap_or_revert();
+    match destination_purse_key.as_uref() {
+        Some(uref) => *uref,
+        None => runtime::revert(ApiError::InvalidPurse),
+    }
 }
 
 pub fn typecast_to_string<T>(list: Vec<T>) -> Vec<String>

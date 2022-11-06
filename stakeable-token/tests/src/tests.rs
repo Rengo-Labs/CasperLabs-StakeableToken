@@ -1,10 +1,7 @@
 use casper_types::{account::AccountHash, runtime_args, Key, RuntimeArgs, U256, U512};
 use casperlabs_test_env::{TestContract, TestEnv};
-use tests_common::{
-    deploys::*,
-    helpers::*,
-    keys::{SESSION_WASM_LIQUIDITY_TRANSFORMER, SESSION_WASM_STAKEABLE},
-};
+use num_traits::AsPrimitive;
+use tests_common::{deploys::*, helpers::*, keys::*};
 
 #[allow(clippy::type_complexity)]
 fn deploy() -> (
@@ -90,7 +87,8 @@ fn deploy() -> (
         &uniswap_factory,
         &pair_stakeable,
         &liquidity_guard,
-        (now() - (2 * MILLI_SECONDS_IN_DAY)).into(), // 172800000 == 2 days in ms (launch time set in past for testing)
+        STAKEABLE_AMOUNT,
+        now() - (2 * MILLI_SECONDS_IN_DAY), // 172800000 == 2 days in ms (launch time set in past for testing)
     );
     let liquidity_transformer = deploy_liquidity_transformer(
         &env,
@@ -146,8 +144,8 @@ fn add_liquidity(
         owner,
         SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
-            "package_hash" => Key::Hash(wcspr.package_hash()),
-            "entrypoint" => "deposit_no_return",
+            ENTRYPOINT => "deposit_no_return",
+            PACKAGE_HASH => Key::Hash(wcspr.package_hash()),
             "amount" => U512::from(AMOUNT),
         },
         time,
@@ -211,8 +209,8 @@ fn forward_liquidity(
         owner,
         SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
-            "package_hash" => Key::Hash(token.package_hash()),
-            "entrypoint" => "set_liquidity_transfomer",
+            ENTRYPOINT => "set_liquidity_transfomer",
+            PACKAGE_HASH => Key::Hash(token.package_hash()),
             "immutable_transformer" => Key::Hash(lt.package_hash()),
         },
         now(),
@@ -228,13 +226,7 @@ fn forward_liquidity(
     now() + INVESTMENT_DAY
 }
 
-fn create_stake() -> (
-    TestEnv,
-    AccountHash,
-    TestContract,
-    (Vec<u32>, U256, Vec<u32>),
-    u64,
-) {
+fn init() -> (TestEnv, AccountHash, TestContract, u64) {
     let (
         env,
         liquidity_transformer,
@@ -275,8 +267,8 @@ fn create_stake() -> (
         owner,
         SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
-            "package_hash" => Key::Hash(liquidity_transformer.package_hash()),
-            "entrypoint" => "reserve_wise",
+            ENTRYPOINT => "reserve_wise",
+            PACKAGE_HASH => Key::Hash(liquidity_transformer.package_hash()),
             "investment_mode" => 1_u8,
             "amount" => TWOTHOUSEND_CSPR
         },
@@ -306,50 +298,48 @@ fn create_stake() -> (
         &wcspr,
         time,
     );
+
+    (env, owner, wise, time)
+}
+
+#[test]
+fn should_be_able_to_create_stake_with_cspr() {
+    let (env, owner, wise, time) = init();
     call(
         &env,
         owner,
         SESSION_WASM_STAKEABLE,
         runtime_args! {
-            "entrypoint" => "create_stake",
-            "package_hash" => Key::Hash(wise.package_hash()),
+            ENTRYPOINT => CREATE_STAKE_WITH_CSPR,
+            PACKAGE_HASH => Key::Hash(wise.package_hash()),
+            "lock_days" => 20u64,
+            "referrer" => account_zero_address(),
+            "amount" => <casper_types::U256 as AsPrimitive<casper_types::U512>>::as_(ONETHOUSEND_CSPR)
+        },
+        time,
+    );
+}
+
+#[test]
+fn should_be_able_create_end_stake_and_scrape_interest() {
+    let (env, owner, wise, mut time) = init();
+    // CREATE STAKE
+    call(
+        &env,
+        owner,
+        SESSION_WASM_STAKEABLE,
+        runtime_args! {
+            ENTRYPOINT => CREATE_STAKE,
+            PACKAGE_HASH => Key::Hash(wise.package_hash()),
             "staked_amount" => ONETHOUSEND_CSPR,
             "lock_days" => 20u64,
             "referrer" => account_zero_address()
         },
         time,
     );
-
     // STAKE_ID / START_DATE / REFERAL_ID
-    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, "create_stake");
-
-    (env, owner, wise, ret, time)
-}
-
-#[test]
-fn test_wise_create_stake() {
-    let (_, _, _, _, _) = create_stake();
-}
-
-#[test]
-fn test_wise_end_stake() {
-    let (env, owner, wise, ret, time) = create_stake();
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            "entrypoint" => "end_stake",
-            "package_hash" => Key::Hash(wise.package_hash()),
-            "stake_id" => ret.0
-        },
-        time,
-    );
-}
-
-#[test]
-fn test_wise_scrape_interest() {
-    let (env, owner, wise, ret, mut time) = create_stake();
+    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
+    // SCRAPE INTEREST
     time += 2 * MILLI_SECONDS_IN_DAY;
     wise.call_contract(owner, "manual_daily_snapshot", runtime_args! {}, time);
     call(
@@ -357,10 +347,22 @@ fn test_wise_scrape_interest() {
         owner,
         SESSION_WASM_STAKEABLE,
         runtime_args! {
-            "entrypoint" => "scrape_interest",
-            "package_hash" => Key::Hash(wise.package_hash()),
-            "stake_id" => ret.0,
+            ENTRYPOINT => SCRAPE_INTEREST,
+            PACKAGE_HASH => Key::Hash(wise.package_hash()),
+            "stake_id" => ret.0.clone(),
             "scrape_days" => 1u64
+        },
+        time,
+    );
+    // END STAKE
+    call(
+        &env,
+        owner,
+        SESSION_WASM_STAKEABLE,
+        runtime_args! {
+            ENTRYPOINT => END_STAKE,
+            PACKAGE_HASH => Key::Hash(wise.package_hash()),
+            "stake_id" => ret.0
         },
         time,
     );
