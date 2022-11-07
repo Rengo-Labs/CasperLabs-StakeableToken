@@ -3,7 +3,7 @@ use casper_contract::{
     contract_api::{runtime, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
-use casper_types::{runtime_args, Key, RuntimeArgs, URef, U256, U512};
+use casper_types::{runtime_args, Key, RuntimeArgs, URef, U256};
 use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use common::{
     errors::Errors,

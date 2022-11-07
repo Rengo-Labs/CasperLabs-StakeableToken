@@ -16,7 +16,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
     }
 
     fn _not_contract(&self, addr: Key) -> bool {
-        addr.to_formatted_string().starts_with("hash")
+        addr.to_formatted_string().starts_with("account")
     }
 
     fn _to_bytes16(&self, x: U256) -> Vec<u16> {

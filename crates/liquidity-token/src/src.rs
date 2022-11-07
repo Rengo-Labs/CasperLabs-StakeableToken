@@ -59,7 +59,8 @@ pub trait LIQUIDITYTOKEN<Storage: ContractStorage>:
         }
         liquidity_stake.is_active = false;
         liquidity_stake.close_day = self._current_stakeable_day();
-        // liquidity_stake.reward_amount = self._calculate_reward_amount(liquidity_stake);
+        liquidity_stake.reward_amount =
+            LIQUIDITYTOKEN::_calculate_reward_amount(self, liquidity_stake);
         self.mint(self.get_caller(), liquidity_stake.reward_amount);
         self._transfer(
             uniswap_pair(),

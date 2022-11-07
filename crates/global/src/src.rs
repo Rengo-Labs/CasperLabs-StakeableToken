@@ -65,13 +65,12 @@ pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Sto
     }
 
     fn _log_globals(&self) {
-        let globals = globals();
         emit(&Events::NewGlobals {
-            total_shares: globals.total_shares,
-            total_staked: globals.total_staked,
-            share_rate: globals.share_price,
-            referral_shares: globals.referral_shares,
-            current_stakeable_day: globals.current_stakeable_day,
+            total_shares: globals().total_shares,
+            total_staked: globals().total_staked,
+            share_rate: globals().share_price,
+            referral_shares: globals().referral_shares,
+            current_stakeable_day: globals().current_stakeable_day,
         });
     }
 }
