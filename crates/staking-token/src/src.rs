@@ -35,7 +35,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         referrer: Key,
     ) -> (Vec<u32>, U256, Vec<u32>) {
         self.snapshot_trigger();
-        if self.get_caller() == referrer || self._not_contract(referrer) {
+        if self.get_caller() == referrer || !self._not_contract(referrer) {
             runtime::revert(Errors::InvalidReferrer);
         }
         if lock_days < MIN_LOCK_DAYS.into() || lock_days > MAX_LOCK_DAYS.into() {

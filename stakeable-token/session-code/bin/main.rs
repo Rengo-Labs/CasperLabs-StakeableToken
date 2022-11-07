@@ -13,7 +13,6 @@ use casper_types::{
     bytesrepr::ToBytes, runtime_args, ApiError, CLTyped, Key, RuntimeArgs, URef, U256, U512,
 };
 use common::keys::*;
-use num_traits::AsPrimitive;
 
 // Key is the same a destination
 fn store<T: CLTyped + ToBytes>(key: &str, value: T) {
