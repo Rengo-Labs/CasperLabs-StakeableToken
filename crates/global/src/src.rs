@@ -12,7 +12,7 @@ pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Sto
     fn init(&self) {
         set_globals({
             let mut globals = globals();
-            globals.share_price = U256::from(100) * U256::from(10).pow(7.into()); // 100 * (10 ^ 7(15))  =  100E7(15)
+            globals.share_price = U256::from(100) * U256::from(10).pow(8.into()); // 100E15 <=> 100E8
             globals
         });
     }

@@ -17,7 +17,7 @@ pub const MAX_BONUS_DAYS_A: u16 = 1825;
 pub const MAX_BONUS_DAYS_B: u16 = 13505;
 pub const MIN_REFERRAL_DAYS: u16 = 365;
 
-pub const MIN_STAKE_AMOUNT: u32 = 1_000_000;
+pub const MIN_STAKE_AMOUNT: u32 = 1_000; // E6 <=> E3
 pub const REFERRALS_RATE: u32 = 366_816_973;
 pub const INFLATION_RATE_MAX: u32 = 103000;
 
