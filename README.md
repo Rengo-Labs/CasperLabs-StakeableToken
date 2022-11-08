@@ -72,7 +72,7 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [`end_liquidity_stake`](#stakeable-token-end-liquidity-stake)
     - [`check_liquidity_stake_by_id`](#stakeable-token-check-liquidity-stake-by-id)
 
-## Interacting with the contract
+### Interacting with the contract
 
 You need to have `casper-client` and `jq` installed on your system to run the examples. The instructions have been tested on Ubuntu 20.04.0 LTS.
 
@@ -80,68 +80,127 @@ You need to have `casper-client` and `jq` installed on your system to run the ex
 
 You can install the required software by issuing the following commands. If you are on an up-to-date Casper node, you probably already have all of the prerequisites installed so you can skip this step.
 
-```bash
-# Update package repositories
+#### Note: If any command fails try again by restarting the terminal to reset the enviornment variable.
+
+### Update package repositories
+
+```
 sudo apt update
+```
 
-# Install the command-line JSON processor
+### Install the command-line JSON processor
+
+```
 sudo apt install jq -y
+```
 
-# Install rust
+### Install rust
+
+Choose cutomize intallation to install nightly version
+Install the nightly version (by default stable toolchain is installed)
+
+```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-#Install the nightly version (by default stable toolchain is installed)
-rustup install nightly
+```
+rustup install nightly-2022-08-29
+```
 
-#Check that nightly toolchain version is installed(this will list stable and nightly versions)
+### Check that nightly toolchain version is installed(this will list stable and nightly versions)
+
+```
 rustup toolchain list
+```
 
-#Set rust nightly as default
-rustup default nightly
+### Set rust nightly as default
 
-# Install wasm32-unknown-unknown
+```
+rustup default nightly-2022-08-29-x86_64-unknown-linux-gnu
+```
+
+### Install wasm32-unknown-unknown
+
+```
 rustup target add wasm32-unknown-unknown
+```
 
-#rust Version
+### Rust Version
+
+```
 rustup --version
+```
 
-#Install Cmake
- sudo apt-get -y install cmake
+### Install Cmake
+
+```
+sudo apt-get -y install cmake
+```
 
 Note:https://cgold.readthedocs.io/en/latest/first-step/installation.html
 
-#cmake Version
-cmake --version
-
-#Installing the Casper Crates
-cargo install cargo-casper
-
-# Add Casper repository
-echo "deb https://repo.casperlabs.io/releases" bionic main | sudo tee -a /etc/apt/sources.list.d/casper.list
-curl -O https://repo.casperlabs.io/casper-repo-pubkey.asc
-sudo apt-key add casper-repo-pubkey.ascr
-sudo apt update
-
-# Install the Casper client software
-Install Casper-client
-
-cargo +nightly install casper-client
-
-# To check Casper Client Version
-Casper-client --version
-
-# Commands for help
-casper-client --help
-
-casper-client <command> --help
+### check if cmake is installed properly
 
 ```
+cmake --version
+```
 
-### Creating Keys
+### Install the Casper Crates
 
-```bash
-# Create keys
-casper-client keygen <TARGET DIRECTORY>
+```
+cargo install cargo-casper
+```
+
+### Add Casper repository
+
+```
+echo "deb https://repo.casperlabs.io/releases" bionic main | sudo tee -a /etc/apt/sources.list.d/casper.list
+```
+
+```
+curl -O https://repo.casperlabs.io/casper-repo-pubkey.asc
+```
+
+```
+sudo apt-key add casper-repo-pubkey.asc
+```
+
+```
+sudo apt update
+```
+
+```
+sudo apt install libssl-dev
+```
+
+```
+sudo apt install pkg-config
+```
+
+### Install the Casper client software
+
+```
+cargo +nightly-2022-08-29-x86_64-unknown-linux-gnu install casper-client
+```
+
+### To check Casper Client Version
+
+```
+casper-client --version
+```
+
+# Additonal commands for help
+
+```
+casper-client --help
+casper-client <command> --help
+```
+
+### Generate the keys
+
+```
+casper-client keygen keys
+
 ```
 
 ### Usage
