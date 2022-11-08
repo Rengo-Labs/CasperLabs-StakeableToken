@@ -13,21 +13,11 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [Build All Smart Contracts](#build-all-smart-contracts)
     - [Individual Test Cases](#individual-test-cases)
     - [All Test Cases](#all-test-cases)
-- [Transfer Helper](#transfer-helper)
-  - [Deployment](#deploying-transfer-helper-contract-manually)
-  - [Entry Point methods](#transfer-helper-entry-point-methods)
-    - [`get_transfer_invoker_address`](#transfer-helper-get-transfer-invoker-address)
-    - [`forward_funds`](#transfer-helper-forward-funds)
 - [Liquidity Guard](#liquidity-guard)
   - [Deployment](#deploying-liquidity-guard-contract-manually)
   - [Entry Point methods](#liquidity-guard-entry-point-methods)
     - [`get_inflation`](#liquidity-guard-get-inflation)
     - [`assign_inflation`](#liquidity-guard-assign-inflation)
-- [Stable USD](#stable-usd)
-  - [Deployment](#deploying-stable-usd-contract-manually)
-  - [Entry Point methods](#stable-usd-entry-point-methods)
-    - [`get_stable_usd_equivalent`](#stable-usd-get-stable-usd)
-    - [`update_stable_usd_equivalent`](#stable-usd-update-stable-usd)
 - [Stakeable Token](#stakeable-token)
   - [Deployment](#deploying-stakeable-token-contract-manually)
   - [Entry Point methods](#stakeable-token-entry-point-methods)
@@ -207,7 +197,7 @@ casper-client keygen keys
 
 To run the Contracts make sure you are in the folder of your required contract.
 
-#### Install
+##### Install
 
 Make sure `wasm32-unknown-unknown` is installed.
 
@@ -218,17 +208,25 @@ make prepare
 It's also recommended to have [wasm-strip](https://github.com/WebAssembly/wabt)
 available in your PATH to reduce the size of compiled Wasm.
 
-#### Build Individual Smart Contract
-
-Run this command to build Smart Contract.
+##### Build Dependencies of Contract
+Run this command to build dependencies of contracts.
 
 ```
-make build-contract
+make build-dependencies
+```
+
+##### Build Individual Smart Contract
+
+Run this command to build Smart Contracts individually.
+
+```
+make build-stakeable-token
+make build-liquidity-guard
 ```
 
 <br>**Note:** User needs to be in the desired project folder to build contracts and User needs to run `make build-contract` in every project to make wasms to avoid errors
 
-#### Build All Smart Contracts
+##### Build All Smart Contracts
 
 Run this command in main folder to build all Smart Contract.
 
@@ -236,9 +234,9 @@ Run this command in main folder to build all Smart Contract.
 make build-all
 ```
 
-#### Individual Test Cases
+##### Individual Test Cases
 
-Run this command to run Test Cases.
+Run this command to run all test Cases.
 
 ```
 make test-stakeable-token
@@ -247,7 +245,7 @@ make test-liquidity-guard
 
 <br>**Note:** User needs to be in the desired project folder to run test cases
 
-#### All Test Cases
+##### All Test Cases
 
 Run this command in main folder to run all contract's Test Cases.
 
@@ -255,9 +253,9 @@ Run this command in main folder to run all contract's Test Cases.
 make test-all
 ```
 
-### Liquidity Guard <a id="liquidity-guard"></a>
+#### Liquidity Guard <a id="liquidity-guard"></a>
 
-#### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
+##### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
 
 If you need to deploy the `Liquidity Guard` manually you need to pass the some parameters. Following is the command to deploy the `Liquidity Guard`.
 
@@ -267,7 +265,7 @@ sudo casper-client put-deploy \
     --node-address http://$NODE_ADDRESS:7777/ \
     --secret-key path_to_secret_key.pem \
     --session-path path_to_wasm_file \
-    --payment-amount 10000000000 \
+    --payment-amount 100000000000 \
     --session-arg="public_key:public_key='Public Key In Hex'" \
     --session-arg="contract_name:string='contract_name'"
 ```
@@ -314,7 +312,7 @@ sudo casper-client put-deploy \
     --node-address http://$NODE_ADDRESS:7777/ \
     --secret-key path_to_secret_key.pem \
     --session-path path_to_wasm_file \
-    --payment-amount 10000000000 \
+    --payment-amount 200000000000 \
     --session-arg="public_key:public_key='Public Key In Hex'" \
     --session-arg="contract_name:string='contract_name'"\
     --session-arg="synthetic_cspr_address:string='synthetic_cspr_address-contract-hash'"\
