@@ -197,7 +197,7 @@ casper-client keygen keys
 
 To run the Contracts make sure you are in the folder of your required contract.
 
-##### Install
+### Install
 
 Make sure `wasm32-unknown-unknown` is installed.
 
@@ -208,14 +208,14 @@ make prepare
 It's also recommended to have [wasm-strip](https://github.com/WebAssembly/wabt)
 available in your PATH to reduce the size of compiled Wasm.
 
-##### Build Dependencies of Contract
+### Build Dependencies of Contract
 Run this command to build dependencies of contracts.
 
 ```
 make build-dependencies
 ```
 
-##### Build Individual Smart Contract
+### Build Individual Smart Contract
 
 Run this command to build Smart Contracts individually.
 
@@ -226,7 +226,7 @@ make build-liquidity-guard
 
 <br>**Note:** User needs to be in the desired project folder to build contracts and User needs to run `make build-contract` in every project to make wasms to avoid errors
 
-##### Build All Smart Contracts
+### Build All Smart Contracts
 
 Run this command in main folder to build all Smart Contract.
 
@@ -234,7 +234,7 @@ Run this command in main folder to build all Smart Contract.
 make build-all
 ```
 
-##### Individual Test Cases
+### Individual Test Cases
 
 Run this command to run all test Cases.
 
@@ -245,7 +245,7 @@ make test-liquidity-guard
 
 <br>**Note:** User needs to be in the desired project folder to run test cases
 
-##### All Test Cases
+### All Test Cases
 
 Run this command in main folder to run all contract's Test Cases.
 
@@ -253,9 +253,9 @@ Run this command in main folder to run all contract's Test Cases.
 make test-all
 ```
 
-##### Liquidity Guard <a id="liquidity-guard"></a>
+### Liquidity Guard <a id="liquidity-guard"></a>
 
-##### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
+### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
 
 If you need to deploy the `Liquidity Guard` manually you need to pass the some parameters. Following is the command to deploy the `Liquidity Guard`.
 
@@ -270,11 +270,11 @@ sudo casper-client put-deploy \
     --session-arg="contract_name:string='contract_name'"
 ```
 
-#### Entry Point methods <a id="liquidity-guard-entry-point-methods"></a>
+### Entry Point methods <a id="liquidity-guard-entry-point-methods"></a>
 
 Following are the Liquidity Guard's entry point methods.
 
-- ##### get_inflation <a id="liquidity-guard-get-inflation"></a>
+- #### get_inflation <a id="liquidity-guard-get-inflation"></a>
   Returns the inflation calculated at a certain amount.
 
 | Parameter Name | Type |
@@ -283,7 +283,7 @@ Following are the Liquidity Guard's entry point methods.
 
 This method **returns** U256.
 
-- ##### assign_inflation <a id="liquidity-guard-assign-inflation"></a>
+- #### assign_inflation <a id="liquidity-guard-assign-inflation"></a>
   Assigns inflation as set in contract to inflations dictionary.
   <br> Contract reverts if inflation is assigned already.
 
@@ -293,8 +293,8 @@ This method **returns** U256.
 
 This method **returns** nothing.
 
-##### Stakable Token <a id="stakeable-token"></a>
-##### Deployment <a id="deploying-stakeable-token-contract-manually"></a>
+### Stakable Token <a id="stakeable-token"></a>
+### Deployment <a id="deploying-stakeable-token-contract-manually"></a>
 
 If you need to deploy the `Stakeable Token` manually you need to pass the some parameters. Following is the command to deploy the `Stakeable Token`.
 
