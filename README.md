@@ -222,6 +222,7 @@ It's also recommended to have [wasm-strip](https://github.com/WebAssembly/wabt)
 available in your PATH to reduce the size of compiled Wasm.
 
 ### Build Dependencies of Contract
+
 Run this command to build dependencies of contracts.
 
 ```
@@ -292,7 +293,7 @@ Following are the Liquidity Guard's entry point methods.
 
 | Parameter Name | Type |
 | -------------- | ---- |
-| amount         | u32 |
+| amount         | u32  |
 
 This method **returns** U256.
 
@@ -307,6 +308,7 @@ This method **returns** U256.
 This method **returns** nothing.
 
 ### Stakable Token <a id="stakeable-token"></a>
+
 ### Deployment <a id="deploying-stakeable-token-contract-manually"></a>
 
 If you need to deploy the `Stakeable Token` manually you need to pass the some parameters. Following is the command to deploy the `Stakeable Token`.
@@ -329,42 +331,46 @@ sudo casper-client put-deploy \
     --session-arg="liquidity_guard:Key='liquidity_guard_contract_hash'"\
 ```
 
-#### Entry Point methods <a id="stakeable-token-entry-point-methods"></a>
+### Entry Point methods <a id="stakeable-token-entry-point-methods"></a>
 
 Following are the Stakeable Token's entry point methods.
 
-- ##### set_liquidity_transfomer
+- #### set_liquidity_transfomer
+
   <a id="stakeable-token-set-liquidity-transfomer"></a>
   Set Liquidity Transformer's hash and it's purse's uref to stakeable token contract global state.
 
-| Parameter Name        | Type |
-| --------------------- | ---- |
-| immutable_transformer | Key  |
-| transformer_purse     | URef |
+  | Parameter Name        | Type |
+  | --------------------- | ---- |
+  | immutable_transformer | Key  |
+  | transformer_purse     | URef |
 
-This method **returns** U256.
+  This method **returns** U256.
 
-- ##### get_transformer_gate_keeper
+- #### get_transformer_gate_keeper
+
   <a id="stakeable-token-get-transformer-gate-keeper"></a>
   Return the transformer gate keeper.
 
-| Parameter Name        | Type |
-| --------------------- | ---- |
+  | Parameter Name | Type |
+  | -------------- | ---- |
 
-This method **returns** `Key`.
+  This method **returns** `Key`.
 
-- ##### mint_supply <a id="stakeable-token-mint-supply"></a>
+- #### mint_supply <a id="stakeable-token-mint-supply"></a>
+
   Mints tokens to an address.
   <br>Contract reverts if `self.get_caller()` is not the Liquidity Transformer contract.
 
-| Parameter Name   | Type |
-| ---------------- | ---- |
-| investor_address | Key  |
-| amount           | U256 |
+  | Parameter Name   | Type |
+  | ---------------- | ---- |
+  | investor_address | Key  |
+  | amount           | U256 |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### create_stake_with_cspr <a id="stakeable-token-create-stake-with-cspr"></a>
+- #### create_stake_with_cspr <a id="stakeable-token-create-stake-with-cspr"></a>
+
   Creates a stake by withdrawing a cspr amount from a provided purse.
   Parameter Name | Type
   |---|--- |
@@ -380,42 +386,48 @@ This method **returns** nothing.
   |1|start_day | u64
   |2| referrer_id | Vec\<u32>
 
-- ##### get_liquidity_rate <a id="stakeable-token-get-liquidity-rate"></a>
+- #### get_liquidity_rate <a id="stakeable-token-get-liquidity-rate"></a>
+
   Return the liquidity rate.
   Parameter Name | Type
   |---|--- |
 
   This method **returns** `U256`
 
-- ##### get_scspr <a id="stakeable-token-get-scspr"></a>
+- #### get_scspr <a id="stakeable-token-get-scspr"></a>
+
   Return the scspr.
   Parameter Name | Type
   |---|--- |
 
   This method **returns** `Key`
 
-- ##### get_uniswap_pair <a id="stakeable-token-get-uniswap-pair"></a>
+- #### get_uniswap_pair <a id="stakeable-token-get-uniswap-pair"></a>
+
   Return the uniswap pair.
   Parameter Name | Type
   |---|--- |
 
   This method **returns** `Key`
 
-- ##### get_inflation_rate <a id="stakeable-token-get-inflation-rate"></a>
+- #### get_inflation_rate <a id="stakeable-token-get-inflation-rate"></a>
+
   Return the inflation rate.
   Parameter Name | Type
   |---|--- |
 
   This method **returns** `U256`
 
-- ##### create_pair <a id="stakeable-token-create-pair"></a>
+- #### create_pair <a id="stakeable-token-create-pair"></a>
+
   This function is used to create the pair.
   Parameter Name | Type
   |---|--- |
 
   This method **returns** nothing
 
-- ##### get_scheduled_to_end <a id="stakeable-token-get-scheduled-to-end"></a>
+- #### get_scheduled_to_end <a id="stakeable-token-get-scheduled-to-end"></a>
+
   Return the value of scheduled to end.
   Parameter Name | Type
   |---|--- |
@@ -423,7 +435,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_total_penalties <a id="stakeable-token-get-total-penalties"></a>
+- #### get_total_penalties <a id="stakeable-token-get-total-penalties"></a>
+
   Return the total penalties.
   Parameter Name | Type
   |---|--- |
@@ -431,7 +444,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_scrapes <a id="stakeable-token-get-scrapes"></a>
+- #### get_scrapes <a id="stakeable-token-get-scrapes"></a>
+
   Return the value of scrapes.
   Parameter Name | Type
   |---|--- |
@@ -440,7 +454,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_stake_count <a id="stakeable-token-get-stake-count"></a>
+- #### get_stake_count <a id="stakeable-token-get-stake-count"></a>
+
   Return the count of stake.
   Parameter Name | Type
   |---|--- |
@@ -448,7 +463,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_referral_count <a id="stakeable-token-get-referral-count"></a>
+- #### get_referral_count <a id="stakeable-token-get-referral-count"></a>
+
   Return the count of referrals.
   Parameter Name | Type
   |---|--- |
@@ -456,7 +472,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_liquidity_stake_count <a id="stakeable-token-get-liquidity-stake-count"></a>
+- #### get_liquidity_stake_count <a id="stakeable-token-get-liquidity-stake-count"></a>
+
   Return the count of liquidity stake.
   Parameter Name | Type
   |---|--- |
@@ -464,7 +481,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### get_referral_shares_to_end <a id="stakeable-token-get-referral-shares-to-end"></a>
+- #### get_referral_shares_to_end <a id="stakeable-token-get-referral-shares-to-end"></a>
+
   Return the value of referral shares to end.
   Parameter Name | Type
   |---|--- |
@@ -472,7 +490,8 @@ This method **returns** nothing.
 
   This method **returns** `U256`
 
-- ##### create_stake_with_token <a id="stakeable-token-create-stake-with-token"></a>
+- #### create_stake_with_token <a id="stakeable-token-create-stake-with-token"></a>
+
   Creates a stake by withdrawing an amount of tokens from a provided token contract againts `self.get_caller()`.
   <br> `self.get_caller()` must have given Stakeable Token contract allowance of 'token_amount' atleast before calling this entry point.
   Parameter Name | Type
@@ -482,240 +501,243 @@ This method **returns** nothing.
   | token_amount | U256 |
   | token_address | URef |
 
-This method **returns** a tuple of order 3, described below.
-| Tuple Index | Item Name | Type |
-| --- | --- | --- |
-|0|stake_id | Vec\<u32>
-|1|start_day | u64
-|2| referrer_id | Vec\<u32>
+  This method **returns** a tuple of order 3, described below.
+  | Tuple Index | Item Name | Type |
+  | --- | --- | --- |
+  |0|stake_id | Vec\<u32>
+  |1|start_day | u64
+  |2| referrer_id | Vec\<u32>
 
-- ##### get_pair_address <a id="stakeable-token-get-pair-address"></a>
+- #### get_pair_address <a id="stakeable-token-get-pair-address"></a>
+
   Returns the address of Uniswap V2 Pair contract on the CasperLabs Blockchain.
   Parameter Name | Type
   |---|--- |
-  | --- | --- |
 
-This method **returns** a Key type.
+  This method **returns** a Key type.
 
-- ##### get_total_staked <a id="stakeable-token-get-total-staked"></a>
+- #### get_total_staked <a id="stakeable-token-get-total-staked"></a>
+
   Returns the total amount of tokens staked for stakes in Stakeable Token.
   Parameter Name | Type
   |---|--- |
-  | --- | --- |
 
-This method **returns** a U256 type.
+  This method **returns** a U256 type.
 
-- ##### get_liquidity_transformer <a id="stakeable-token-get-liquidity-transformer"></a>
+- #### get_liquidity_transformer <a id="stakeable-token-get-liquidity-transformer"></a>
   Returns the `liquidity_transformer` address.
 
-| Parameter Name | Type |
-| -------------- | ---- |
-| ---            | ---  |
+  | Parameter Name | Type |
+  | -------------- | ---- |
 
-This method **returns** a Key type.
+  This method **returns** a Key type.
 
-- ##### get_synthetic_token_address <a id="stakeable-token-get-synthetic-token-address"></a>
+- #### get_synthetic_token_address <a id="stakeable-token-get-synthetic-token-address"></a>
   Returns the `synthetic_token` address.
 
-| Parameter Name | Type |
-| -------------- | ---- |
-| ---            | ---  |
+  | Parameter Name | Type |
+  | -------------- | ---- |
+  | ---            | ---  |
 
-This method **returns** a Key type.
+  This method **returns** a Key type.
 
-- ##### current_stakeable_day <a id="stakeable-token-current-stakeable-day"></a>
+- #### current_stakeable_day <a id="stakeable-token-current-stakeable-day"></a>
+
   Returns the day since launch of WISE.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type |
-| -------------- | ---- |
+  | Parameter Name | Type |
+  | -------------- | ---- |
 
 This method **returns** u64.
 
-- ##### liquidity_guard_trigger <a id="stakeable-token-liquidity-guard-trigger"></a>
+- #### liquidity_guard_trigger <a id="stakeable-token-liquidity-guard-trigger"></a>
+
   Enables the liquidity guard if it is disabled.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type |
-| -------------- | ---- |
+  | Parameter Name | Type |
+  | -------------- | ---- |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### manual_daily_snapshot <a id="stakeable-token-manual-daily-snapshot"></a>
+- #### manual_daily_snapshot <a id="stakeable-token-manual-daily-snapshot"></a>
+
   Creates a snapshot from `update_day` till the current stakeable day.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-Parameter Name | Type
-update_day|u64
+  Parameter Name | Type
+  update_day|u64
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### get_stable_usd_equivalent <a id="stakeable-token-get-stable-usd"></a>
+- #### get_stable_usd_equivalent <a id="stakeable-token-get-stable-usd"></a>
+
   Returns the value of stable usd.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type |
-| -------------- | ---- |
+  | Parameter Name | Type |
+  | -------------- | ---- |
 
 This method **returns** U256.
 
-- ##### referrer_interest <a id="stakeable-token-referrer-interest"></a>
+- #### referrer_interest <a id="stakeable-token-referrer-interest"></a>
   Returns the calculated interest on a particular referral for `scrape_days` duration and mints equivalend WISE tokens to `self.get_caller()`
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| referreral_id  | Vec\<u32> |
-| scrape_days    | U256      |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | referreral_id  | Vec\<u32> |
+  | scrape_days    | U256      |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### referrer_interest_bulk <a id="stakeable-token-referrer-interest-bulk"></a>
+- #### referrer_interest_bulk <a id="stakeable-token-referrer-interest-bulk"></a>
   Returns the calculated interest on a several referrals, each for for several `scrape_days` duration and mints equivalend WISE tokens to `self.get_caller()` in each case.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type            |
-| -------------- | --------------- |
-| referreral_ids | Vec\<Vec\<u32>> |
-| scrape_days    | Vec\<U256>      |
+  | Parameter Name | Type            |
+  | -------------- | --------------- |
+  | referreral_ids | Vec\<Vec\<u32>> |
+  | scrape_days    | Vec\<U256>      |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### check_referrals_by_id <a id="stakeable-token-check-referrals-by-id"></a>
+- #### check_referrals_by_id <a id="stakeable-token-check-referrals-by-id"></a>
   Calculates rewards and shares for a referrer on a partical referral, and returns all information as a serialized struct.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| referreral_ids | Vec\<u32> |
-| referrer       | Key       |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | referreral_ids | Vec\<u32> |
+  | referrer       | Key       |
 
-This method **returns** StakeInfo type serialized as Vec\<u8>.
+  This method **returns** StakeInfo type serialized as Vec\<u8>.
 
-- ##### create_stake_bulk <a id="stakeable-token-create_stake_bulk"></a>
+- #### create_stake_bulk <a id="stakeable-token-create_stake_bulk"></a>
   Creates several stakes for `self.get_caller()` each with a referrer.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| staked_amount  | U256      |
-| lock_days      | Vec\<u64> |
-| referrer       | Vec\<Key> |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | staked_amount  | U256      |
+  | lock_days      | Vec\<u64> |
+  | referrer       | Vec\<String> |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### create_stake <a id="stakeable-token-create_stake"></a>
+- #### create_stake <a id="stakeable-token-create_stake"></a>
   Creates a stake for `self.get_caller()` with a referrer.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| stake_id       | Vec\<u32> |
-| start_day      | u64       |
-| referral_id    | Vec\<u32> |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | stake_id       | Vec\<u32> |
+  | start_day      | u64       |
+  | referral_id    | Vec\<u32> |
 
-This method **returns** a tupe of order 3 described below.
+  This method **returns** a tupe of order 3 described below.
 
-| Tuple Index | Item Name   | Type      |
-| ----------- | ----------- | --------- |
-| 0           | stake_id    | Vec\<u32> |
-| 1           | start_day   | u64       |
-| 2           | referrer_id | Vec\<u32> |
+  | Tuple Index | Item Name   | Type      |
+  | ----------- | ----------- | --------- |
+  | 0           | stake_id    | Vec\<u32> |
+  | 1           | start_day   | u64       |
+  | 2           | referrer_id | Vec\<u32> |
 
-- ##### end_stake <a id="stakeable-token-end-stake"></a>
+- #### end_stake <a id="stakeable-token-end-stake"></a>
   Ends a stakes of given `stake_id` having been created by `self.get_caller()`.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| stake_id       | Vec\<u32> |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | stake_id       | Vec\<u32> |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### scrape_interest <a id="stakeable-token-scrape-interest"></a>
+- #### scrape_interest <a id="stakeable-token-scrape-interest"></a>
   Calculates interests, rewards and penalties for a stake created by ``self.get_caller()`.`
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| stake_id       | Vec\<u32> |
-| scrape_days    | u64       |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | stake_id       | Vec\<u32> |
+  | scrape_days    | u64       |
 
-This method **returns** a Vec<u32>, described below.
+  This method **returns** a Vec<u32>, described below.
 
-| Vector Index | Item Name        | Type |
-| ------------ | ---------------- | ---- |
-| 0            | scrape_day       | U256 |
-| 1            | scrape_amount    | U256 |
-| 2            | remaining_days   | U256 |
-| 3            | stakers_penalty  | U256 |
-| 4            | referrer_penalty | U256 |
+  | Vector Index | Item Name        | Type |
+  | ------------ | ---------------- | ---- |
+  | 0            | scrape_day       | U256 |
+  | 1            | scrape_amount    | U256 |
+  | 2            | remaining_days   | U256 |
+  | 3            | stakers_penalty  | U256 |
+  | 4            | referrer_penalty | U256 |
 
-- ##### check_mature_stake <a id="stakeable-token-check-mature-stake"></a>
+- #### check_mature_stake <a id="stakeable-token-check-mature-stake"></a>
   Retrns true if a stake of `stake_id` created by a `staker` has matured.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| stake_id       | Vec\<u32> |
-| staker         | Key       |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | stake_id       | Vec\<u32> |
+  | staker         | Key       |
 
-This method **returns** Bool
+  This method **returns** Bool
 
-- ##### check_stake_by_id <a id="stakeable-token-check-stake-by-id"></a>
+- #### check_stake_by_id <a id="stakeable-token-check-stake-by-id"></a>
   Retrns true if a stake of `stake_id` created by a `staker` has matured.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name | Type      |
-| -------------- | --------- |
-| stake_id       | Vec\<u32> |
-| staker         | Key       |
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | stake_id       | Vec\<u32> |
+  | staker         | Key       |
 
-This method **returns** Bool
+  This method **returns** Bool
 
-- ##### create_liquidity_stake <a id="stakeable-token-create-liquidity-stake"></a>
+- #### create_liquidity_stake <a id="stakeable-token-create-liquidity-stake"></a>
   Creates a liquidity stake for `self.get_caller()` staking `liquidity_token` of token amount.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name  | Type |
-| --------------- | ---- |
-| liquidity_token | U256 |
+  | Parameter Name  | Type |
+  | --------------- | ---- |
+  | liquidity_token | U256 |
 
-This method **returns** Vec<u32> type of stake id.
+  This method **returns** Vec<u32> type of stake id.
 
-- ##### end_liquidity_stake <a id="stakeable-token-end-liquidity-stake"></a>
+- #### end_liquidity_stake <a id="stakeable-token-end-liquidity-stake"></a>
   End a liquidity stake for `self.get_caller()` having.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name  | Type |
-| --------------- | ---- |
-| liquidity_token | U256 |
+  | Parameter Name  | Type |
+  | --------------- | ---- |
+  | liquidity_token | U256 |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
-- ##### check_liquidity_stake_by_id <a id="stakeable-token-check-liquidity-stake-by-id"></a>
+- #### check_liquidity_stake_by_id <a id="stakeable-token-check-liquidity-stake-by-id"></a>
   End a liquidity stake for `self.get_caller()` having.
 
-Following is the table of parameters.
+  Following is the table of parameters.
 
-| Parameter Name     | Type      |
-| ------------------ | --------- |
-| liquidity_stake_id | Vec\<u32> |
-| staker             | Key       |
+  | Parameter Name     | Type      |
+  | ------------------ | --------- |
+  | liquidity_stake_id | Vec\<u32> |
+  | staker             | Key       |
 
-This method **returns** Stake type serlialized as Vec<u8>.
+  This method **returns** Stake type serlialized as Vec<u8>.
