@@ -215,7 +215,7 @@ Run this command to build dependencies of contracts.
 make build-dependencies
 ```
 
-##### Build Individual Smart Contract
+###### Build Individual Smart Contract
 
 Run this command to build Smart Contracts individually.
 
@@ -226,7 +226,7 @@ make build-liquidity-guard
 
 <br>**Note:** User needs to be in the desired project folder to build contracts and User needs to run `make build-contract` in every project to make wasms to avoid errors
 
-##### Build All Smart Contracts
+###### Build All Smart Contracts
 
 Run this command in main folder to build all Smart Contract.
 
@@ -234,7 +234,7 @@ Run this command in main folder to build all Smart Contract.
 make build-all
 ```
 
-##### Individual Test Cases
+###### Individual Test Cases
 
 Run this command to run all test Cases.
 
@@ -245,7 +245,7 @@ make test-liquidity-guard
 
 <br>**Note:** User needs to be in the desired project folder to run test cases
 
-##### All Test Cases
+###### All Test Cases
 
 Run this command in main folder to run all contract's Test Cases.
 
@@ -253,9 +253,9 @@ Run this command in main folder to run all contract's Test Cases.
 make test-all
 ```
 
-#### Liquidity Guard <a id="liquidity-guard"></a>
+###### Liquidity Guard <a id="liquidity-guard"></a>
 
-##### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
+###### Deployment <a id="deploying-liquidity-guard-contract-manually"></a>
 
 If you need to deploy the `Liquidity Guard` manually you need to pass the some parameters. Following is the command to deploy the `Liquidity Guard`.
 
@@ -274,12 +274,12 @@ sudo casper-client put-deploy \
 
 Following are the Liquidity Guard's entry point methods.
 
-- ##### get_inflation <a id="liquidity-guard-forward-funds"></a>
+- ##### get_inflation <a id="liquidity-guard-get-inflation"></a>
   Returns the inflation calculated at a certain amount.
 
 | Parameter Name | Type |
 | -------------- | ---- |
-| amount         | U256 |
+| amount         | u32 |
 
 This method **returns** U256.
 
@@ -302,7 +302,7 @@ This method **returns** nothing.
 
 This method **returns** U256.
 
-#### Deployment <a id="deploying-stakeable-token-contract-manually"></a>
+###### Deploying Stakeable Token contract manually <a id="deploying-stakeable-token-contract-manually"></a>
 
 If you need to deploy the `Stakeable Token` manually you need to pass the some parameters. Following is the command to deploy the `Stakeable Token`.
 
