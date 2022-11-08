@@ -22,11 +22,24 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
   - [Deployment](#deploying-stakeable-token-contract-manually)
   - [Entry Point methods](#stakeable-token-entry-point-methods)
     - [`set_liquidity_transfomer`](#stakeable-token-set-liquidity-transfomer)
+    - [`get_transformer_gate_keeper`](#stakeable-token-get-transformer-gate-keeper)
     - [`set_stable_usd`](#stakeable-token-set-stable_usd)
     - [`renounce_keeper`](#stakeable-token-renounce-keeper)
     - [`change_keeper`](#stakeable-token-change-keeper)
     - [`mint_supply`](#stakeable-token-mint-supply)
     - [`create_stake_with_cspr`](#stakeable-token-create-stake-with-cspr)
+    - [`get_liquidity_rate`](#stakeable-token-get-liquidity-rate)
+    - [`get_scspr`](#stakeable-token-get-scspr)
+    - [`get_uniswap_pair`](#stakeable-token-get-uniswap-pair)
+    - [`get_inflation_rate`](#stakeable-token-get-inflation-rate)
+    - [`create_pair`](#stakeable-token-create-pair)
+    - [`get_scheduled_to_end`](#stakeable-token-get-scheduled-to-end)
+    - [`get_total_penalties`](#stakeable-token-get-total-penalties)
+    - [`get_scrapes`](#stakeable-token-get-scrapes)
+    - [`get_stake_count`](#stakeable-token-get-stake-count)
+    - [`get_referral_count`](#stakeable-token-get-referral-count)
+    - [`get_liquidity_stake_count`](#stakeable-token-get-liquidity-stake-count)
+    - [`get_referral_shares_to_end`](#stakeable-token-get-referral-shares-to-end)
     - [`create_stake_with_token`](#stakeable-token-create-stake-with-token)
     - [`get_pair_address`](#stakeable-token-get-pair-address)
     - [`get_total_staked`](#stakeable-token-get-total-staked)
@@ -307,13 +320,13 @@ sudo casper-client put-deploy \
     --payment-amount 200000000000 \
     --session-arg="public_key:public_key='Public Key In Hex'" \
     --session-arg="contract_name:string='contract_name'"\
-    --session-arg="synthetic_cspr_address:string='synthetic_cspr_address-contract-hash'"\
-    --session-arg="router_address:string='router_contract_hash'"\
-    --session-arg="launch_time:string='launch_time'"\
-    --session-arg="factory_address:string='factory_contract_hash'" \
-    --session-arg="pair_address:string='pair_contract_hash'"\
-    --session-arg="liquidity_guard:string='liquidity_guard_contract_hash'"\
-    --session-arg="wcspr:string='wcspr_contract_hash'"
+    --session-arg="stable_usd:Key='stable usd address'"\
+    --session-arg="scspr:Key='synthetic_cspr_address-contract-hash'"\
+    --session-arg="wcspr:Key='wcspr_contract_hash'"
+    --session-arg="router_address:Key='router_contract_hash'"\
+    --session-arg="factory_address:Key='factory_contract_hash'" \
+    --session-arg="pair_address:Key='pair_contract_hash'"\
+    --session-arg="liquidity_guard:Key='liquidity_guard_contract_hash'"\
 ```
 
 #### Entry Point methods <a id="stakeable-token-entry-point-methods"></a>
@@ -321,8 +334,8 @@ sudo casper-client put-deploy \
 Following are the Stakeable Token's entry point methods.
 
 - ##### set_liquidity_transfomer
-  <a id="stakeable-token-get-set-liquidity-transfomer"></a>
-  Sets Liquidity Transformer's hash and it's purse's uref to stakeable token contract global state.
+  <a id="stakeable-token-set-liquidity-transfomer"></a>
+  Set Liquidity Transformer's hash and it's purse's uref to stakeable token contract global state.
 
 | Parameter Name        | Type |
 | --------------------- | ---- |
@@ -331,33 +344,14 @@ Following are the Stakeable Token's entry point methods.
 
 This method **returns** U256.
 
-- ##### set_stable_usd <a id="stakeable-token-update-set-stable_usd"></a>
-  Sets Stable USD's contract hash to Stakeable token contract's global state.
-  Parameter Name | Type
-  |---|--- |
-  | equalizer_address | Key |
+- ##### get_transformer_gate_keeper
+  <a id="stakeable-token-get-transformer-gate-keeper"></a>
+  Return the transformer gate keeper.
 
-This method **returns** nothing.
+| Parameter Name        | Type |
+| --------------------- | ---- |
 
-- ##### renounce_keeper <a id="stakeable-token-update-renounce-keeper"></a>
-  Sets Transformer Gatekeeper named key to a hash of zero address.
-  <br>Contract reverts if `self.get_caller()` is not the `transformer_gate_keeper`.
-
-| Parameter Name | Type |
-| -------------- | ---- |
-| ---            | ---  |
-
-This method **returns** nothing.
-
-- ##### change_keeper <a id="stakeable-token-update-change-keeper"></a>
-  Sets Transformer Gatekeeper named key to a provided address.
-  <br>Contract reverts if `self.get_caller()` is not the `transformer_gate_keeper`.
-
-| Parameter Name | Type |
-| -------------- | ---- |
-| keeper         | Key  |
-
-This method **returns** nothing.
+This method **returns** `Key`.
 
 - ##### mint_supply <a id="stakeable-token-mint-supply"></a>
   Mints tokens to an address.
@@ -379,12 +373,104 @@ This method **returns** nothing.
   | lock_days | u64 |
   | purse | URef |
 
-This method **returns** a tuple of order 3, described below.
-| Tuple Index | Item Name | Type |
-| --- | --- | --- |
-|0|stake_id | Vec\<u32>
-|1|start_day | u64
-|2| referrer_id | Vec\<u32>
+  This method **returns** a tuple of order 3, described below.
+  | Tuple Index | Item Name | Type |
+  | --- | --- | --- |
+  |0|stake_id | Vec\<u32>
+  |1|start_day | u64
+  |2| referrer_id | Vec\<u32>
+
+- ##### get_liquidity_rate <a id="stakeable-token-get-liquidity-rate"></a>
+  Return the liquidity rate.
+  Parameter Name | Type
+  |---|--- |
+
+  This method **returns** `U256`
+
+- ##### get_scspr <a id="stakeable-token-get-scspr"></a>
+  Return the scspr.
+  Parameter Name | Type
+  |---|--- |
+
+  This method **returns** `Key`
+
+- ##### get_uniswap_pair <a id="stakeable-token-get-uniswap-pair"></a>
+  Return the uniswap pair.
+  Parameter Name | Type
+  |---|--- |
+
+  This method **returns** `Key`
+
+- ##### get_inflation_rate <a id="stakeable-token-get-inflation-rate"></a>
+  Return the inflation rate.
+  Parameter Name | Type
+  |---|--- |
+
+  This method **returns** `U256`
+
+- ##### create_pair <a id="stakeable-token-create-pair"></a>
+  This function is used to create the pair.
+  Parameter Name | Type
+  |---|--- |
+
+  This method **returns** nothing
+
+- ##### get_scheduled_to_end <a id="stakeable-token-get-scheduled-to-end"></a>
+  Return the value of scheduled to end.
+  Parameter Name | Type
+  |---|--- |
+  |key|U256 |
+
+  This method **returns** `U256`
+
+- ##### get_total_penalties <a id="stakeable-token-get-total-penalties"></a>
+  Return the total penalties.
+  Parameter Name | Type
+  |---|--- |
+  |key|U256 |
+
+  This method **returns** `U256`
+
+- ##### get_scrapes <a id="stakeable-token-get-scrapes"></a>
+  Return the value of scrapes.
+  Parameter Name | Type
+  |---|--- |
+  |key0|Key |
+  |key1|Vec\<u32> |
+
+  This method **returns** `U256`
+
+- ##### get_stake_count <a id="stakeable-token-get-stake-count"></a>
+  Return the count of stake.
+  Parameter Name | Type
+  |---|--- |
+  |staker|Key |
+
+  This method **returns** `U256`
+
+- ##### get_referral_count <a id="stakeable-token-get-referral-count"></a>
+  Return the count of referrals.
+  Parameter Name | Type
+  |---|--- |
+  |referral|Key |
+
+  This method **returns** `U256`
+
+- ##### get_liquidity_stake_count <a id="stakeable-token-get-liquidity-stake-count"></a>
+  Return the count of liquidity stake.
+  Parameter Name | Type
+  |---|--- |
+  |staker|Key |
+
+  This method **returns** `U256`
+
+- ##### get_referral_shares_to_end <a id="stakeable-token-get-referral-shares-to-end"></a>
+  Return the value of referral shares to end.
+  Parameter Name | Type
+  |---|--- |
+  |staker|U256 |
+
+  This method **returns** `U256`
 
 - ##### create_stake_with_token <a id="stakeable-token-create-stake-with-token"></a>
   Creates a stake by withdrawing an amount of tokens from a provided token contract againts `self.get_caller()`.
