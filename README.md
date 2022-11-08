@@ -40,7 +40,9 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [`get_referral_count`](#stakeable-token-get-referral-count)
     - [`get_liquidity_stake_count`](#stakeable-token-get-liquidity-stake-count)
     - [`get_referral_shares_to_end`](#stakeable-token-get-referral-shares-to-end)
-    - [`create_stake_with_token`](#stakeable-token-create-stake-with-token)
+    - [`snapshots`](#stakeable-token-snapshots)
+    - [`rsnapshots`](#stakeable-token-rsnapshots)
+    - [`lsnapshots`](#stakeable-token-lsnapshots)
     - [`get_pair_address`](#stakeable-token-get-pair-address)
     - [`get_total_staked`](#stakeable-token-get-total-staked)
     - [`get_liquidity_transformer`](#stakeable-token-get-liquidity-transformer)
@@ -50,7 +52,7 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [`transfer_from`](#erc20-transfer-from)
     - [`permit`](#erc20-permit)
     - [`approve`](#erc20-approve)
-    - [`balance_of`](#erc20-balance_of)
+    - [`balance_of`](#erc20-balance-of)
     - [`nonce`](#erc20-nonce)
     - [`allowance`](#erc20-allowance)
     - [`total_supply`](#erc20-total-supply)
@@ -58,10 +60,13 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [`burn`](#erc20-burn)
     - [`name`](#erc20-name)
     - [`symbol`](#erc20-symbol)
+    - [`increase_allowance`](#erc20-increase-allowance)
+    - [`decrease_allowance`](#erc20-decrease-allowance)
     - [`current_stakeable_day`](#stakeable-token-current-stakeable-day)
     - [`liquidity_guard_trigger`](#stakeable-token-liquidity-guard-trigger)
     - [`manual_daily_snapshot`](#stakeable-token-manual-daily-snapshot)
-    - [`get_stable_usd_equivalent`](#stakeable-token-get-stable-usd)
+    - [`manual_daily_snapshot_point`](#stakeable-token-manual-daily-snapshot-point)
+    - [`get_stable_usd_equivalent`](#stakeable-token-get-stable-usd-equivalent)
     - [`referrer_interest`](#stakeable-token-referrer-interest)
     - [`referrer_interest_bulk`](#stakeable-token-referrer-interest-bulk)
     - [`check_referrals_by_id`](#stakeable-token-check-referrals-by-id)
@@ -71,9 +76,16 @@ Implementation of `Liquidity Guard` and `Stakeable Token` contracts for CasperLa
     - [`scrape_interest`](#stakeable-token-scrape-interest)
     - [`check_mature_stake`](#stakeable-token-check-mature-stake)
     - [`check_stake_by_id`](#stakeable-token-check-stake-by-id)
+    - [`generate_id`](#stakeable-token-generate-id)
+    - [`stakes_pagination`](#stakeable-token-stakes-pagination)
+    - [`referrals_pagination`](#stakeable-token-referrals-pagination)
+    - [`latest_stake_id`](#stakeable-token-latest-stake-id)
+    - [`latest_referral_id`](#stakeable-token-latest-referral-id)
+    - [`latest_liquidity_stake_id`](#stakeable-token-latest-liquidity-stake-id)
     - [`create_liquidity_stake`](#stakeable-token-create-liquidity-stake)
     - [`end_liquidity_stake`](#stakeable-token-end-liquidity-stake)
     - [`check_liquidity_stake_by_id`](#stakeable-token-check-liquidity-stake-by-id)
+    - [`package-hash`](#stakeable-token-package-hash)
 
 ### Interacting with the contract
 
@@ -291,21 +303,21 @@ Following are the Liquidity Guard's entry point methods.
 - #### get_inflation <a id="liquidity-guard-get-inflation"></a>
   Returns the inflation calculated at a certain amount.
 
-| Parameter Name | Type |
-| -------------- | ---- |
-| amount         | u32  |
+  | Parameter Name | Type |
+  | -------------- | ---- |
+  | amount         | u32  |
 
-This method **returns** U256.
+  This method **returns** U256.
 
 - #### assign_inflation <a id="liquidity-guard-assign-inflation"></a>
   Assigns inflation as set in contract to inflations dictionary.
   <br> Contract reverts if inflation is assigned already.
 
-| Parameter Name | Type |
-| -------------- | ---- |
-| ---            | ---  |
+  | Parameter Name | Type |
+  | -------------- | ---- |
+  | ---            | ---  |
 
-This method **returns** nothing.
+  This method **returns** nothing.
 
 ### Stakable Token <a id="stakeable-token"></a>
 
@@ -490,23 +502,32 @@ Following are the Stakeable Token's entry point methods.
 
   This method **returns** `U256`
 
-- #### create_stake_with_token <a id="stakeable-token-create-stake-with-token"></a>
+- #### snapshots <a id="stakeable-token-snapshots"></a>
 
-  Creates a stake by withdrawing an amount of tokens from a provided token contract againts `self.get_caller()`.
-  <br> `self.get_caller()` must have given Stakeable Token contract allowance of 'token_amount' atleast before calling this entry point.
+  Return the snapshots.
   Parameter Name | Type
   |---|--- |
-  | referrer | Key |
-  | lock_days | u64 |
-  | token_amount | U256 |
-  | token_address | URef |
+  |key|U256 |
 
-  This method **returns** a tuple of order 3, described below.
-  | Tuple Index | Item Name | Type |
-  | --- | --- | --- |
-  |0|stake_id | Vec\<u32>
-  |1|start_day | u64
-  |2| referrer_id | Vec\<u32>
+  This method **returns** `Vec<Snapshot>`
+
+- #### rsnapshots <a id="stakeable-token-rsnapshots"></a>
+
+  Return the rsnapshots.
+  Parameter Name | Type
+  |---|--- |
+  |key|U256 |
+
+  This method **returns** `Vec<RSnapshot>`
+
+- #### lsnapshots <a id="stakeable-token-lsnapshots"></a>
+
+  Return the lsnapshots.
+  Parameter Name | Type
+  |---|--- |
+  |key|U256 |
+
+  This method **returns** `Vec<LSnapshot>`
 
 - #### get_pair_address <a id="stakeable-token-get-pair-address"></a>
 
@@ -543,7 +564,7 @@ Following are the Stakeable Token's entry point methods.
 
 - #### current_stakeable_day <a id="stakeable-token-current-stakeable-day"></a>
 
-  Returns the day since launch of WISE.
+  Returns the day since launch of stakeable token.
 
   Following is the table of parameters.
 
@@ -563,7 +584,7 @@ This method **returns** u64.
 
   This method **returns** nothing.
 
-- #### manual_daily_snapshot <a id="stakeable-token-manual-daily-snapshot"></a>
+- #### manual_daily_snapshot_point <a id="stakeable-token-manual-daily-snapshot-point"></a>
 
   Creates a snapshot from `update_day` till the current stakeable day.
 
@@ -574,7 +595,18 @@ This method **returns** u64.
 
   This method **returns** nothing.
 
-- #### get_stable_usd_equivalent <a id="stakeable-token-get-stable-usd"></a>
+- #### manual_daily_snapshot <a id="stakeable-token-manual-daily-snapshot"></a>
+
+  Call the function of manual daily snapshot.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type |
+  | -------------- | ---- |
+
+  This method **returns** nothing.
+
+- #### get_stable_usd_equivalent <a id="stakeable-token-get-stable-usd-equivalent"></a>
 
   Returns the value of stable usd.
 
@@ -583,7 +615,7 @@ This method **returns** u64.
   | Parameter Name | Type |
   | -------------- | ---- |
 
-This method **returns** U256.
+  This method **returns** `U256`.
 
 - #### referrer_interest <a id="stakeable-token-referrer-interest"></a>
   Returns the calculated interest on a particular referral for `scrape_days` duration and mints equivalend WISE tokens to `self.get_caller()`
@@ -619,38 +651,38 @@ This method **returns** U256.
   | referreral_ids | Vec\<u32> |
   | referrer       | Key       |
 
-  This method **returns** StakeInfo type serialized as Vec\<u8>.
+  This method **returns** `Vec<String>`.
 
-- #### create_stake_bulk <a id="stakeable-token-create_stake_bulk"></a>
+- #### create_stake_bulk <a id="stakeable-token-create-stake-bulk"></a>
   Creates several stakes for `self.get_caller()` each with a referrer.
 
   Following is the table of parameters.
 
   | Parameter Name | Type      |
   | -------------- | --------- |
-  | staked_amount  | U256      |
+  | staked_amount  | Vec\<U256>|
   | lock_days      | Vec\<u64> |
   | referrer       | Vec\<String> |
 
   This method **returns** nothing.
 
-- #### create_stake <a id="stakeable-token-create_stake"></a>
+- #### create_stake <a id="stakeable-token-create-stake"></a>
   Creates a stake for `self.get_caller()` with a referrer.
 
   Following is the table of parameters.
 
   | Parameter Name | Type      |
   | -------------- | --------- |
-  | stake_id       | Vec\<u32> |
-  | start_day      | u64       |
-  | referral_id    | Vec\<u32> |
+  | staked_amount       | U256 |
+  | lock_days      | u64       |
+  | referrer    | Key|
 
   This method **returns** a tupe of order 3 described below.
 
   | Tuple Index | Item Name   | Type      |
   | ----------- | ----------- | --------- |
   | 0           | stake_id    | Vec\<u32> |
-  | 1           | start_day   | u64       |
+  | 1           | start_day   | U256       |
   | 2           | referrer_id | Vec\<u32> |
 
 - #### end_stake <a id="stakeable-token-end-stake"></a>
@@ -662,7 +694,7 @@ This method **returns** U256.
   | -------------- | --------- |
   | stake_id       | Vec\<u32> |
 
-  This method **returns** nothing.
+  This method **returns** `U256`.
 
 - #### scrape_interest <a id="stakeable-token-scrape-interest"></a>
   Calculates interests, rewards and penalties for a stake created by ``self.get_caller()`.`
@@ -674,15 +706,7 @@ This method **returns** U256.
   | stake_id       | Vec\<u32> |
   | scrape_days    | u64       |
 
-  This method **returns** a Vec<u32>, described below.
-
-  | Vector Index | Item Name        | Type |
-  | ------------ | ---------------- | ---- |
-  | 0            | scrape_day       | U256 |
-  | 1            | scrape_amount    | U256 |
-  | 2            | remaining_days   | U256 |
-  | 3            | stakers_penalty  | U256 |
-  | 4            | referrer_penalty | U256 |
+  This method **returns** `Vec<String>`
 
 - #### check_mature_stake <a id="stakeable-token-check-mature-stake"></a>
   Retrns true if a stake of `stake_id` created by a `staker` has matured.
@@ -697,7 +721,7 @@ This method **returns** U256.
   This method **returns** Bool
 
 - #### check_stake_by_id <a id="stakeable-token-check-stake-by-id"></a>
-  Retrns true if a stake of `stake_id` created by a `staker` has matured.
+  Return Vec`<String>`. 
 
   Following is the table of parameters.
 
@@ -706,7 +730,79 @@ This method **returns** U256.
   | stake_id       | Vec\<u32> |
   | staker         | Key       |
 
-  This method **returns** Bool
+  This method **returns** `Vec<String>`
+
+- #### generate_id <a id="stakeable-token-generate-id"></a>
+  This function is used to generate the id.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | x       | Key |
+  | y         | U256 |
+  | z         | U8 |
+
+  This method **returns** `Vec<u32>`
+
+- #### stakes_pagination <a id="stakeable-token-stakes-pagination"></a>
+  This function returns the `Vec<Vec<u32>`.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | staker       | Key |
+  | length         | U256 |
+  | offset         | U256 |
+
+  This method **returns** `Vec<Vec<u32>>`
+
+- #### referrals_pagination <a id="stakeable-token-referrals-pagination"></a>
+  This function returns the `Vec<Vec<u32>`.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | referrer       | Key |
+  | length         | U256 |
+  | offset         | U256 |
+
+  This method **returns** `Vec<Vec<u32>>`
+
+- #### latest_stake_id <a id="stakeable-token-latest-stake-id"></a>
+  This function returns the latest stake id.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | staker       | Key |
+
+  This method **returns** `Vec<u32>`
+
+- #### latest_referral_id <a id="stakeable-token-latest-referral-id"></a>
+  This function returns the latest referral id.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | staker       | Key |
+
+  This method **returns** `Vec<u32>`
+
+- #### latest_liquidity_stake_id <a id="stakeable-token-latest-liquidity-stake-id"></a>
+  This function returns the latest referral id.
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type      |
+  | -------------- | --------- |
+  | staker       | Key |
+
+  This method **returns** `Vec<u32>`
 
 - #### create_liquidity_stake <a id="stakeable-token-create-liquidity-stake"></a>
   Creates a liquidity stake for `self.get_caller()` staking `liquidity_token` of token amount.
@@ -726,9 +822,9 @@ This method **returns** U256.
 
   | Parameter Name  | Type |
   | --------------- | ---- |
-  | liquidity_token | U256 |
+  | liquidity_stake_id | Vec\<U32> |
 
-  This method **returns** nothing.
+  This method **returns** `U256`.
 
 - #### check_liquidity_stake_by_id <a id="stakeable-token-check-liquidity-stake-by-id"></a>
   End a liquidity stake for `self.get_caller()` having.
@@ -740,4 +836,180 @@ This method **returns** U256.
   | liquidity_stake_id | Vec\<u32> |
   | staker             | Key       |
 
-  This method **returns** Stake type serlialized as Vec<u8>.
+  This method **returns** `Vec<String>`.
+
+  - #### transfer <a id="erc20-transfer"></a>
+  Returns Result<(), u32> if amount transfered successfully return ok().
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type |
+  | -------------- | ---- |
+  | recipient      | Key  |
+  | amount         | U256 |
+
+  This method **returns** `Result<(), u32>`.
+
+- #### transfer_from <a id="erc20-transfer-from"></a>
+  Returns Result<(), u32> if amount transfered successfully return ok().
+
+  Following is the table of parameters.
+
+  | Parameter Name | Type |
+  | -------------- | ---- |
+  | owner          | Key  |
+  | recipient      | Key  |
+  | amount         | U256 |
+
+  This method **returns** `Result<(), u32>`.
+
+  - #### approve <a id="erc20-approve"></a>
+  Lets ` self.get_caller() ` set their allowance for a spender.
+  <br>user needs to call this `approve` method before calling the `transfer_from` method.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  spender | Key
+  amount | U256
+
+  This method **returns** nothing.
+  <br>**Recommendation:** 
+  The exploit is mitigated through use of functions that increase/decrease the allowance relative to its current value, such as `increaseAllowance()` and `decreaseAllowance()`,
+  Pending community agreement on an ERC standard that would protect against this exploit, we recommend that developers of applications dependent on approve() / transferFrom()
+  should keep in mind that they have to set allowance to 0 first and verify if it was used before setting the new value.
+  <br>**Note:**  Teams who decide to wait for such a standard should make these
+  recommendations to app developers who work with their token contract.
+
+- #### balance_of <a id="erc20-balance-of"></a>
+  This method will return the balance of owner in `ERC20 Contract`.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  owner | Key
+
+
+  This method **returns** U256.
+
+
+- #### nonce <a id="erc20-nonce"></a>
+  Returns the current `nonce` for an address for use in ` permit `.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  owner | Key
+
+
+  This method **returns** U256.
+
+
+- #### allowance <a id="erc20-allowance"></a>
+  Returns the amount of liquidity tokens owned by an hash that a spender is allowed to transfer via ` transfer_from `.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  owner | Key
+  spender | Key
+
+
+  This method **returns** U256.
+
+
+- #### total_supply <a id="erc20-total-supply"></a>
+  Returns the total amount of pool tokens for a pair.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+
+
+  This method **returns** U256.
+
+- #### mint <a id="erc20-mint"></a>
+  This method mints the number of tokens provided by user against the hash provided by user.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  to | Key
+  amount | U256
+
+  This method **returns** nothing.
+
+
+- #### burn <a id="erc20-burn"></a>
+  This method burns the number of tokens provided by user against the hash provided by user.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  from | Key
+  amount | U256
+
+  This method **returns** nothing.
+  <br>**Note:** To `burn` the tokens against the hash provided by user, User needs to `mint` tokens first in `ERC20`.
+
+- #### name <a id="erc20-name"></a>
+  Returns the `name` of tokens for a pair.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+
+  This method **returns** String.
+
+- #### symbol <a id="erc20-symbol"></a>
+  Returns the `symbol` of tokens for a pair.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+
+  This method **returns** String.
+
+- #### increase_allowance <a id="erc20-increase-allowance"></a>
+  Use to increase the allowance of the user.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  spender | Key
+  amount | U256
+
+  This method **returns** `Result<(), u32>`.
+
+  - #### decrease_allowance <a id="erc20-decrease-allowance"></a>
+  Use to decrease the allowance of the user.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+  spender | Key
+  amount | U256
+
+  This method **returns** `Result<(), u32>`.
+
+  - #### package_hash <a id="stakeable-token-package-hash"></a>
+  Return the package hash of the contract.
+
+  Following is the table of parameters.
+
+  Parameter Name | Type
+  ---|---
+
+  This method **returns**  `ContractPackageHash`.
+  

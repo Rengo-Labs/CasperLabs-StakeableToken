@@ -58,24 +58,6 @@ pub extern "C" fn call() {
             );
             store(CREATE_STAKE_WITH_CSPR, ret);
         }
-        CREATE_STAKE_WITH_TOKEN => {
-            let token_address: Key = runtime::get_named_arg("token_address");
-            let token_amount: U256 = runtime::get_named_arg("token_amount");
-            let lock_days: u64 = runtime::get_named_arg("lock_days");
-            let referrer: Key = runtime::get_named_arg("referrer");
-            let ret: (Vec<u32>, U256, Vec<u32>) = runtime::call_versioned_contract(
-                package_hash.into_hash().unwrap_or_revert().into(),
-                None,
-                CREATE_STAKE_WITH_TOKEN,
-                runtime_args! {
-                    "token_address" => token_address,
-                    "token_amount" => token_amount,
-                    "lock_days" => lock_days,
-                    "referrer" => referrer
-                },
-            );
-            store(CREATE_STAKE_WITH_TOKEN, ret);
-        }
         TRANSFER => {
             let recipient: Key = runtime::get_named_arg("recipient");
             let amount: U256 = runtime::get_named_arg("amount");
@@ -108,7 +90,7 @@ pub extern "C" fn call() {
         }
         CHECK_REFERRALS_BY_ID => {
             let referrer: Key = runtime::get_named_arg("referrer");
-            let referral_id: Vec<String> = runtime::get_named_arg("referral_id");
+            let referral_id: Vec<u32> = runtime::get_named_arg("referral_id");
             let ret: Vec<String> = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
@@ -165,7 +147,7 @@ pub extern "C" fn call() {
         }
         CHECK_MATURE_STAKE => {
             let staker: Key = runtime::get_named_arg("staker");
-            let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
+            let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
             let ret: bool = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
@@ -179,8 +161,8 @@ pub extern "C" fn call() {
         }
         CHECK_STAKE_BY_ID => {
             let staker: Key = runtime::get_named_arg("staker");
-            let stake_id: Vec<String> = runtime::get_named_arg("stake_id");
-            let ret: (Vec<u8>, U256, bool) = runtime::call_versioned_contract(
+            let stake_id: Vec<u32> = runtime::get_named_arg("stake_id");
+            let ret: Vec<String> = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
                 CHECK_STAKE_BY_ID,
@@ -204,7 +186,7 @@ pub extern "C" fn call() {
             store(CREATE_LIQUIDITY_STAKE, ret);
         }
         END_LIQUIDITY_STAKE => {
-            let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
+            let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
             let ret: U256 = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
@@ -217,8 +199,8 @@ pub extern "C" fn call() {
         }
         CHECK_LIQUIDITY_STAKE_BY_ID => {
             let staker: Key = runtime::get_named_arg("staker");
-            let liquidity_stake_id: Vec<String> = runtime::get_named_arg("liquidity_stake_id");
-            let ret: Vec<u8> = runtime::call_versioned_contract(
+            let liquidity_stake_id: Vec<u32> = runtime::get_named_arg("liquidity_stake_id");
+            let ret: Vec<String> = runtime::call_versioned_contract(
                 package_hash.into_hash().unwrap_or_revert().into(),
                 None,
                 CHECK_LIQUIDITY_STAKE_BY_ID,
