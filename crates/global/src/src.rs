@@ -21,7 +21,7 @@ pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Sto
         set_globals({
             let mut globals = globals();
             globals.total_staked = globals
-                .total_shares
+                .total_staked
                 .checked_add(staked)
                 .unwrap_or_revert_with(Errors::AdditionOverflow1);
             globals.total_shares = globals
