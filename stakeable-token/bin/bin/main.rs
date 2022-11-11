@@ -630,12 +630,6 @@ fn latest_liquidity_stake_id() {
 }
 
 #[no_mangle]
-fn decimals() {
-    let ret = StakeableToken::default().decimals();
-    runtime::ret(CLValue::from_t(ret).unwrap_or_revert());
-}
-
-#[no_mangle]
 fn create_pair() {
     StakeableToken::default().create_pair();
 }
@@ -897,14 +891,14 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         "rsnapshots",
         vec![Parameter::new("key", CLType::U256)],
-        CLType::List(Box::new(SnapShot::cl_type())),
+        CLType::List(Box::new(RSnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
         "lsnapshots",
         vec![Parameter::new("key", CLType::U256)],
-        CLType::List(Box::new(SnapShot::cl_type())),
+        CLType::List(Box::new(LSnapShot::cl_type())),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
@@ -969,13 +963,6 @@ fn get_entry_points() -> EntryPoints {
         "latest_liquidity_stake_id",
         vec![Parameter::new("staker", CLType::Key)],
         CLType::List(Box::new(CLType::U32)),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        "decimals",
-        vec![],
-        CLType::U8,
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
