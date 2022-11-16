@@ -380,7 +380,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         if self._current_stakeable_day() == FORMULA_DAY as u64 {
             set_globals({
                 let mut globals = globals();
-                globals.share_price = 11000000000u64.into(); // 110E15 <=> 110E8
+                globals.share_price = 110_000_000.into(); // 110E15 <=> 110E6
                 globals
             });
         }
@@ -397,9 +397,9 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         let bonus_amount = self._get_bonus(
             lock_days,
             if self._non_zero_address(referrer) {
-                110000.into() // 11E9 <=> 11E4
+                11_000_000_000u64.into()
             } else {
-                100000.into() // 10E9 <=> 10E4
+                10_000_000_000u64.into()
             },
         );
         staked_amount
@@ -407,7 +407,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
             .unwrap_or_revert_with(Errors::AdditionOverflow17)
             .checked_mul(bonus_amount)
             .unwrap_or_revert_with(Errors::MultiplicationOverflow9)
-            .checked_mul(10000.into()) // 1E8 <=> 1E4
+            .checked_mul(100_000_000.into())
             .unwrap_or_revert_with(Errors::MultiplicationOverflow10)
             .checked_div(stake_shares)
             .unwrap_or_revert_with(Errors::DivisionByZero8)
@@ -459,11 +459,19 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         share_price: U256,
     ) -> U256 {
         if self._non_zero_address(referrer) {
-            // 11E9 <=> 11E4
-            self._shares_amount(staked_amount, lock_days, share_price, 110000.into())
+            self._shares_amount(
+                staked_amount,
+                lock_days,
+                share_price,
+                11_000_000_000u64.into(),
+            )
         } else {
-            // 10E9 <=> 10E4
-            self._shares_amount(staked_amount, lock_days, share_price, 100000.into())
+            self._shares_amount(
+                staked_amount,
+                lock_days,
+                share_price,
+                10_000_000_000u64.into(),
+            )
         }
     }
 
@@ -477,7 +485,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         self._base_amount(staked_amount, share_price)
             .checked_mul(self._get_bonus(lock_days, extra_bonus))
             .unwrap_or_revert_with(Errors::MultiplicationOverflow6)
-            .checked_div(100000.into()) // 10E9 <=> 10E4
+            .checked_div(10_000_000_000u64.into())
             .unwrap_or_revert_with(Errors::MultiplicationOverflow6)
     }
 
@@ -505,7 +513,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
                 .checked_mul(daily)
                 .unwrap_or_revert_with(Errors::MultiplicationOverflow8)
         })
-        .checked_div(100000.into()) // 10E9 <=> 10E4
+        .checked_div(10_000_000_000u64.into())
         .unwrap_or_revert_with(Errors::DivisionByZero7)
     }
 
@@ -525,7 +533,7 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
                 staked_amount,
                 lock_days,
                 globals().share_price,
-                100000.into(), // 10E9 <=> 10E4
+                10_000_000_000u64.into(),
             )
         }
     }
@@ -586,8 +594,9 @@ pub trait STAKINGTOKEN<Storage: ContractStorage>:
         let mut reward_amount: U256 = 0.into();
         let mut day: U256 = start_day;
         while day < final_day {
-            reward_amount +=
-                stake_shares * PRECISION_RATE / Snapshots::instance().get(&day).inflation_amount;
+            reward_amount += (stake_shares * PRECISION_RATE)
+                .checked_div(Snapshots::instance().get(&day).inflation_amount)
+                .unwrap_or_revert_with(Errors::DivisionByZero11);
             day += 1.into();
         }
         reward_amount

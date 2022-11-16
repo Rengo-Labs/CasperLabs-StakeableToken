@@ -15,7 +15,7 @@ pub trait DECLARATION<Storage: ContractStorage>:
     fn init(&self) {
         GLOBAL::init(self);
         set_key(LAUNCH_TIME, U256::from(block_timestamp()));
-        // const MY_UNIX_TIME: u64 = 1668055857679;
+        // const MY_UNIX_TIME: u64 = 1668524681322;
         // set_key(
         //     LAUNCH_TIME,
         //     U256::from(MY_UNIX_TIME - (15 * 86400000)) - 84600000,

@@ -107,8 +107,9 @@ pub trait LIQUIDITYTOKEN<Storage: ContractStorage>:
         let mut reward_amount: U256 = 0.into();
         let mut day: U256 = liquidity_stake.start_day.into();
         while day < calculation_day {
-            reward_amount += liquidity_stake.staked_amount * PRECISION_RATE
-                / LSnapshots::instance().get(&day).inflation_amount;
+            reward_amount += (liquidity_stake.staked_amount * PRECISION_RATE)
+                .checked_div(LSnapshots::instance().get(&day).inflation_amount)
+                .unwrap_or_revert_with(Errors::DivisionByZero12);
             day += 1.into();
         }
         reward_amount
