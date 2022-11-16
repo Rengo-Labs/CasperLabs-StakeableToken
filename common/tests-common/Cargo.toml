@@ -12,3 +12,4 @@ casper-engine-test-support = "2.1.0"
 casperlabs-test-env = "0.2.0"
 hex = "0.4.3"
 common = { path = "../common" }
+global = { path = "../../crates/global" }

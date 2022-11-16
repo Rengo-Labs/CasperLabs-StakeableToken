@@ -5,7 +5,7 @@ use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use casperlabs_contract_utils::{get_key, set_key};
 use common::keys::GLOBALS;
 
-#[derive(Default, Debug, Clone, Copy, CLTyped, ToBytes, FromBytes)]
+#[derive(Default, Debug, Clone, Copy, CLTyped, ToBytes, FromBytes, PartialEq, Eq)]
 pub struct Globals {
     pub total_staked: U256,
     pub total_shares: U256,

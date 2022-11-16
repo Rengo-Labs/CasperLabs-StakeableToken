@@ -2,7 +2,7 @@ use casper_types::ApiError;
 
 #[repr(u16)]
 pub enum Errors {
-    TransferHelperWrongSender = 5,
+    TransferHelperWrongSender = 50005,
     NotActive,
     InvalidReferrer,
     StakeIsNotInRange,
@@ -78,6 +78,9 @@ pub enum Errors {
     DivisionByZero8,
     DivisionByZero9,
     DivisionByZero10,
+    DivisionByZero11,
+    DivisionByZero12,
+    DivisionByZero13,
 }
 
 impl From<Errors> for ApiError {

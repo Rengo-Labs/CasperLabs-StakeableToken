@@ -4,7 +4,7 @@ use casperlabs_contract_utils::{ContractContext, ContractStorage};
 use renvm_sig::keccak256;
 use timing::{
     errors::Errors,
-    functions::{account_zero_address, key_to_hash},
+    functions::{account_zero_address, key_to_hash, zero_address},
     globals,
     src::TIMING,
     CriticalMass, LiquidityStakeCount, ReferralCount, ReferrerLinks, Stake, StakeCount, Stakes,
@@ -67,13 +67,15 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
         };
         let mut i = 0;
         let mut stakes: Vec<Vec<u32>> = Vec::with_capacity((start - finish).as_usize());
-        for stake_index in (finish.as_u128()..start.as_u128()).rev() {
+        let mut stake_index = start;
+        while stake_index > finish {
             let stake_id: Vec<u32> =
                 Self::generate_id(self, staker, (stake_index - 1).into(), 0x01);
             if Stakes::instance().get(&staker, &stake_id).staked_amount > 0.into() {
                 stakes[i] = stake_id;
                 i += 1;
             }
+            stake_index -= 1.into();
         }
         stakes
     }
@@ -92,12 +94,14 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
         };
         let mut i = 0;
         let mut referrals: Vec<Vec<u32>> = Vec::with_capacity((start - finish).as_usize());
-        for r_index in (finish.as_u128()..start.as_u128()).rev() {
+        let mut r_index = start;
+        while r_index > finish {
             let r_id: Vec<u32> = Self::generate_id(self, referrer, (r_index - 1).into(), 0x02);
             if self._non_zero_address(ReferrerLinks::instance().get(&referrer, &r_id).staker) {
                 referrals[i] = r_id;
                 i += 1;
             }
+            r_index -= 1.into();
         }
         referrals
     }
@@ -227,7 +231,7 @@ pub trait HELPER<Storage: ContractStorage>: ContractContext<Storage> + TIMING<St
     }
 
     fn _non_zero_address(&self, address: Key) -> bool {
-        address != account_zero_address()
+        address != account_zero_address() && address != zero_address()
     }
 
     fn _get_lock_days(&self, stake: Stake) -> U256 {

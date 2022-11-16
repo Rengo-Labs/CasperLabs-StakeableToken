@@ -94,14 +94,19 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
         self.liquidity_guard_trigger();
         let mut scheduled_to_end_today: U256;
         let total_staked_today: U256 = globals().total_staked;
-        for day in globals().current_stakeable_day.as_u128()..update_day.into() {
+        let mut day = globals().current_stakeable_day;
+        while day < update_day.into() {
             // ------------------------------------
             // prepare snapshot for regular shares
             // reusing scheduledToEndToday variable
             scheduled_to_end_today = ScheduledToEnd::instance().get(&day.into())
-                + Snapshots::instance()
-                    .get(&(day - 1).into())
-                    .scheduled_to_end;
+                + if day.checked_sub(1.into()).is_some() {
+                    Snapshots::instance()
+                        .get(&(day - 1).into())
+                        .scheduled_to_end
+                } else {
+                    0.into()
+                };
             let mut snapshot: SnapShot = Snapshots::instance().get(&day.into());
             snapshot.scheduled_to_end = scheduled_to_end_today;
             snapshot.total_shares = if globals().total_shares > scheduled_to_end_today {
@@ -134,9 +139,13 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
             // prepare snapshot for referrer shares
             // reusing scheduledToEndToday variable
             scheduled_to_end_today = ReferralSharesToEnd::instance().get(&day.into())
-                + RSnapshots::instance()
-                    .get(&(day - 1).into())
-                    .scheduled_to_end;
+                + if day.checked_sub(1.into()).is_some() {
+                    RSnapshots::instance()
+                        .get(&(day - 1).into())
+                        .scheduled_to_end
+                } else {
+                    0.into()
+                };
             let mut rsnapshot: RSnapShot = RSnapshots::instance().get(&day.into());
             rsnapshot.scheduled_to_end = scheduled_to_end_today;
             rsnapshot.total_shares = if globals().referral_shares > scheduled_to_end_today {
@@ -182,6 +191,7 @@ pub trait SNAPSHOT<Storage: ContractStorage>: ContractContext<Storage> + HELPER<
                 globals.current_stakeable_day = globals.current_stakeable_day + 1;
                 globals
             });
+            day += 1.into();
         }
     }
 

@@ -59,29 +59,27 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>:
     }
 
     fn _add_critical_mass(&self, referrer: Key, dai_equivalent: U256) {
-        CriticalMass::instance().set(&referrer, {
-            let mut critical_mass = CriticalMass::instance().get(&referrer);
-            critical_mass.total_amount = critical_mass
-                .total_amount
-                .checked_add(dai_equivalent)
-                .unwrap_or_revert_with(Errors::AdditionOverflow5);
-            critical_mass.activation_day = self._determine_activation_day(referrer);
-            critical_mass
-        });
+        let mut critical_mass = CriticalMass::instance().get(&referrer);
+        critical_mass.total_amount = critical_mass
+            .total_amount
+            .checked_add(dai_equivalent)
+            .unwrap_or_revert_with(Errors::AdditionOverflow5);
+        CriticalMass::instance().set(&referrer, critical_mass);
+        critical_mass.activation_day = self._determine_activation_day(referrer);
+        CriticalMass::instance().set(&referrer, critical_mass);
     }
 
     fn _remove_critical_mass(&self, referrer: Key, dai_equivalent: U256, start_day: U256) {
         if !self._not_future(start_day) && self._non_zero_address(referrer) {
-            CriticalMass::instance().set(&referrer, {
-                let mut critical_mass = CriticalMass::instance().get(&referrer);
-                critical_mass.total_amount = if critical_mass.total_amount > dai_equivalent {
-                    critical_mass.total_amount - dai_equivalent
-                } else {
-                    0.into()
-                };
-                critical_mass.activation_day = self._determine_activation_day(referrer);
-                critical_mass
-            });
+            let mut critical_mass = CriticalMass::instance().get(&referrer);
+            critical_mass.total_amount = if critical_mass.total_amount > dai_equivalent {
+                critical_mass.total_amount - dai_equivalent
+            } else {
+                0.into()
+            };
+            CriticalMass::instance().set(&referrer, critical_mass);
+            critical_mass.activation_day = self._determine_activation_day(referrer);
+            CriticalMass::instance().set(&referrer, critical_mass);
         }
     }
 
@@ -217,9 +215,10 @@ pub trait REFERRALTOKEN<Storage: ContractStorage>:
         let mut referral_interest: U256 = 0.into();
         let mut day: U256 = start_day;
         while day < final_day {
-            referral_interest += stake.stakes_shares * PRECISION_RATE
-                / RSnapshots::instance().get(&day).inflation_amount;
-            day = day + 1;
+            referral_interest += (stake.stakes_shares * PRECISION_RATE)
+                .checked_div(RSnapshots::instance().get(&day).inflation_amount)
+                .unwrap_or_revert_with(Errors::DivisionByZero13);
+            day += 1.into();
         }
         referral_interest
     }

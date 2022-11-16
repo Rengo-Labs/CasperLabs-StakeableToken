@@ -2,14 +2,25 @@ use casper_types::{
     account::AccountHash, bytesrepr::FromBytes, CLTyped, Key, RuntimeArgs, U256, U512,
 };
 use casperlabs_test_env::{TestContract, TestEnv};
+use global::data::Globals;
 use std::time::SystemTime;
 
+pub const ZERO: U256 = U256([0, 0, 0, 0]);
+pub const RESERVED_WISE: U256 = U256([264000000000000, 0, 0, 0]);
 pub const MILLI_SECONDS_IN_DAY: u64 = 86_400_000;
-pub const SCSPR_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
-pub const TRANSFORMER_AMOUNT: U512 = U512([100_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const SCSPR_AMOUNT: U512 = U512([50_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const TRANSFORMER_AMOUNT: U512 = U512([50_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
 pub const STAKEABLE_AMOUNT: U512 = U512([0, 0, 0, 0, 0, 0, 0, 0]);
-pub const TWOTHOUSEND_CSPR: U512 = U512([2_000_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
-pub const ONETHOUSEND_CSPR: U256 = U256([1_000_000_000_000, 0, 0, 0]);
+pub const TWOHUNDRED_CSPR: U512 = U512([200_000_000_000, 0, 0, 0, 0, 0, 0, 0]);
+pub const ONEHUNDRED_CSPR: U256 = U256([100_000_000_000, 0, 0, 0]);
+pub const DEFAULT_GLOBALS: Globals = Globals {
+    total_staked: ZERO,
+    total_shares: ZERO,
+    share_price: U256([100000000, 0, 0, 0]),
+    current_stakeable_day: ZERO,
+    referral_shares: ZERO,
+    liquidity_shares: ZERO,
+};
 
 pub fn zero_address() -> Key {
     Key::from_formatted_str("hash-0000000000000000000000000000000000000000000000000000000000000000")
