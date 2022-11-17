@@ -34,9 +34,9 @@ pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Sto
                     .checked_add(rshares)
                     .unwrap_or_revert_with(Errors::AdditionOverflow3);
             }
-            self._log_globals();
             globals
         });
+        self._log_globals();
     }
 
     fn _decrease_globals(&self, staked: U256, shares: U256, rshares: U256) {
@@ -59,9 +59,9 @@ pub trait GLOBAL<Storage: ContractStorage>: ContractContext<Storage> + ERC20<Sto
                     0.into()
                 };
             }
-            self._log_globals();
             globals
         });
+        self._log_globals();
     }
 
     fn _log_globals(&self) {
