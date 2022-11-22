@@ -311,7 +311,7 @@ fn default_check(wise: &TestContract, owner: AccountHash) {
     assert_eq!(balance, RESERVED_WISE, "Not default wise amount");
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_with_cspr() {
     let (env, owner, wise, time) = init();
     default_check(&wise, owner);
@@ -343,7 +343,7 @@ fn should_be_able_to_create_stake_with_cspr() {
     );
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_and_end_stake_immature_no_penalty() {
     let (env, owner, wise, time) = init();
     default_check(&wise, owner);
@@ -418,7 +418,7 @@ fn should_be_able_to_create_stake_and_end_stake_immature_no_penalty() {
     );
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_and_end_stake_immature_penalty() {
     let (env, owner, wise, time) = init();
     default_check(&wise, owner);
@@ -500,7 +500,7 @@ fn should_be_able_to_create_stake_and_end_stake_immature_penalty() {
     );
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_and_scrape_interest() {
     let (env, owner, wise, time) = init();
     default_check(&wise, owner);
@@ -577,7 +577,7 @@ fn should_be_able_to_create_stake_and_scrape_interest() {
     );
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_and_claim_referral_interest() {
     let (env, owner, wise, time) = init();
     let referrer = env.next_user();
