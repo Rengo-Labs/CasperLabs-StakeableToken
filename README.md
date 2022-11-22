@@ -2,91 +2,6 @@
 
 Implementation of `Contract Crates`, `Liquidity Guard` and `Stakeable Token` for CasperLabs Blockchain.
 
-## Table of contents
-
-- [Interacting with the contract](#interacting-with-the-contract)
-  - [Install the prerequisites](#install-the-prerequisites)
-  - [Creating Keys](#creating-keys)
-  - [Usage](#usage)
-    - [Install](#install)
-    - [Build Individual Smart Contract](#build-individual-smart-contract)
-    - [Build All Smart Contracts](#build-all-smart-contracts)
-    - [Individual Test Cases](#individual-test-cases)
-    - [All Test Cases](#all-test-cases)
-- [Liquidity Guard](#liquidity-guard)
-  - [Deployment](#deploying-liquidity-guard-contract-manually)
-  - [Entry Point methods](#liquidity-guard-entry-point-methods)
-    - [`get_inflation`](#liquidity-guard-get-inflation)
-    - [`assign_inflation`](#liquidity-guard-assign-inflation)
-- [Stakeable Token](#stakeable-token)
-  - [Deployment](#deploying-stakeable-token-contract-manually)
-  - [Entry Point methods](#stakeable-token-entry-point-methods)
-    - [`set_liquidity_transfomer`](#stakeable-token-set-liquidity-transfomer)
-    - [`get_transformer_gate_keeper`](#stakeable-token-get-transformer-gate-keeper)
-    - [`set_stable_usd`](#stakeable-token-set-stable_usd)
-    - [`renounce_keeper`](#stakeable-token-renounce-keeper)
-    - [`change_keeper`](#stakeable-token-change-keeper)
-    - [`mint_supply`](#stakeable-token-mint-supply)
-    - [`create_stake_with_cspr`](#stakeable-token-create-stake-with-cspr)
-    - [`get_liquidity_rate`](#stakeable-token-get-liquidity-rate)
-    - [`get_scspr`](#stakeable-token-get-scspr)
-    - [`get_uniswap_pair`](#stakeable-token-get-uniswap-pair)
-    - [`get_inflation_rate`](#stakeable-token-get-inflation-rate)
-    - [`create_pair`](#stakeable-token-create-pair)
-    - [`get_scheduled_to_end`](#stakeable-token-get-scheduled-to-end)
-    - [`get_total_penalties`](#stakeable-token-get-total-penalties)
-    - [`get_scrapes`](#stakeable-token-get-scrapes)
-    - [`get_stake_count`](#stakeable-token-get-stake-count)
-    - [`get_referral_count`](#stakeable-token-get-referral-count)
-    - [`get_liquidity_stake_count`](#stakeable-token-get-liquidity-stake-count)
-    - [`get_referral_shares_to_end`](#stakeable-token-get-referral-shares-to-end)
-    - [`snapshots`](#stakeable-token-snapshots)
-    - [`rsnapshots`](#stakeable-token-rsnapshots)
-    - [`lsnapshots`](#stakeable-token-lsnapshots)
-    - [`get_pair_address`](#stakeable-token-get-pair-address)
-    - [`get_total_staked`](#stakeable-token-get-total-staked)
-    - [`get_liquidity_transformer`](#stakeable-token-get-liquidity-transformer)
-    - [`get_synthetic_token_address`](#stakeable-token-get-synthetic-token-address)
-    - [`extend_lt_auction`](#stakeable-token-extend-lt-auction)
-    - [`transfer`](#erc20-transfer)
-    - [`transfer_from`](#erc20-transfer-from)
-    - [`permit`](#erc20-permit)
-    - [`approve`](#erc20-approve)
-    - [`balance_of`](#erc20-balance-of)
-    - [`nonce`](#erc20-nonce)
-    - [`allowance`](#erc20-allowance)
-    - [`total_supply`](#erc20-total-supply)
-    - [`mint`](#erc20-mint)
-    - [`burn`](#erc20-burn)
-    - [`name`](#erc20-name)
-    - [`symbol`](#erc20-symbol)
-    - [`increase_allowance`](#erc20-increase-allowance)
-    - [`decrease_allowance`](#erc20-decrease-allowance)
-    - [`current_stakeable_day`](#stakeable-token-current-stakeable-day)
-    - [`liquidity_guard_trigger`](#stakeable-token-liquidity-guard-trigger)
-    - [`manual_daily_snapshot`](#stakeable-token-manual-daily-snapshot)
-    - [`manual_daily_snapshot_point`](#stakeable-token-manual-daily-snapshot-point)
-    - [`get_stable_usd_equivalent`](#stakeable-token-get-stable-usd-equivalent)
-    - [`referrer_interest`](#stakeable-token-referrer-interest)
-    - [`referrer_interest_bulk`](#stakeable-token-referrer-interest-bulk)
-    - [`check_referrals_by_id`](#stakeable-token-check-referrals-by-id)
-    - [`create_stake_bulk`](#stakeable-token-create-stake-bulk)
-    - [`create_stake`](#stakeable-token-create-stake)
-    - [`end_stake`](#stakeable-token-end-stake)
-    - [`scrape_interest`](#stakeable-token-scrape-interest)
-    - [`check_mature_stake`](#stakeable-token-check-mature-stake)
-    - [`check_stake_by_id`](#stakeable-token-check-stake-by-id)
-    - [`generate_id`](#stakeable-token-generate-id)
-    - [`stakes_pagination`](#stakeable-token-stakes-pagination)
-    - [`referrals_pagination`](#stakeable-token-referrals-pagination)
-    - [`latest_stake_id`](#stakeable-token-latest-stake-id)
-    - [`latest_referral_id`](#stakeable-token-latest-referral-id)
-    - [`latest_liquidity_stake_id`](#stakeable-token-latest-liquidity-stake-id)
-    - [`create_liquidity_stake`](#stakeable-token-create-liquidity-stake)
-    - [`end_liquidity_stake`](#stakeable-token-end-liquidity-stake)
-    - [`check_liquidity_stake_by_id`](#stakeable-token-check-liquidity-stake-by-id)
-    - [`package-hash`](#stakeable-token-package-hash)
-
 ### Interacting with the contract
 
 You need to have `casper-client` and `jq` installed on your system to run the examples. The instructions have been tested on Ubuntu 20.04.0 LTS.
@@ -131,7 +46,7 @@ rustup toolchain list
 ### Set rust nightly as default
 
 ```
-rustup default nightly-2022-04-04-x86_64-unknown-linux-gnu
+rustup default nightly-2022-08-29-x86_64-unknown-linux-gnu
 ```
 
 ### Install wasm32-unknown-unknown
@@ -215,8 +130,11 @@ casper-client <command> --help
 
 ```
 casper-client keygen keys
-
 ```
+
+### Fund the key
+
+The keys can be funded from casper live website [testnet faucet](https://testnet.cspr.live/tools/faucet). Requires chrome browser and the casper signer extension. You should import the keys that were generated in the previous step
 
 ## Deployment
 
@@ -235,6 +153,8 @@ Use the following command to execute the deployments
 ```
 make deploy
 ```
+
+After deployments, hashes can be found in the folder 'script/hashes'
 
 ## Install
 
