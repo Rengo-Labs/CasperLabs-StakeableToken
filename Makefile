@@ -21,6 +21,9 @@ router_contract = ${uniswap_router_directory}/uniswap-v2-router
 # paths to stakeable contracts
 stakeable_token_contract = ${stakeable_liquidity_transformer_directory}/
 
+deploy:
+	cd script && npm ci && npm run deployContracts
+
 prepare:
 	rustup target add wasm32-unknown-unknown
 

@@ -1241,13 +1241,6 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        "package_hash",
-        vec![],
-        ContractPackageHash::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
         "symbol",
         vec![],
         String::cl_type(),
@@ -1277,6 +1270,13 @@ fn get_entry_points() -> EntryPoints {
             ok: Box::new(CLType::Unit),
             err: Box::new(CLType::String),
         },
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        "package_hash",
+        vec![],
+        ContractPackageHash::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
