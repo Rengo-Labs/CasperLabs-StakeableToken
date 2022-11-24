@@ -105,6 +105,36 @@ fn deploy() -> (
         TRANSFORMER_AMOUNT,
         time,
     );
+
+    uniswap_factory.call_contract(
+        owner,
+        "set_white_list",
+        runtime_args! {
+            "white_list" => Key::Account(owner)
+        },
+        time,
+    );
+    uniswap_factory.call_contract(
+        owner,
+        "create_pair",
+        runtime_args! {
+            "token_a" => Key::Hash(stakeable_token.package_hash()),
+            "token_b" => Key::Hash(scspr.package_hash()),
+            "pair_hash" => Key::Hash(pair_stakeable.package_hash()),
+        },
+        0,
+    );
+    uniswap_factory.call_contract(
+        owner,
+        "create_pair",
+        runtime_args! {
+            "token_a" => Key::Hash(scspr.package_hash()),
+            "token_b" => Key::Hash(wcspr.package_hash()),
+            "pair_hash" => Key::Hash(pair_scspr.package_hash()),
+        },
+        0,
+    );
+
     (
         env,
         liquidity_transformer,
