@@ -177,7 +177,7 @@ fn add_liquidity(
         owner,
         SESSION_WASM_LIQUIDITY_TRANSFORMER,
         runtime_args! {
-            ENTRYPOINT => "deposit_no_return",
+            ENTRYPOINT => "deposit",
             PACKAGE_HASH => Key::Hash(wcspr.package_hash()),
             "amount" => U512::from(AMOUNT),
         },
@@ -341,7 +341,7 @@ fn default_check(wise: &TestContract, owner: AccountHash) {
     assert_eq!(balance, RESERVED_WISE, "Not default wise amount");
 }
 
-// #[test]
+#[test]
 fn should_be_able_to_create_stake_with_cspr() {
     let (env, owner, wise, time) = init();
     default_check(&wise, owner);
