@@ -6,9 +6,9 @@ des_session_wasm_stakeable_token = stakeable-token/${tests_wasm}
 des_wasm_liquidity_guard = liquidity-guard/${tests_wasm}
 
 # Dependencies
-uniswap_core_directory = ../CasperLabs-UniswapV2-core
-uniswap_router_directory = ../Casperlabs-UniswapRouter
-liquidity_transformer_directory = ../CasperLabs-Wise-LiquidityTransformer
+uniswap_core_directory = ../CasperLabs-UniswapV2-Core
+uniswap_router_directory = ../CasperLabs-UniswapV2-Router
+liquidity_transformer_directory = ../CasperLabs-LiquidityTransformer
 # path to core contracts
 erc20_contract = ${uniswap_core_directory}/erc20
 factory_contract = ${uniswap_core_directory}/factory
