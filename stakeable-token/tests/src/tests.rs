@@ -341,268 +341,276 @@ fn default_check(wise: &TestContract, owner: AccountHash) {
     assert_eq!(balance, RESERVED_WISE, "Not default wise amount");
 }
 
-#[test]
-fn should_be_able_to_create_stake_with_cspr() {
-    let (env, owner, wise, time) = init();
-    default_check(&wise, owner);
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => CREATE_STAKE_WITH_CSPR,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "lock_days" => 20u64,
-            "referrer" => account_zero_address(),
-            "amount" => <casper_types::U256 as AsPrimitive<casper_types::U512>>::as_(ONEHUNDRED_CSPR)
-        },
-        time,
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: 87823823823823u64.into(),
-            total_shares: 880644370373725u64.into(),
-            share_price: 100000000.into(),
-            current_stakeable_day: 22.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
+mod t1 {
+    use crate::tests::*;
+
+    #[test]
+    fn should_be_able_to_create_stake_with_cspr() {
+        let (env, owner, wise, time) = init();
+        default_check(&wise, owner);
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => CREATE_STAKE_WITH_CSPR,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "lock_days" => 20u64,
+                "referrer" => account_zero_address(),
+                "amount" => <casper_types::U256 as AsPrimitive<casper_types::U512>>::as_(ONEHUNDRED_CSPR)
+            },
+            time,
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: 87823823823823u64.into(),
+                total_shares: 880644370373725u64.into(),
+                share_price: 100000000.into(),
+                current_stakeable_day: 22.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+    }
+
+    #[test]
+    fn should_be_able_to_create_stake_and_end_stake_immature_no_penalty() {
+        let (env, owner, wise, time) = init();
+        default_check(&wise, owner);
+        // CREATE STAKE
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => CREATE_STAKE,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "staked_amount" => ONEHUNDRED_CSPR,
+                "lock_days" => 20u64,
+                "referrer" => account_zero_address()
+            },
+            time,
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap_or_default();
+        assert_eq!(
+            balance,
+            RESERVED_WISE - ONEHUNDRED_CSPR,
+            "Required amount not staked for owner"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: ONEHUNDRED_CSPR,
+                total_shares: 1002739726000u64.into(),
+                share_price: 100000000.into(),
+                current_stakeable_day: 22.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+        // STAKE_ID / START_DATE / REFERAL_ID
+        let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
+        // END STAKE
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => END_STAKE,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "stake_id" => ret.0
+            },
+            time,
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap();
+        assert_eq!(
+            balance, RESERVED_WISE,
+            "Required amount not unstaked for owner (immature stake, no penalty)"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: 0.into(),
+                total_shares: 0.into(),
+                share_price: 100000000.into(),
+                current_stakeable_day: 22.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+    }
 }
 
-#[test]
-fn should_be_able_to_create_stake_and_end_stake_immature_no_penalty() {
-    let (env, owner, wise, time) = init();
-    default_check(&wise, owner);
-    // CREATE STAKE
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => CREATE_STAKE,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "staked_amount" => ONEHUNDRED_CSPR,
-            "lock_days" => 20u64,
-            "referrer" => account_zero_address()
-        },
-        time,
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap_or_default();
-    assert_eq!(
-        balance,
-        RESERVED_WISE - ONEHUNDRED_CSPR,
-        "Required amount not staked for owner"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: ONEHUNDRED_CSPR,
-            total_shares: 1002739726000u64.into(),
-            share_price: 100000000.into(),
-            current_stakeable_day: 22.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
-    // STAKE_ID / START_DATE / REFERAL_ID
-    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
-    // END STAKE
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => END_STAKE,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "stake_id" => ret.0
-        },
-        time,
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap();
-    assert_eq!(
-        balance, RESERVED_WISE,
-        "Required amount not unstaked for owner (immature stake, no penalty)"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: 0.into(),
-            total_shares: 0.into(),
-            share_price: 100000000.into(),
-            current_stakeable_day: 22.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
-}
+mod t2 {
+    use crate::tests::*;
 
-#[test]
-fn should_be_able_to_create_stake_and_end_stake_immature_penalty() {
-    let (env, owner, wise, time) = init();
-    default_check(&wise, owner);
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap_or_default();
-    assert_eq!(ret, DEFAULT_GLOBALS, "Not default globals");
-    assert_eq!(balance, RESERVED_WISE, "Not default wise amount");
-    // CREATE STAKE
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => CREATE_STAKE,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "staked_amount" => ONEHUNDRED_CSPR,
-            "lock_days" => 20u64,
-            "referrer" => account_zero_address()
-        },
-        time,
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap();
-    assert_eq!(
-        balance,
-        RESERVED_WISE - ONEHUNDRED_CSPR,
-        "Required amount not staked for owner"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: ONEHUNDRED_CSPR,
-            total_shares: 1002739726000u64.into(),
-            share_price: 100000000.into(),
-            current_stakeable_day: 22.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
-    // STAKE_ID / START_DATE / REFERAL_ID
-    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
-    // END STAKE
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => END_STAKE,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "stake_id" => ret.0
-        },
-        time + (10 * MILLI_SECONDS_IN_DAY),
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap();
-    assert_eq!(
-        balance,
-        264332746893298u64.into(), // NOT FULY RECOVERED DUE TO PENALTY
-        "Required amount not unstaked for owner (immature stake, no penalty)"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: 0.into(),
-            total_shares: 0.into(),
-            share_price: 110000000.into(),
-            current_stakeable_day: 32.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
-}
+    #[test]
+    fn should_be_able_to_create_stake_and_end_stake_immature_penalty() {
+        let (env, owner, wise, time) = init();
+        default_check(&wise, owner);
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap_or_default();
+        assert_eq!(ret, DEFAULT_GLOBALS, "Not default globals");
+        assert_eq!(balance, RESERVED_WISE, "Not default wise amount");
+        // CREATE STAKE
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => CREATE_STAKE,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "staked_amount" => ONEHUNDRED_CSPR,
+                "lock_days" => 20u64,
+                "referrer" => account_zero_address()
+            },
+            time,
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap();
+        assert_eq!(
+            balance,
+            RESERVED_WISE - ONEHUNDRED_CSPR,
+            "Required amount not staked for owner"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: ONEHUNDRED_CSPR,
+                total_shares: 1002739726000u64.into(),
+                share_price: 100000000.into(),
+                current_stakeable_day: 22.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+        // STAKE_ID / START_DATE / REFERAL_ID
+        let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
+        // END STAKE
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => END_STAKE,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "stake_id" => ret.0
+            },
+            time + (10 * MILLI_SECONDS_IN_DAY),
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap();
+        assert_eq!(
+            balance,
+            264332746893298u64.into(), // NOT FULY RECOVERED DUE TO PENALTY
+            "Required amount not unstaked for owner (immature stake, no penalty)"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: 0.into(),
+                total_shares: 0.into(),
+                share_price: 110000000.into(),
+                current_stakeable_day: 32.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+    }
 
-#[test]
-fn should_be_able_to_create_stake_and_scrape_interest() {
-    let (env, owner, wise, time) = init();
-    default_check(&wise, owner);
-    // CREATE STAKE
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => CREATE_STAKE,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "staked_amount" => ONEHUNDRED_CSPR,
-            "lock_days" => 20u64,
-            "referrer" => account_zero_address()
-        },
-        time,
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap_or_default();
-    assert_eq!(
-        balance,
-        RESERVED_WISE - ONEHUNDRED_CSPR,
-        "Required amount not staked for owner"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: ONEHUNDRED_CSPR,
-            total_shares: 1002739726000u64.into(),
-            share_price: 100000000.into(),
-            current_stakeable_day: 22.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
-    // STAKE_ID / START_DATE / REFERAL_ID
-    let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
-    // SCRAPE INTEREST
-    call(
-        &env,
-        owner,
-        SESSION_WASM_STAKEABLE,
-        runtime_args! {
-            ENTRYPOINT => SCRAPE_INTEREST,
-            PACKAGE_HASH => Key::Hash(wise.package_hash()),
-            "stake_id" => ret.0.clone(),
-            "scrape_days" => 0u64
-        },
-        time + (3 * MILLI_SECONDS_IN_DAY),
-    );
-    let ret: Globals = wise.query_named_key(GLOBALS.into());
-    let balance: U256 = wise
-        .query_dictionary("balances", owner.to_string())
-        .unwrap_or_default();
-    assert_eq!(
-        balance,
-        263985521531844u64.into(), // AFTER AMOUNT SCRAPED
-        "Required amount not scraped for owner"
-    );
-    assert_eq!(
-        ret,
-        Globals {
-            total_staked: ONEHUNDRED_CSPR,
-            total_shares: 59894125637u64.into(),
-            share_price: 110000000.into(),
-            current_stakeable_day: 25.into(),
-            referral_shares: 0.into(),
-            liquidity_shares: 0.into(),
-        },
-        "Globals not updated accordingly"
-    );
+    #[test]
+    fn should_be_able_to_create_stake_and_scrape_interest() {
+        let (env, owner, wise, time) = init();
+        default_check(&wise, owner);
+        // CREATE STAKE
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => CREATE_STAKE,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "staked_amount" => ONEHUNDRED_CSPR,
+                "lock_days" => 20u64,
+                "referrer" => account_zero_address()
+            },
+            time,
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap_or_default();
+        assert_eq!(
+            balance,
+            RESERVED_WISE - ONEHUNDRED_CSPR,
+            "Required amount not staked for owner"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: ONEHUNDRED_CSPR,
+                total_shares: 1002739726000u64.into(),
+                share_price: 100000000.into(),
+                current_stakeable_day: 22.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+        // STAKE_ID / START_DATE / REFERAL_ID
+        let ret: (Vec<u32>, U256, Vec<u32>) = result_key(&env, owner, CREATE_STAKE);
+        // SCRAPE INTEREST
+        call(
+            &env,
+            owner,
+            SESSION_WASM_STAKEABLE,
+            runtime_args! {
+                ENTRYPOINT => SCRAPE_INTEREST,
+                PACKAGE_HASH => Key::Hash(wise.package_hash()),
+                "stake_id" => ret.0.clone(),
+                "scrape_days" => 0u64
+            },
+            time + (3 * MILLI_SECONDS_IN_DAY),
+        );
+        let ret: Globals = wise.query_named_key(GLOBALS.into());
+        let balance: U256 = wise
+            .query_dictionary("balances", owner.to_string())
+            .unwrap_or_default();
+        assert_eq!(
+            balance,
+            263985521531844u64.into(), // AFTER AMOUNT SCRAPED
+            "Required amount not scraped for owner"
+        );
+        assert_eq!(
+            ret,
+            Globals {
+                total_staked: ONEHUNDRED_CSPR,
+                total_shares: 59894125637u64.into(),
+                share_price: 110000000.into(),
+                current_stakeable_day: 25.into(),
+                referral_shares: 0.into(),
+                liquidity_shares: 0.into(),
+            },
+            "Globals not updated accordingly"
+        );
+    }
 }
