@@ -227,22 +227,6 @@ fn approve() {
     StakeableToken::default().approve(spender, amount);
 }
 
-/// This function is to mint token against the address that user provided
-///
-/// # Parameters
-///
-/// * `to` - A Key that holds the account address of the user
-///
-/// * `amount` - A U256 that holds the amount for mint
-///
-
-#[no_mangle]
-fn mint() {
-    let to: Key = runtime::get_named_arg("to");
-    let amount: U256 = runtime::get_named_arg("amount");
-    StakeableToken::default().mint(to, amount);
-}
-
 /// This function is to burn token against the address that user provided
 ///
 /// # Parameters
@@ -1210,16 +1194,6 @@ fn get_entry_points() -> EntryPoints {
         "total_supply",
         vec![],
         U256::cl_type(),
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        "mint",
-        vec![
-            Parameter::new("to", Key::cl_type()),
-            Parameter::new("amount", U256::cl_type()),
-        ],
-        <()>::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));

@@ -64,7 +64,8 @@ copy-wasm-file-liquidity-guard:
 	cp ${wasm_src_path}/session-code-liquidity-guard.wasm ${des_wasm_liquidity_guard}
 
 test-stakeable-token:
-	cargo test -p stakeable-token-tests -- --test-threads=1
+	cargo test -p stakeable-token-tests t1
+	cargo test -p stakeable-token-tests t2
 test-liquidity-guard:
 	cargo test -p liquidity-guard-tests
 
