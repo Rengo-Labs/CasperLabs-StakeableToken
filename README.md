@@ -177,6 +177,8 @@ make build-dependencies
 
 ### Individual Run Contracts
 
+NOTE:- Running all tests at once requires high processing and memory, should be suitable to run EACH test case individually
+
 Run this command to build & test specific test cases.
 
 ```
